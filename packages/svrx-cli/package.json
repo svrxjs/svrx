@@ -1,0 +1,23 @@
+{
+  "name": "svrx-cli",
+  "version": "0.0.0",
+  "description": "svrx cli",
+  "keywords": [
+    "svrx",
+    "cli",
+    "live-reload",
+    "mock"
+  ],
+  "license": "MIT",
+  "main": "lib/svrx-cli.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}
