@@ -8,7 +8,7 @@
     "live-reload",
     "mock"
   ],
-  "homepage": "http://yyyfe.github.io/svrx",
+  "homepage": "http://x-orpheus.github.io/svrx",
   "license": "MIT",
   "main": "lib/svrx.js",
   "directories": {
@@ -20,7 +20,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yyyfe/svrx"
+    "url": "https://github.com/x-orpheus/svrx"
   },
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha __tests__",
