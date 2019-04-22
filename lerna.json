@@ -1,27 +1,21 @@
 {
-  "packages": [
-    "packages/*"
-  ],
-  "version": "0.0.2",
-  "changelog": {
-    "repo": "x-orpheus/svrx",
-    "labels": {
-      "PR: new feature": ":rocket: New Feature",
-      "PR: breaking change": ":boom: Breaking Change",
-      "PR: bug fix": ":bug: Bug Fix",
-      "PR: enhancement": ":nail_care: Enhancement",
-      "PR: documentation": ":memo: Documentation",
-      "PR: internal": ":house: Internal"
+    "packages": ["packages/*"],
+    "version": "0.0.2",
+    "changelog": {
+        "repo": "x-orpheus/svrx",
+        "labels": {
+            "PR: new feature": ":rocket: New Feature",
+            "PR: breaking change": ":boom: Breaking Change",
+            "PR: bug fix": ":bug: Bug Fix",
+            "PR: enhancement": ":nail_care: Enhancement",
+            "PR: documentation": ":memo: Documentation",
+            "PR: internal": ":house: Internal"
+        },
+        "cacheDir": ".changelog"
     },
-    "cacheDir": ".changelog"
-  },
-  "commoand": {
-    "publish": {
-      "ignoreChanges": [
-        "*.md",
-        "*.txt",
-        "test/**"
-      ]
+    "commoand": {
+        "publish": {
+            "ignoreChanges": ["*.md", "*.txt", "test/**"]
+        }
     }
-  }
 }

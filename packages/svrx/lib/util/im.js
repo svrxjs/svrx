@@ -1,24 +1,19 @@
-
-
 let _ = require('./helper');
 
-
 // simple immutable utility
-// ------------------------------ 
-// - set: deep set
+// ------------------------------
+// - set: deep immutable set
 // - get: deep get
-// - del: deep del
-// - splice: deep array splice mani
+// - del: deep immutable del
+// - splice: deep immutable array splice mani
 let im = {
-
     /**
-     * 
-     * @param {Object} options 
+     *
+     * @param {Object} options
      *  - options.replace
      *  - options.noCreate: if true, won't create raw object for undefined
      */
     set(target, pathes, val, options = {}) {
-
         if (options === true) {
             options = { replace: true };
         }
@@ -28,17 +23,9 @@ let im = {
         pathes = pathes || [];
 
         let currentVal = im.get(target, pathes);
-        if ( !options.replace && currentVal === val ) {
+        if (!options.replace && currentVal === val) {
             return target;
         }
-
-        // if (options.delete) {
-        //     if (val === undefined || val === null || (_.typeOf(val) === 'array' && val.length === 0)) {
-        //         return im.del(target, pathes);
-        //     }
-        // } else if (val === undefined && !options.forceSet) {
-        //     return im.del(target, pathes);
-        // }
 
         let { replace } = options;
 
@@ -47,18 +34,18 @@ let im = {
         let len = pathes.length;
 
         if (!len) {
-            return !replace && (tType === 'object' && aType === 'object') ?
-                Object.assign({}, target, val) : val;
+            return !replace && (tType === 'object' && aType === 'object') ? Object.assign({}, target, val) : val;
         }
 
         let nextPath = pathes.shift();
         let dest = _.clone(target);
 
-        if ( dest === undefined && !options.noCreate ) {
+        if (dest === undefined && !options.noCreate) {
             dest = {};
         }
 
-        if (len === 1) { // 证明是最后一个
+        if (len === 1) {
+            // 证明是最后一个
             if (dest[nextPath] === val) {
                 return dest;
             }
@@ -75,17 +62,18 @@ let im = {
     get(target, pathes) {
         if (typeof pathes === 'number') pathes = [pathes];
         else if (typeof pathes === 'string') pathes = pathes.split('.');
-        target && pathes.some((p) => {
-            target = target[p];
-            if (target == null) return true;
-            return false;
-        });
+        target &&
+            pathes.some((p) => {
+                target = target[p];
+                if (target == null) return true;
+                return false;
+            });
         return target;
     },
 
     splice(target, pathes, ...args) {
         let list = im.get(target, pathes).slice();
-        list.splice.call(list, ...args);
+        list.splice.apply(list, args);
         return im.set(target, pathes, list, true);
     },
 
@@ -123,8 +111,7 @@ let im = {
         }
         dest[nextPath] = im.del(dest[nextPath], pathes);
         return dest;
-    },
-
+    }
 };
 
 module.exports = im;

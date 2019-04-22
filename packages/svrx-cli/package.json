@@ -17,9 +17,6 @@
   "files": [
     "lib"
   ],
-  "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
-  },
   "devDependencies": {
     "coveralls": "^3.0.3",
     "expect.js": "^0.3.1",

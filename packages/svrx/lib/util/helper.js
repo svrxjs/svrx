@@ -1,42 +1,43 @@
 // safe listening port
-const nPath = require('path');
-const CONST = require('../constant')
-const o2str = ({}).toString;
+const CONST = require('../constant');
+const o2str = {}.toString;
 const slice = [].slice;
+const exec = require('child_process').exec;
 
+async function noopMiddleware(ctx, next) {
+    await next();
+}
 
 // return promise by callback node-callback-style handler
-function npCall( callback, args, ctx ) {
-
+function npCall(callback, args, ctx) {
     args = args || [];
 
     return new Promise((resolve, reject) => {
-
         args.push((err, ret) => {
-            if (err) return reject( err )
+            if (err) return reject(err);
             return resolve(ret);
-        })
+        });
 
-        callback.apply(ctx, args)
-    })
+        callback.apply(ctx, args);
+    });
 }
-
 
 function normalizePluginName(name) {
-
-    return name.indexOf( CONST.PLUGIN_PREFIX ) !== 0?
-        CONST.PLUGIN_PREFIX + name:
-        name
-
+    return name.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + name : name;
 }
 
-function typeOf( o ){
-    return o == null ? String(o) : o2str.toString.call(o).slice(8, -1).toLowerCase();
+function typeOf(o) {
+    return o == null
+        ? String(o)
+        : o2str
+              .call(o)
+              .slice(8, -1)
+              .toLowerCase();
 }
 
-// 浅复制
+// simple clone
 function clone(target) {
-    const type = typeOf( target );
+    const type = typeOf(target);
 
     if (type === 'array') {
         return slice.call(target);
@@ -47,8 +48,25 @@ function clone(target) {
     return target;
 }
 
+function openBrowser(target, callback) {
+    const map = {
+        darwin: 'open',
+        win32: 'start '
+    };
 
-exports.normalizePluginName = normalizePluginName
-exports.npCall = npCall
-exports.typeOf = typeOf
-exports.clone = clone
+    const opener = map[process.platform] || 'xdg-open';
+
+    return exec('' + opener + ' ' + target, callback);
+}
+
+function is(someThing) {
+    return someThing;
+}
+
+exports.normalizePluginName = normalizePluginName;
+exports.noopMiddleware = noopMiddleware;
+exports.openBrowser = openBrowser;
+exports.typeOf = typeOf;
+exports.npCall = npCall;
+exports.clone = clone;
+exports.is = is;

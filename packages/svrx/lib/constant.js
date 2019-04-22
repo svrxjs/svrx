@@ -1,6 +1,4 @@
-
-
 module.exports = {
-    'PLUGIN_PREFIX': 'svrx-plugin',
-    'DEFAULT_PRIORITY': 10
-}
+    PLUGIN_PREFIX: 'svrx-plugin',
+    DEFAULT_PRIORITY: 10
+};
