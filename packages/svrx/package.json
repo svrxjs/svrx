@@ -42,8 +42,10 @@
     "npmi": "^4.0.0",
     "request-promise": "^4.2.4",
     "resolve": "^1.10.0",
+    "rimraf": "^2.6.3",
     "socket.io": "^2.2.0",
-    "socket.io-client": "^2.2.0"
+    "socket.io-client": "^2.2.0",
+    "svrx-plugin-test": "file:__tests__/fixture/plugin/svrx-plugin-test"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",

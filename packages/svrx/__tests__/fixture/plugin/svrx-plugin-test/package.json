@@ -1,0 +1,11 @@
+{
+  "name": "svrx-plugin-test",
+  "version": "0.0.1",
+  "keywords": [
+    "svrx",
+    "plugin"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "dependencies": { }
+}
