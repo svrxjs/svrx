@@ -22,8 +22,15 @@ class MiddlewareManager {
             }
         }
 
-        this.add('proxy', require('./middlewares/proxy'));
-        this.add('serveStatic', require('./middlewares/serveStatic'));
+        this.add('$ctx', {
+            priority: -Infinity,
+            onCreate: () => async (ctx, next) => {
+                ctx._svrx = {};
+                await next();
+            }
+        });
+        this.add('$proxy', require('./middlewares/proxy'));
+        this.add('$serveStatic', require('./middlewares/serveStatic'));
     }
 
     add(name, def) {

@@ -1,4 +1,6 @@
 // safe listening port
+const EventEmitter = require('events');
+
 const CONST = require('../constant');
 const o2str = {}.toString;
 const slice = [].slice;
@@ -24,6 +26,15 @@ function npCall(callback, args, ctx) {
 
 function normalizePluginName(name) {
     return name.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + name : name;
+}
+
+function isWritableStream(test) {
+    // ducking type check
+    return test instanceof EventEmitter && typeof test.write === 'function' && typeof test.end === 'function';
+}
+function isReadableStream(test) {
+    // ducking type check
+    return test instanceof EventEmitter && typeof test.read === 'function';
 }
 
 function typeOf(o) {
@@ -64,6 +75,8 @@ function is(someThing) {
 }
 
 exports.normalizePluginName = normalizePluginName;
+exports.isWritableStream = isWritableStream;
+exports.isReadableStream = isReadableStream;
 exports.noopMiddleware = noopMiddleware;
 exports.openBrowser = openBrowser;
 exports.typeOf = typeOf;

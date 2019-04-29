@@ -11,3 +11,4 @@
 
 @TODO: transform options before usage
 @TODO: unzip proxy before
+@TODO: selector logic

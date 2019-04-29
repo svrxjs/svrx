@@ -1,4 +1,4 @@
-const im = require('../lib/util/im');
+const im = require('../../lib/util/im');
 const expect = require('expect.js');
 
 

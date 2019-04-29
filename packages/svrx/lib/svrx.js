@@ -3,10 +3,10 @@ const http = require('http');
 const ffp = require('find-free-port');
 const Koa = require('koa');
 
-const MiddlewareManager = require('./middleware');
+const Middleware = require('./middleware');
 const PluginSystem = require('./plugin/system');
 const Configure = require('./configure');
-// const Injector = require('./injector')
+const Injector = require('./injector');
 const IO = require('./io');
 
 const NOOP = () => {};
@@ -23,22 +23,31 @@ class Svrx {
         const app = (this.app = new Koa());
         const server = (this._server = http.createServer(app.callback()));
         const config = (this.config = new Configure(options));
-
-        this.middlewareManager = new MiddlewareManager(config);
+        this.initConfig(config);
+        const middleware = (this.middleware = new Middleware(config));
+        const injector = (this.injector = new Injector({ config, middleware }));
 
         this.system = new PluginSystem({
             config,
-            middleware: this.middlewareManager
+            injector,
+            middleware
         });
 
         this.io = new IO({
             config,
             server,
-            middlewareManager: this.middlewareManager
+            middleware
         });
 
         // @TODO: need dynamic
         app.use(this.koaMiddleware());
+    }
+
+    // @TODO
+    initConfig(config) {
+        config.set('urls.script', '/svrx/svrx-client.js');
+        config.set('urls.style', '/svrx/svrx-client.css');
+        if (!config.get('port')) config.set('port', 8000);
     }
 
     async ready() {
@@ -47,7 +56,7 @@ class Svrx {
 
     // export koa middleware for exsited koa application
     koaMiddleware() {
-        return this.middlewareManager.middleware();
+        return this.middleware.middleware();
     }
 
     // export raw callback for http(s).createServer

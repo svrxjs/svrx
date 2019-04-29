@@ -8,9 +8,12 @@ const request = require('supertest');
 const expect = require('expect.js');
 const Koa = require('koa');
 
-const Configure = require('../lib/configure');
-const Middleware = require('../lib/middleware');
-const Svrx = require('../lib/svrx');
+const Configure = require('../../lib/configure');
+const Middleware = require('../../lib/middleware');
+const Svrx = require('../../lib/svrx');
+
+
+const FIXTURE_ROOT = path.join(__dirname, '../fixture');
 
 const getPort = function(number) {
     return new Promise((resolve, reject) => {
@@ -61,6 +64,15 @@ describe('Basic', () => {
             });
         });
     });
+
+    it('#start with no port', (done) => {
+        const svrx = new Svrx({});
+        svrx.start((port) => {
+            expect(port).to.not.equal(undefined);
+            done();
+        });
+    });
+
 
     it('#port conflict', (done) => {
         getPort().then((p) => {
@@ -195,36 +207,32 @@ describe('Middleware', () => {
         // });
 
         it('serveStatic: basic', (done) => {
+
             const server = new Svrx({
                 port: 3000,
                 static: {
-                    root: path.join(__dirname, 'fixture/middleware')
+                    root: path.join( FIXTURE_ROOT, 'middleware' )
                 }
             });
+
             request(server.callback())
                 .get('/demo.js')
                 .expect('const a = 1;', done);
+
         });
         it('serveStatic: injector', (done) => {
             const server = new Svrx({
                 port: 3000,
                 static: {
-                    root: path.join(__dirname, 'fixture/middleware')
-                },
-                middlewares: {
-                    modify: (config) => async (ctx, next) => {
-                        await next();
-                        if (/html/.test(ctx.response.get('content-type'))) {
-                            ctx.body = transform(ctx.body, '</body>', `<script src='xx.js'></body>`);
-                        }
-                    }
+                    root: path.join(FIXTURE_ROOT, 'middleware')
                 }
             });
 
             request(server.callback())
                 .get('/demo.html')
                 .expect('Content-Type', /html/)
-                .expect(`<body><script src='xx.js'></body>`, done);
+                .expect('<body><script async src="/svrx/svrx-client.js"/></body>' , done);
+
         });
 
         it('builtin - serveStatic & proxy', () => {});

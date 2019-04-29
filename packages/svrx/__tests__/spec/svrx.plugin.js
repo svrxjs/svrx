@@ -4,21 +4,21 @@ const rimraf = require('rimraf');
 const libPath = require('path');
 const libFs = require('fs');
 
-const MiddlewareManager = require('../lib/middleware');
-const System = require('../lib/plugin/system');
-const Configure = require('../lib/configure');
-const npm = require('../lib/plugin/npm');
-const Svrx = require('../lib/svrx');
+const MiddlewareManager = require('../../lib/middleware');
+const System = require('../../lib/plugin/system');
+const Configure = require('../../lib/configure');
+const npm = require('../../lib/plugin/npm');
+const Svrx = require('../../lib/svrx');
 
-const MODULE_PATH = libPath.join(__dirname, './fixture/plugin');
-const TEST_PLUGIN_PATH = libPath.join(__dirname, 'fixture/plugin/svrx-plugin-test');
+const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
+const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
 
 function des() {}
 
 describe('Plugin System', () => {
     function cleanModule(done) {
-        rimraf(libPath.join(__dirname, 'fixture/plugin/node_modules'), () => {
-            rimraf(libPath.join(__dirname, 'fixture/plugin/packag*.json'), done);
+        rimraf(libPath.join(MODULE_PATH, 'node_modules'), () => {
+            rimraf(libPath.join(MODULE_PATH, 'packag*.json'), done);
         });
     }
 
@@ -32,17 +32,19 @@ describe('Plugin System', () => {
             cleanModule(done);
         });
         it('basic usage', (done) => {
+
             npm.install({
                 path: MODULE_PATH,
                 name: 'lodash.noop',
                 version: '3.0.0'
             }).then((result) => {
                 expect(result.version).to.equal('3.0.0');
-                const expectModulePath = libPath.join(__dirname, 'fixture/plugin/node_modules/lodash.noop');
+                const expectModulePath = libPath.join(MODULE_PATH,'/node_modules/lodash.noop');
                 expect(result.path).to.equal(expectModulePath);
                 expect(libFs.statSync(expectModulePath).isDirectory()).to.equal(true);
                 done();
             });
+
         }).timeout(10000);
 
         it('load module: local install', (done) => {
@@ -53,7 +55,7 @@ describe('Plugin System', () => {
             }).then((ret) => {
                 expect(ret.name).to.equal('svrx-plugin-test');
                 expect(ret.version).to.equal('0.0.1');
-                const testModule = require(libPath.join(__dirname, 'fixture/plugin/node_modules/svrx-plugin-test'));
+                const testModule = require(libPath.join(TEST_PLUGIN_PATH));
                 expect(testModule.name).to.equal('test');
                 done();
             });
@@ -70,13 +72,13 @@ describe('Plugin System', () => {
             cleanModule(done);
         });
 
-        it('system#loadOne with path & install', (done) => {
+        it('system#loadOne with path', (done) => {
             const system = new System({
                 config: new Configure({
                     root: MODULE_PATH
                 })
             });
-            system.load([{ path: libPath.join(MODULE_PATH, 'svrx-plugin-test') }]).then((res) => {
+            system.load([{ path: TEST_PLUGIN_PATH }]).then((res) => {
                 expect(system.get('test').name).to.equal('test');
                 expect(system.get('test').module.priority).to.equal(100);
                 done();
@@ -89,7 +91,7 @@ describe('Plugin System', () => {
                     root: MODULE_PATH
                 })
             });
-            system.load([{ path: libPath.join(MODULE_PATH, 'svrx-plugin-test') }]).then((res) => {
+            system.load([{ path: TEST_PLUGIN_PATH }]).then((res) => {
                 expect(system.get('test').name).to.equal('test');
                 expect(system.get('test').module.priority).to.equal(100);
                 done();
@@ -108,7 +110,7 @@ describe('Plugin System', () => {
             });
         }).timeout(10000);
 
-        it('system#loadOne with path has depend', (done) => {
+        it('system#loadOne with path has depend, force install', (done) => {
             const system = new System({
                 config: new Configure({
                     root: MODULE_PATH
@@ -165,32 +167,11 @@ describe('Plugin System', () => {
                 });
         });
 
-        it('path: install', (done) => {
-            const system = new System({
-                config: new Configure({
-                    root: MODULE_PATH
-                })
-            });
-            system
-                .load([
-                    {
-                        name: 'inplace',
-                        priority: 10,
-                        hooks: {
-                            async onRoute(props, ctx, next) {}
-                        }
-                    }
-                ])
-                .then((res) => {
-                    const plugModule = system.get('inplace');
-                    expect(plugModule.name).to.equal('inplace');
-                    expect(plugModule.path).to.eql(MODULE_PATH);
-                    done();
-                });
-        });
+ 
     });
 
-    describe('Svrx Integration', () => {
+    describe('Integration', () => {
+
         it('plugin-test onRoute', (done) => {
             const svrx = new Svrx({
                 root: MODULE_PATH,
@@ -212,6 +193,8 @@ describe('Plugin System', () => {
             });
         });
 
+
+
         it('plugin url parser', () => {});
 
         it('only one plugin is enable', () => {});
@@ -219,5 +202,62 @@ describe('Plugin System', () => {
         it('plugin config cli builder', () => {});
 
         it('plugin props handle via propModels', () => {});
+
+
+        it('assets basic usage', ()=>{
+
+            const svrx = new Svrx({
+                root: MODULE_PATH,
+                plugins: [
+                    {
+                        name: 'inplace',
+                        priority: 10,
+                        hooks: {
+                            async onRoute(props, ctx, next) {}
+                        },
+                        assets: {
+                            styles: [
+                                { content: `body{left: 10px}` }
+                            ],
+                            scripts: [
+                                './'
+                            ]
+                        }
+                    }
+                ]
+            });
+
+            svrx.setup().then(() => {
+
+            })
+        })
+
+        it('selector on definition', ()=>{
+
+            const svrx = new Svrx({
+                root: MODULE_PATH,
+                plugins: [
+                    {
+                        name: 'inplace',
+                        priority: 10,
+                        hooks: {
+                            async onRoute(props, ctx, next) {}
+                        },
+                        assets: {
+                            style: [
+
+                            ]
+                        }
+                    }
+                ]
+            });
+
+        })
+
+        it('selector on props', ()=>{
+
+
+        })
+
     });
 });
