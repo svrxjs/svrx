@@ -2,6 +2,7 @@ const npm = require('npm');
 const npmi = require('npmi');
 const _ = require('lodash');
 const nUtil = require('util');
+const libPath = require('path');
 
 const { npCall } = require('../util/helper');
 
@@ -23,6 +24,8 @@ const view = normalizeNpmCommand('view');
 const search = normalizeNpmCommand('search');
 
 function install(option) {
+    const root = option.path;
+
     return new Promise((resolve, reject) => {
         npmi(option, (err, result) => {
             if (err) return reject(err);
@@ -30,10 +33,15 @@ function install(option) {
                 if (!result) return resolve(result);
                 let len = result.length;
                 const [name, version] = result[len - 1][0].split('@');
+                let path = result[len - 1][1];
+                // @FIX npmi error
+                if (!libPath.isAbsolute(path)) {
+                    path = libPath.join(root, path);
+                }
                 resolve({
                     name,
                     version,
-                    path: result[len - 1][1]
+                    path
                 });
             }
         });

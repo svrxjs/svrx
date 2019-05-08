@@ -74,11 +74,28 @@ function is(someThing) {
     return someThing;
 }
 
+const acceptMineTypes = /\b(xhtml|html|htm|xml)\b/;
+
+function isHtmlType(headers) {
+    return acceptMineTypes.test(headers['content-type'] || '');
+}
+
+function isAcceptGzip(headers) {
+    return (headers['accept-encoding'] || '').indexOf('gzip') !== -1;
+}
+
+function isRespGzip(headers) {
+    return (headers['content-encoding'] || '').indexOf('gzip') !== -1;
+}
+
 exports.normalizePluginName = normalizePluginName;
 exports.isWritableStream = isWritableStream;
 exports.isReadableStream = isReadableStream;
 exports.noopMiddleware = noopMiddleware;
+exports.isAcceptGzip = isAcceptGzip;
 exports.openBrowser = openBrowser;
+exports.isRespGzip = isRespGzip;
+exports.isHtmlType = isHtmlType;
 exports.typeOf = typeOf;
 exports.npCall = npCall;
 exports.clone = clone;

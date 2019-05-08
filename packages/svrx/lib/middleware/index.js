@@ -1,5 +1,6 @@
 const Configure = require('../configure');
-const cache = require('../util/cache');
+const { PRIORITY } = require('../constant');
+const cache = require('../shared/cache');
 const compose = require('koa-compose');
 
 const MIDDLEWARE_CACHE = Symbol('middleware');
@@ -23,14 +24,12 @@ class MiddlewareManager {
         }
 
         this.add('$ctx', {
-            priority: -Infinity,
+            priority: Infinity,
             onCreate: () => async (ctx, next) => {
                 ctx._svrx = {};
                 await next();
             }
         });
-        this.add('$proxy', require('./middlewares/proxy'));
-        this.add('$serveStatic', require('./middlewares/serveStatic'));
     }
 
     add(name, def) {
@@ -39,6 +38,7 @@ class MiddlewareManager {
                 onCreate: def
             };
         }
+        if (!def.priority) def.priority = PRIORITY.DEFAULT;
 
         const cache = this[MIDDLEWARE_CACHE];
         cache.set(name, def);
@@ -59,7 +59,7 @@ class MiddlewareManager {
         const middlewares = this[MIDDLEWARE_CACHE].values();
 
         middlewares.sort((a, b) => {
-            return (a.priority || 10) - (b.priority || 10);
+            return (b.priority || 10) - (a.priority || 10);
         });
 
         this[COMPOSE_KEY] = compose(middlewares.map((m) => m.onCreate(this.config)));

@@ -45,6 +45,7 @@ const API = {
         return this;
     }
 };
+
 module.exports = function(obj) {
     obj = typeof obj === 'function' ? obj.prototype : obj;
     ['on', 'off', 'emit'].forEach((name) => (obj[name] = API[name]));

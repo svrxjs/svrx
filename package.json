@@ -30,5 +30,8 @@
       "git add"
     ]
   },
-  "dependencies": {}
+  "dependencies": {
+    "browser-sync-client": "^2.26.4",
+    "csv-stream": "^0.2.0"
+  }
 }

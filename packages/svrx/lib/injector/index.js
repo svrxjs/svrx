@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const replaceStream = require('./replace');
-const { isReadableStream } = require('../util/helper');
+const { isReadableStream, isHtmlType, isAcceptGzip } = require('../util/helper');
 const { gzip } = require('../util/gzip');
+const logger = require('../util/logger');
 const { PRIORITY } = require('../constant');
 
 // const
@@ -51,14 +52,14 @@ module.exports = class Injector {
 
         let match;
         ['style', 'script'].some((name) => {
-            if (ctx.url === config.get('urls.' + name)) {
+            if (ctx.path === config.get('urls.' + name)) {
                 match = name;
                 return true;
             }
         });
         if (match) {
             const isGzip = isAcceptGzip(ctx.headers);
-            ctx.body = await this.getContent(match, isGzip);
+            ctx.body = await this.getContent(match, ctx);
             ctx.set('Content-Type', MINE_TYPES[match]);
             if (isGzip) {
                 ctx.body = await gzip(ctx.body);
@@ -69,30 +70,32 @@ module.exports = class Injector {
         }
     }
 
-    async getContent(type, isGzip) {
+    async getContent(type, ctx) {
         const assets = this[ASSETS][type];
 
         const appendContent = assets
+            .filter((m) => {
+                return !m.test || m.test(ctx.get('Referer'));
+            })
             .map((m) => m.content + (m.name ? '\n//' + `source from ${m.name}` : ''))
             .filter((m) => !!m)
             .join('\n;');
 
         const output = type === 'script' ? BASIC_SCRIPT + '\n' + appendContent : appendContent;
 
-        if (isGzip) {
-        }
         return output;
     }
 
     add(type, def) {
-        if (typeof def === 'string') {
-            def = { filename: def };
-        }
-
         let { filename, content } = def;
 
         if (filename && !content) {
-            def.content = fs.readFileSync(filename, 'utf8');
+            try {
+                def.content = fs.readFileSync(filename, 'utf8');
+            } catch (e) {
+                logger.error(e.message);
+                def.content = '';
+            }
         }
 
         this[ASSETS][type].push(def);
@@ -101,8 +104,11 @@ module.exports = class Injector {
     // @TODO FIX </body> split case
     transform(body) {
         const config = this.config;
-        const replaceScript = [`</body>`, `<script async src="${config.get('urls.script')}"/></body>`];
-        const replaceStyle = [`</head>`, `<link rel="stylesheet" type="text/css" href="${config.get('urls.style')}"/>`];
+        const replaceScript = [`</body>`, `<script async src="${config.get('urls.script')}"></script></body>`];
+        const replaceStyle = [
+            `</head>`,
+            `<link rel="stylesheet" type="text/css" href="${config.get('urls.style')}"/></head>`
+        ];
 
         if (body instanceof Buffer) {
             body = body.toString('utf8');
@@ -116,13 +122,3 @@ module.exports = class Injector {
         return body;
     }
 };
-
-const acceptMineTypes = /\b(xhtml|html|htm|xml)\b/;
-
-function isHtmlType(headers) {
-    return acceptMineTypes.test(headers['content-type'] || '');
-}
-
-function isAcceptGzip(headers) {
-    return (headers['accept-encoding'] || '').indexOf('gzip') !== -1;
-}

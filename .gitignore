@@ -90,3 +90,9 @@ tmp/
 
 .DS_Store
 .changelog
+.vscode
+
+
+# ignore dist
+
+dist

@@ -17,7 +17,7 @@ module.exports = {
         ]
     },
     hooks: {
-        async onRoute( props, ctx, next ){
+        async onRoute( ctx, next, {props} ){
             const limit = props.limit;
             ctx.set('X-Svrx-Limit', limit);
             await next()

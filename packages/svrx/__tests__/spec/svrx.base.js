@@ -2,7 +2,6 @@
 
 const path = require('path');
 
-const { Transform, Duplex } = require('stream');
 const ffp = require('find-free-port');
 const request = require('supertest');
 const expect = require('expect.js');
@@ -12,8 +11,12 @@ const Configure = require('../../lib/configure');
 const Middleware = require('../../lib/middleware');
 const Svrx = require('../../lib/svrx');
 
+function createServer(option){
+    option = option || {};
+    option.livereload = false
+    return new Svrx(option)
+}
 
-const FIXTURE_ROOT = path.join(__dirname, '../fixture');
 
 const getPort = function(number) {
     return new Promise((resolve, reject) => {
@@ -23,30 +26,9 @@ const getPort = function(number) {
     });
 };
 
-function bufferToStream(buffer) {
-    let stream = new Duplex();
-    stream.push(buffer);
-    stream.push(null);
-    return stream;
-}
-
-function transform(rs, str, replaced) {
-    if (rs instanceof Buffer) {
-        rs = bufferToStream(rs);
-    }
-    return rs.pipe(
-        new Transform({
-            transform(chunk, encoding, callback) {
-                this.push(chunk.toString().replace(str, replaced));
-                callback();
-            }
-        })
-    );
-}
-
 describe('Basic', () => {
     it('#Callback', (done) => {
-        const server = new Svrx();
+        const server = createServer();
 
         request(server.callback())
             .get('/path-not-exsits')
@@ -55,7 +37,7 @@ describe('Basic', () => {
 
     it('#start', (done) => {
         ffp(3000, '127.0.0.1', (err, p) => {
-            const svrx = new Svrx({
+            const svrx = createServer({
                 port: p
             });
             svrx.start((port) => {
@@ -66,10 +48,10 @@ describe('Basic', () => {
     });
 
     it('#start with no port', (done) => {
-        const svrx = new Svrx({});
+        const svrx = createServer({});
         svrx.start((port) => {
             expect(port).to.not.equal(undefined);
-            done();
+            svrx.close(done)
         });
     });
 
@@ -77,11 +59,11 @@ describe('Basic', () => {
     it('#port conflict', (done) => {
         getPort().then((p) => {
             p = p[0];
-            const svrx = new Svrx({ port: p });
+            const svrx = createServer({ port: p });
 
             svrx.start((port) => {
                 expect(port).to.eql(p);
-                const svrx2 = new Svrx({
+                const svrx2 = createServer({
                     port: p
                 });
 
@@ -100,7 +82,7 @@ describe('Middleware', () => {
         const m = new Middleware();
 
         m.add('one', {
-            priority: 1,
+            priority: 2,
             onCreate(config) {
                 return async (ctx, next) => {
                     ctx.body = 'one';
@@ -110,7 +92,7 @@ describe('Middleware', () => {
         });
 
         m.add('two', {
-            priority: 2,
+            priority: 1,
             onCreate(config) {
                 return async (ctx, next) => {
                     ctx.body += ' two';
@@ -130,7 +112,7 @@ describe('Middleware', () => {
     describe('Builtin', () => {
         function joinTest(config1, config2, callback) {
             getPort(2).then((ports) => {
-                const targetServer = new Svrx(
+                const targetServer = createServer(
                     Object.assign(
                         {
                             port: ports[0]
@@ -139,7 +121,7 @@ describe('Middleware', () => {
                     )
                 );
                 targetServer.start(() => {
-                    const server = new Svrx(
+                    const server = createServer(
                         Object.assign(
                             {
                                 port: ports[1],
@@ -206,35 +188,6 @@ describe('Middleware', () => {
         //     );
         // });
 
-        it('serveStatic: basic', (done) => {
 
-            const server = new Svrx({
-                port: 3000,
-                static: {
-                    root: path.join( FIXTURE_ROOT, 'middleware' )
-                }
-            });
-
-            request(server.callback())
-                .get('/demo.js')
-                .expect('const a = 1;', done);
-
-        });
-        it('serveStatic: injector', (done) => {
-            const server = new Svrx({
-                port: 3000,
-                static: {
-                    root: path.join(FIXTURE_ROOT, 'middleware')
-                }
-            });
-
-            request(server.callback())
-                .get('/demo.html')
-                .expect('Content-Type', /html/)
-                .expect('<body><script async src="/svrx/svrx-client.js"/></body>' , done);
-
-        });
-
-        it('builtin - serveStatic & proxy', () => {});
     });
 });
