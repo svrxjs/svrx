@@ -6,19 +6,26 @@ const libFs = require('fs');
 
 const System = require('../../lib/plugin/system');
 const Configure = require('../../lib/configure');
+const constants = require('../../lib/constant');
 const npm = require('../../lib/plugin/npm');
 const Svrx = require('../../lib/svrx');
 
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
 
-
-function createServer(option){
-    option = option || {};
-    option.livereload = false
-    return new Svrx(option)
+function changeVersion(version) {
+    const PRE_VERSION = constants.VERSION;
+    constants.VERSION = version;
+    return () => {
+        constants.VERSION = PRE_VERSION;
+    };
 }
 
+function createServer(option) {
+    option = option || {};
+    option.livereload = false;
+    return new Svrx(option);
+}
 
 describe('Plugin System', () => {
     function cleanModule(done) {
@@ -63,6 +70,28 @@ describe('Plugin System', () => {
                 done();
             });
         }).timeout(10000);
+        it('npm view version', (done) => {
+            npm.view(['svrx-plugin-demo@*', 'engines']).then((ret) => {
+                for (var i in ret) {
+                    expect(ret[i].engines.svrx).to.not.equal(undefined);
+                }
+                done();
+            });
+        }).timeout(10000);
+
+        it('npm load satisfied version', (done) => {
+            const revert = changeVersion('0.0.2');
+            npm.getSatisfiedVersion('demo').then((ret) => {
+                expect(ret).to.equal('1.0.2');
+                changeVersion('0.0.3');
+                return npm.getSatisfiedVersion('demo').then((ret) => {
+                    expect(ret).to.equal('1.0.3');
+                    done();
+                    // Restore VERSION
+                    revert();
+                })
+            }).catch(done)
+        }).timeout(10000);
     });
 
     describe('System', () => {
@@ -88,8 +117,6 @@ describe('Plugin System', () => {
             });
         }).timeout(10000);
 
-
-
         it('system#loadOne with name', (done) => {
             const system = new System({
                 config: new Configure({
@@ -108,10 +135,10 @@ describe('Plugin System', () => {
                     root: MODULE_PATH
                 })
             });
-            system.load([{ path: libPath.join(MODULE_PATH, 'svrx-plugin-depend'), install: true }]).then((res) => {
+            system.loadOne({ path: libPath.join(MODULE_PATH, 'svrx-plugin-depend'), install: true }).then((res) => {
                 expect(system.get('depend').name).to.equal('depend');
                 done();
-            });
+            }).catch(done)
         }).timeout(10000);
 
         it('system#load: path should correct', (done) => {
@@ -170,6 +197,56 @@ describe('Plugin System', () => {
                     done();
                 });
         });
+
+        describe('Engine', () => {
+            it('loadVersion', (done) => {
+
+                const revert = changeVersion('0.0.2');
+                const system = new System({
+                    config: new Configure({
+                        root: MODULE_PATH
+                    })
+                });
+                system
+                    .load([
+                        {
+                            name: 'demo',
+                            version: '1.0.2'
+                        }
+                    ])
+                    .then((res) => {
+                        const plugModule = system.get('demo');
+                        expect(plugModule.version).to.equal('1.0.2');
+
+                        revert();
+                        done();
+                    })
+                    .catch(done);
+            });
+            it('load unmatched Version ', (done) => {
+                const system = new System({
+                    config: new Configure({
+                        root: MODULE_PATH
+                    })
+                });
+                const revert = changeVersion('0.0.3');
+                system
+                    .loadOne(
+                        {
+                            name: 'demo',
+                            version: '1.0.10'
+                        }
+                    )
+                    .then((res) => {
+                        done('Expect Throw Error, but not');
+                    })
+                    .catch((err) => {
+                        expect(err).to.match(/unmatched plugin version/);
+                        revert()
+                        done();
+                    });
+            });
+        });
     });
 
     describe('Integration', () => {
@@ -211,14 +288,13 @@ describe('Plugin System', () => {
                     .get('/svrx/svrx-client.css')
                     .expect(/body\{background: black\}/)
                     .expect(200)
-                    .end((err)=>{
-                        if(err) return done(err)
+                    .end((err) => {
+                        if (err) return done(err);
                         request(svrx.callback())
                             .get('/svrx/svrx-client.js')
                             .expect(/console.log\(\'svrx-plugin-test\'\)/)
                             .expect(200)
-                            .end(done)
-
+                            .end(done);
                     });
             });
         });
@@ -231,19 +307,15 @@ describe('Plugin System', () => {
 
         it('plugin props handle via propModels', () => {});
 
-
-
         it('selector on props', () => {});
     });
 
-    describe('Builtin', ()=>{
-
+    describe('Builtin', () => {
         it('serveStatic: basic', (done) => {
-
             const svrx = createServer({
                 port: 3000,
                 static: {
-                    root: libPath.join( MODULE_PATH, 'serve' )
+                    root: libPath.join(MODULE_PATH, 'serve')
                 }
             });
 
@@ -251,8 +323,7 @@ describe('Plugin System', () => {
                 request(svrx.callback())
                     .get('/demo.js')
                     .expect('const a = 1;', done);
-            })
-
+            });
         });
         it('serveStatic: injector', (done) => {
             const svrx = createServer({
@@ -266,10 +337,8 @@ describe('Plugin System', () => {
                 request(svrx.callback())
                     .get('/demo.html')
                     .expect('Content-Type', /html/)
-                    .expect(/src=\"\/svrx\/svrx-client.js\"/ , done);
-            })
-
+                    .expect(/src=\"\/svrx\/svrx-client.js\"/, done);
+            });
         });
-
-    })
+    });
 });

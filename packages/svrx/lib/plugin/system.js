@@ -2,10 +2,11 @@ const nodeResolve = require('resolve');
 const libPath = require('path');
 
 // const Plugin = require('./plugin')
+const { PLUGIN_PREFIX, ASSET_FIELDS } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
-const { PLUGIN_PREFIX, ASSET_FIELDS } = require('../constant');
-const { install } = require('./npm');
+const semver = require('../util/semver');
+const { install, getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
 
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 const BUILTIN_PLUGIN = ['livereload', 'proxy', 'serve'];
@@ -31,6 +32,7 @@ class PluginSystem {
     }
 
     // {name: 'test', version:'0.0.1', }
+    // @TODO: 重构重复代码过多
     async loadOne(cfg) {
         if (typeof cfg === 'string') cfg = { name: cfg };
         let { name, path } = cfg;
@@ -75,11 +77,14 @@ class PluginSystem {
                 },
                 (err, res, pkg) => {
                     if (err) return resolve(null); // suppress error
-                    resolve({
-                        path: libPath.join(res.split(normalizedName)[0], normalizedName),
-                        module: require(res),
-                        pkg: pkg
-                    });
+                    const svrxPattern = (pkg.engines && pkg.engines.svrx) || '*';
+                    if (semver.satisfies(svrxPattern)) {
+                        resolve({
+                            path: libPath.join(res.split(normalizedName)[0], normalizedName),
+                            module: require(res),
+                            pkg: pkg
+                        });
+                    }
                 }
             );
         });
@@ -98,9 +103,7 @@ class PluginSystem {
                     pkg = {};
                 }
             } else {
-                let installRet = await install({
-                    name: path != null ? path : normalizePluginName(name),
-                    localInstall: path != null,
+                const installOptions = {
                     path: config.get('root'),
                     npmLoad: {
                         loglevel: 'silent',
@@ -109,7 +112,25 @@ class PluginSystem {
                         // loaded: true,
                         prefix: config.get('root')
                     }
-                });
+                };
+                if (path == null) {
+                    const targetVersion = await getSatisfiedVersion(name, cfg.version);
+                    if (!targetVersion) {
+                        // @TODO
+                        throw Error(
+                            `unmatched plugin version, please use other version\n` +
+                                `${(await listMatchedPackageVersion(name)).join('\n')}`
+                        );
+                    }
+                    installOptions.name = normalizePluginName(name);
+                    installOptions.version = targetVersion;
+                } else {
+                    installOptions.name = path;
+                    installOptions.localInstall = true;
+                }
+
+                let installRet = await install(installOptions);
+
                 logger.log(`plugin ${name} installed completely!`);
 
                 path = installRet.path;

@@ -1,10 +1,12 @@
+// @TODO;
 const npm = require('npm');
 const npmi = require('npmi');
 const _ = require('lodash');
 const nUtil = require('util');
 const libPath = require('path');
+const semver = require('../util/semver');
 
-const { npCall } = require('../util/helper');
+const { npCall, normalizePluginName } = require('../util/helper');
 
 const load = _.memoize(
     nUtil.promisify(npm.load).bind(npm, {
@@ -39,8 +41,8 @@ function install(option) {
                     path = libPath.join(root, path);
                 }
                 resolve({
-                    name,
                     version,
+                    name,
                     path
                 });
             }
@@ -48,8 +50,41 @@ function install(option) {
     });
 }
 
+// getSatisfiedPackage('svrx-plugin-qrcode')
+async function getSatisfiedVersion(name, semverVersion) {
+    const packages = await getMatchedPkg(name, semverVersion);
+    if (!packages.length) return false;
+    const matchedPackage = semver.getClosestPackage(packages);
+    return matchedPackage ? matchedPackage.version : false;
+}
+
+async function getMatchedPkg(name, semverVersion) {
+    name = normalizePluginName(name);
+    const versions = await view([name + '@' + (semverVersion || '*'), 'engines']);
+    if (versions) {
+        let packages = Object.keys(versions).map((v) => {
+            return {
+                version: v,
+                pattern: (versions[v].engines && versions[v].engines.svrx) || '*'
+            };
+        });
+        return packages;
+    }
+    return [];
+}
+
+async function listMatchedPackageVersion(name) {
+    name = normalizePluginName(name);
+    const packages = await getMatchedPkg(name);
+    return packages.map((p) => {
+        return `${name}@${p.version} satisfies svrx@${p.pattern}`;
+    });
+}
+
 module.exports = {
     view,
     search,
-    install
+    install,
+    getSatisfiedVersion,
+    listMatchedPackageVersion
 };

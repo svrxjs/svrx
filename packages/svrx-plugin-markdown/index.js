@@ -7,6 +7,13 @@ function isMarkdown(url){
 }
 
 module.exports = {
+
+    propsModels: {
+        port: {
+            type: 'number',
+            default: 8000
+        }
+    },
     
     assets:{
         test: isMarkdown,
@@ -39,7 +46,7 @@ module.exports = {
             }
             await next();
         },
-        async onCreate({io, config}){
+        async onCreate({io, config, middleware, injector}){
             io.registService('markdown.content', async payload => {
                 return new Promise((resolve, reject)=>{
 
@@ -50,6 +57,7 @@ module.exports = {
 
                 })
             })
+            
         }
 
     }

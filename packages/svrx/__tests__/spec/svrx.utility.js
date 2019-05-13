@@ -1,9 +1,35 @@
+const semver = require('../../lib/util/semver');
+const consts = require('../../lib/constant');
+const _ = require('../../lib/util/helper');
 const im = require('../../lib/util/im');
 const expect = require('expect.js');
 
 
 
 describe('Svrx Utility', () => {
+    describe('helper.semver', ()=>{
+        it('satisfies', ()=>{
+            expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false)
+            expect(semver.satisfies('~0.0.1', '0.0.1')).to.equal(true)
+            expect(semver.satisfies('~0.1.1', '0.1.9')).to.equal(true)
+        })
+        it('getClosetPackages', ()=>{
+
+            const PRE_VERSION = consts.VERSION;
+            consts.VERSION = '0.0.2';
+
+            expect(semver.getClosestPackage([
+                { version:'0.0.1', pattern: '0.0.2' }, 
+                { version: '0.0.3', pattern: '~0.0.2' },
+                { version: '0.0.6', pattern: '~0.0.2' },
+                { version: '0.0.9', pattern: '^0.0.4' }
+            ]).version).to.equal('0.0.6')
+
+            consts.VERSION = PRE_VERSION;
+
+        })
+
+    })
     describe('helper.im', () => {
 
         it('im#set basic', () => {
