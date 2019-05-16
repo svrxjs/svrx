@@ -48,11 +48,7 @@ function install(option) {
                 if (!libPath.isAbsolute(path)) {
                     path = libPath.join(root, path);
                 }
-                resolve({
-                    version,
-                    name,
-                    path
-                });
+                resolve({ version, name, path });
             }
         });
     });

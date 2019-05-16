@@ -6,9 +6,11 @@ function isMarkdown(url){
     return /\.(md|markdown)$/.test(url)
 }
 
+
+
 module.exports = {
 
-    propsModels: {
+    propModels: {
         port: {
             type: 'number',
             default: 8000

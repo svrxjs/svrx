@@ -32,6 +32,7 @@
     "prepublish": "npm run webpack:build"
   },
   "dependencies": {
+    "chalk": "^2.4.2",
     "co-request": "^1.0.0",
     "find-free-port": "^2.0.0",
     "immer": "^2.1.2",
@@ -39,7 +40,6 @@
     "koa-send": "^5.0.0",
     "koa2-connect": "^1.0.2",
     "lodash": "^4.17.11",
-    "nes": "^10.0.2",
     "npm": "^6.9.0",
     "npmi": "^2.0.1",
     "resolve": "^1.10.0",

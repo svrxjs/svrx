@@ -8,11 +8,13 @@
     "prepublish": "webpack",
     "dev": "webpack -w --config webpack.config.js --mode development"
   },
+  "engines": {
+    "svrx": "~0.0.2"
+  },
   "keywords": [
     "svrx",
     "svrx-plugin"
   ],
-  "author": "",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.4.4",
