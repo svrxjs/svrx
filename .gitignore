@@ -91,7 +91,7 @@ tmp/
 .DS_Store
 .changelog
 .vscode
-
+.idea
 
 # ignore dist
 

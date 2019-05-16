@@ -81,16 +81,18 @@ describe('Plugin System', () => {
 
         it('npm load satisfied version', (done) => {
             const revert = changeVersion('0.0.2');
-            npm.getSatisfiedVersion('demo').then((ret) => {
-                expect(ret).to.equal('1.0.2');
-                changeVersion('0.0.3');
-                return npm.getSatisfiedVersion('demo').then((ret) => {
-                    expect(ret).to.equal('1.0.3');
-                    done();
-                    // Restore VERSION
-                    revert();
+            npm.getSatisfiedVersion('demo')
+                .then((ret) => {
+                    expect(ret).to.equal('1.0.2');
+                    changeVersion('0.0.3');
+                    return npm.getSatisfiedVersion('demo').then((ret) => {
+                        expect(ret).to.equal('1.0.3');
+                        done();
+                        // Restore VERSION
+                        revert();
+                    });
                 })
-            }).catch(done)
+                .catch(done);
         }).timeout(10000);
     });
 
@@ -135,10 +137,13 @@ describe('Plugin System', () => {
                     root: MODULE_PATH
                 })
             });
-            system.loadOne({ path: libPath.join(MODULE_PATH, 'svrx-plugin-depend'), install: true }).then((res) => {
-                expect(system.get('depend').name).to.equal('depend');
-                done();
-            }).catch(done)
+            system
+                .loadOne({ path: libPath.join(MODULE_PATH, 'svrx-plugin-depend'), install: true })
+                .then((res) => {
+                    expect(system.get('depend').name).to.equal('depend');
+                    done();
+                })
+                .catch(done);
         }).timeout(10000);
 
         it('system#load: path should correct', (done) => {
@@ -200,7 +205,6 @@ describe('Plugin System', () => {
 
         describe('Engine', () => {
             it('loadVersion', (done) => {
-
                 const revert = changeVersion('0.0.2');
                 const system = new System({
                     config: new Configure({
@@ -231,18 +235,16 @@ describe('Plugin System', () => {
                 });
                 const revert = changeVersion('0.0.3');
                 system
-                    .loadOne(
-                        {
-                            name: 'demo',
-                            version: '1.0.10'
-                        }
-                    )
+                    .loadOne({
+                        name: 'demo',
+                        version: '1.0.10'
+                    })
                     .then((res) => {
                         done('Expect Throw Error, but not');
                     })
                     .catch((err) => {
                         expect(err).to.match(/unmatched plugin version/);
-                        revert()
+                        revert();
                         done();
                     });
             });
