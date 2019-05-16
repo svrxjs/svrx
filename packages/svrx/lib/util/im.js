@@ -57,7 +57,7 @@ let im = {
 
     /**
      * get(state, 'path.left,name')
-     * 避免 undefined of undefined 错误
+     * avoid undefined of undefined 错误
      */
     get(target, pathes) {
         if (typeof pathes === 'number') pathes = [pathes];
@@ -111,6 +111,10 @@ let im = {
         }
         dest[nextPath] = im.del(dest[nextPath], pathes);
         return dest;
+    },
+    equal(state1, state2, pathes) {
+        if (!pathes) return state1 === state2;
+        return im.get(state1, pathes) === im.get(state2, pathes);
     }
 };
 

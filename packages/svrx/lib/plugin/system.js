@@ -106,9 +106,6 @@ class PluginSystem {
                 const installOptions = {
                     path: config.get('root'),
                     npmLoad: {
-                        loglevel: 'silent',
-                        progress: false,
-                        silent: true,
                         // loaded: true,
                         prefix: config.get('root')
                     }

@@ -5,15 +5,18 @@ const _ = require('lodash');
 const nUtil = require('util');
 const libPath = require('path');
 const semver = require('../util/semver');
+const DevNull = require('./devnull');
 
 const { npCall, normalizePluginName } = require('../util/helper');
+// @TODO
+const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
+    loglevel: 'silent',
+    silent: true,
+    logstream: new DevNull(),
+    progress: false
+};
 
-const load = _.memoize(
-    nUtil.promisify(npm.load).bind(npm, {
-        loglevel: 'silent',
-        silent: true
-    })
-);
+const load = _.memoize(nUtil.promisify(npm.load).bind(npm, SILENT_SUGAR_NOT_NECESSARILY_WORKS));
 
 function normalizeNpmCommand(command) {
     return async function(...args) {
@@ -27,6 +30,11 @@ const search = normalizeNpmCommand('search');
 
 function install(option) {
     const root = option.path;
+    const npmLoad = option.npmLoad;
+
+    if (npmLoad) {
+        _.extend(npmLoad, SILENT_SUGAR_NOT_NECESSARILY_WORKS);
+    }
 
     return new Promise((resolve, reject) => {
         npmi(option, (err, result) => {

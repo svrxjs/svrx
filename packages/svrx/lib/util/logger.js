@@ -1,11 +1,14 @@
-module.exports = {
-    log(msg) {
-        console.log(msg);
-    },
-    error(msg) {
-        console.error(msg);
-    },
-    debug(msg) {
-        console.debug(msg);
-    }
-};
+const LEVELS = ['error', 'warn', 'info', 'verbose', 'debug'];
+
+function write(msg, level) {
+    level = level || 'info';
+    process.stdout.write(`[${level.toUpperCase()}] ${new Date().toLocaleString()} - ` + msg + '\n');
+}
+
+LEVELS.forEach((level) => {
+    exports[level] = function(msg) {
+        write(msg, level);
+    };
+});
+
+exports.log = exports.info;
