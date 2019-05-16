@@ -32,7 +32,7 @@ module.exports = {
                 ctx.body = `
                     <html>
                         <head>
-                            <title>MARKDOWN PREVIEW</title>
+                            <title>Markdown Hot Viewer</title>
                             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
                         </head>
                         <body><div class="markdown-body"></div></body>
