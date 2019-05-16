@@ -13,8 +13,15 @@ module.exports = {
     // bind with logic
     hooks: {
         async onCreate({ middleware, config }) {
+            const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }));
             middleware.add('$serve-index', {
-                onCreate: () => c2k(serveIndex(config.get('root'), { icons: true }))
+                priority: PRIORITY.SERVE,
+                onCreate: () => async (ctx, next) => {
+                    if (!ACCEPT_METHOD.test(ctx.method) || ctx.status !== 404 || ctx.body != null) {
+                        return next();
+                    }
+                    return serveIndexMiddleware(ctx, next);
+                }
             });
         },
         async onRoute(ctx, next, { config }) {

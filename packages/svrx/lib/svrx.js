@@ -1,6 +1,8 @@
 const libPath = require('path');
 const http = require('http');
+const https = require('https');
 const libFs = require('fs');
+const { getCert } = require('./util/helper');
 
 const ffp = require('find-free-port');
 const Koa = require('koa');
@@ -17,10 +19,12 @@ const NOOP = () => {};
 class Svrx {
     constructor(options) {
         options = this._handleOptions(options);
+        const config = (this.config = new Configure(options));
 
         const app = (this.app = new Koa());
-        const server = (this._server = http.createServer(app.callback()));
-        const config = (this.config = new Configure(options));
+        const server = (this._server = config.get('https')
+            ? https.createServer(getCert(), app.callback())
+            : http.createServer(app.callback()));
 
         this.initConfig(config);
 
@@ -115,7 +119,8 @@ class Svrx {
             // @TODO: livereload settings
             { name: 'livereload' },
             { name: 'serve' },
-            { name: 'proxy' }
+            { name: 'proxy' },
+            { name: 'cors' }
         ].concat(this.config.get('plugins') || []);
     }
 

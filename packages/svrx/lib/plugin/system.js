@@ -9,7 +9,7 @@ const semver = require('../util/semver');
 const { install, getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
 
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
-const BUILTIN_PLUGIN = ['livereload', 'proxy', 'serve'];
+const BUILTIN_PLUGIN = ['livereload', 'proxy', 'serve', 'cors'];
 
 class PluginSystem {
     /**

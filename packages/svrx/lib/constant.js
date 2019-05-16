@@ -4,10 +4,10 @@ module.exports = {
 
     PRIORITY: {
         DEFAULT: 10,
-        INJECTOR: 1001,
-        SERVE: 200,
-        PROXY: 100,
-        TRANSFORM: 1000
+        SERVE: 20,
+        PROXY: 21,
+        INJECTOR: 101,
+        TRANSFORM: 100
     },
 
     ASSET_FIELDS: ['script', 'style'],

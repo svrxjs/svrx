@@ -1,5 +1,8 @@
 // safe listening port
 const EventEmitter = require('events');
+const libPath = require('path');
+const libFs = require('fs');
+const _ = require('lodash');
 
 const CONST = require('../constant');
 const o2str = {}.toString;
@@ -88,10 +91,21 @@ function isRespGzip(headers) {
     return (headers['content-encoding'] || '').indexOf('gzip') !== -1;
 }
 
+function getCert() {
+    const read = (type) => {
+        return libFs.readFileSync(libPath.join(__dirname, '../../resource/cert/rootCA.' + type), 'utf8');
+    };
+    return {
+        cert: read('crt'),
+        key: read('key')
+    };
+}
+
 exports.normalizePluginName = normalizePluginName;
 exports.isWritableStream = isWritableStream;
 exports.isReadableStream = isReadableStream;
 exports.noopMiddleware = noopMiddleware;
+exports.getCert = _.memoize(getCert);
 exports.isAcceptGzip = isAcceptGzip;
 exports.openBrowser = openBrowser;
 exports.isRespGzip = isRespGzip;

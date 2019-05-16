@@ -1,5 +1,5 @@
 const request = require('co-request');
-const path = require('path');
+const libUrl = require('url');
 const { gunzip } = require('../../util/gzip');
 const { isHtmlType, isRespGzip } = require('../../util/helper');
 
@@ -50,15 +50,17 @@ module.exports = {
 
 // 简化版 request
 async function proxy({ target, ctx, host }) {
-    let url = path.join(target, ctx.originalUrl);
+    let urlObj = new libUrl.URL(ctx.originalUrl, target);
     let headers = ctx.headers;
     let req = ctx.request;
 
-    headers.host = host || target || headers.host;
+    headers.host = host || urlObj.hostname || headers.host;
+
+    console.log(headers.host, urlObj);
 
     const options = {
         method: ctx.method,
-        url: `${ctx.protocol}://${url}`,
+        url: urlObj.toString(),
         body: req.body || '',
         encoding: null,
         headers

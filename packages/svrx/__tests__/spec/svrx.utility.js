@@ -139,19 +139,19 @@ describe('Svrx Utility', () => {
                         d: 3
                     }
                 }
-            });
-            model.watch((evt) => {
-                expect(evt.affects('a')).to.equal(true);
-                expect(evt.affects('a.b')).to.equal(true);
-                expect(evt.affects('a.b.c')).to.equal(true);
-                expect(evt.affects('a.b.d')).to.equal(false);
-                done();
-            });
+            })
+            model.watch((evt)=>{
+                expect(evt.affect('a')).to.equal(true)
+                expect(evt.affect('a.b')).to.equal(true)
+                expect(evt.affect('a.b.c')).to.equal(true)
+                expect(evt.affect('a.b.d')).to.equal(false)
+                done()
+            })
 
-            model.set('a.b.c', 4);
-        });
+            model.set('a.b.c', 4)
+        })
 
-        it('model.watch(path) + set', (done) => {
+        it('model.watch(path) + set', (done)=>{
             const model = new Imodel({
                 a: {
                     b: {
@@ -159,18 +159,19 @@ describe('Svrx Utility', () => {
                         d: 3
                     }
                 }
-            });
-            model.watch('a', (evt) => {
-                expect(evt.affects('b')).to.equal(true);
-                expect(evt.affects('b.c')).to.equal(true);
-                expect(evt.affects('b.d')).to.equal(false);
-                done();
-            });
+            })
+            model.watch('a', (evt)=>{
+                expect(evt.affect('b')).to.equal(true)
+                expect(evt.affect('b.c')).to.equal(true)
+                expect(evt.affect('b.d')).to.equal(false)
+                done()
+            })
 
-            model.set('a.b.c', 4);
-        });
+            model.set('a.b.c', 4)
+        })
 
-        it('splice/del/produce can also trigger watcher', (done) => {
+
+        it('splice/del/produce can also trigger watcher', (done)=>{
             const model = new Imodel({
                 a: {
                     b: {
@@ -179,18 +180,18 @@ describe('Svrx Utility', () => {
                         e: [1, 2, 3]
                     }
                 }
-            });
-            model.watch('a', (evt) => {
-                expect(evt.affects('b')).to.equal(true);
-                expect(evt.affects('b.c')).to.equal(true);
-                expect(evt.affects('b.d')).to.equal(false);
-                expect(evt.affects('b.e')).to.equal(true);
-                done();
-            });
-            model.splice('a.b.e', 0, 1);
-            model.del('a.b.c');
-        });
-        it('one event loop only trigger once', (done) => {
+            })
+            model.watch('a', (evt)=>{
+                expect(evt.affect('b')).to.equal(true)
+                expect(evt.affect('b.c')).to.equal(true)
+                expect(evt.affect('b.d')).to.equal(false)
+                expect(evt.affect('b.e')).to.equal(true)
+                done()
+            })
+            model.splice('a.b.e', 0, 1)
+            model.del('a.b.c')
+        })
+        it('one event loop only trigger once', (done)=>{
             const model = new Imodel({
                 a: {
                     b: {
@@ -210,10 +211,10 @@ describe('Svrx Utility', () => {
             model.del('a.b.c');
             model.del('a.f', 2);
 
-            setImmediatePromise().then(() => {
-                expect(called).to.equal(1);
-                model.watch('a.b', (evt) => {
-                    expect(evt.affects('d')).to.equal(true);
+            setImmediatePromise().then(()=>{
+                expect(called).to.equal(1)
+                model.watch('a.b', (evt)=>{
+                    expect(evt.affect('d')).to.equal(true)
                     done();
                 });
                 model.produce((draf) => {
