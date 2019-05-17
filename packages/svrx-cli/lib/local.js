@@ -9,8 +9,8 @@ module.exports = {
     },
 
     load: (version) =>
-        new Promise(() => {
+        new Promise((resolve) => {
             const Svrx = require(getSvrxPath(version));
-            return new Svrx();
+            resolve(new Svrx());
         })
 };
