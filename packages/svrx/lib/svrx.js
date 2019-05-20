@@ -1,7 +1,6 @@
-const libPath = require('path');
 const http = require('http');
 const https = require('https');
-const libFs = require('fs');
+const cosmiconfig = require('cosmiconfig');
 const { getCert } = require('./util/helper');
 
 const ffp = require('find-free-port');
@@ -13,7 +12,7 @@ const Configure = require('./configure');
 const Injector = require('./injector');
 const IO = require('./io');
 const logger = require('./util/logger');
-const optionList = require('./options');
+const OPTIONS = require('./option-list');
 
 const NOOP = () => {};
 
@@ -54,24 +53,14 @@ class Svrx {
             options || {}
         );
 
-        const root = options.root;
-
-        // config file detect
         try {
-            const defaultRcFile = libPath.join(root, '.svrxrc.js');
-
-            if (libFs.statSync(defaultRcFile).isFile()) {
-                options.config = defaultRcFile;
+            const explorer = cosmiconfig('svrx');
+            const result = explorer.searchSync();
+            if (result && !result.isEmpty) {
+                options = Object.assign(result.config, options);
             }
-        } catch (e) {}
-
-        if (options.config) {
-            try {
-                let configFileOptions = require(options.config);
-                options = Object.assign(configFileOptions, options);
-            } catch (e) {
-                logger.error(`Config File ${options.config} loaded Fail beacuse \n\n` + e.message);
-            }
+        } catch (e) {
+            logger.error(`Config file loaded fail because \n\n` + e.message);
         }
 
         return options;
@@ -107,8 +96,8 @@ class Svrx {
         this._server.close(callback);
     }
 
-    loadOptions() {
-        return optionList;
+    loadOptionList() {
+        return OPTIONS;
     }
 
     async setup() {

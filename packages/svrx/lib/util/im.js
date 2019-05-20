@@ -63,6 +63,7 @@ let im = {
         if (typeof pathes === 'number') pathes = [pathes];
         else if (typeof pathes === 'string') pathes = pathes.split('.');
         target &&
+            pathes &&
             pathes.some((p) => {
                 target = target[p];
                 if (target == null) return true;

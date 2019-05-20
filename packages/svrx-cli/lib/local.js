@@ -8,9 +8,9 @@ module.exports = {
         return fs.existsSync(getSvrxPath(version));
     },
 
-    load: (version) =>
+    load: (version, optionsFromCli = {}) =>
         new Promise((resolve) => {
             const Svrx = require(getSvrxPath(version));
-            resolve(new Svrx());
+            resolve(new Svrx(optionsFromCli));
         })
 };

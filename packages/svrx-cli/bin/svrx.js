@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const _ = require('lodash');
+const argvParse = require('minimist');
 const Manager = require('../lib');
 const commands = require('../lib/commands');
 
@@ -16,8 +16,10 @@ program
     .description('Start a develop server')
     .alias('s')
     .allowUnknownOption()
-    .action(async (cmd) => {
-        const svrx = await manager.loadSvrx();
+    .action(async () => {
+        const options = argvParse(process.argv.slice(2));
+        delete options['_']; // remove cmd name: serve
+        const svrx = await manager.loadSvrx(options);
         svrx.start((port) => {
             Manager.log('success', `Successfully started a server at ${port}`);
         });
@@ -33,7 +35,7 @@ program
         // help info of command:serve
         console.log('serve|s    Start a develop server');
         const svrx = await manager.loadSvrx();
-        const options = svrx.loadOptions();
+        const options = svrx.loadOptionList();
         commands.printServeHelp(options);
     });
 

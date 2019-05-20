@@ -43,15 +43,16 @@ class Manager {
         }
     }
 
-    async loadSvrx() {
+    async loadSvrx(optionsFromCli = {}) {
         try {
-            const userConfigVersion = config.getConfig().version;
-            const version = await registry.getSatisfiedVersion(userConfigVersion);
+            const cliVersion = optionsFromCli.options || optionsFromCli.v;
+            const rcVersion = config.getConfig().version;
+            const version = cliVersion || (await registry.getSatisfiedVersion(rcVersion));
 
             if (!local.exists(version)) {
                 await registry.install(version);
             }
-            return local.load(version);
+            return local.load(version, optionsFromCli);
         } catch (e) {
             Manager.log('error', e);
             process.exit(1);
