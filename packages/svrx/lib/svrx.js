@@ -13,6 +13,7 @@ const Configure = require('./configure');
 const Injector = require('./injector');
 const IO = require('./io');
 const logger = require('./util/logger');
+const optionList = require('./options');
 
 const NOOP = () => {};
 
@@ -104,6 +105,10 @@ class Svrx {
 
     close(callback) {
         this._server.close(callback);
+    }
+
+    loadOptions() {
+        return optionList;
     }
 
     async setup() {

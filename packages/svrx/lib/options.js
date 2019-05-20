@@ -1,15 +1,19 @@
+const { GROUPS } = require('./constant');
 module.exports = {
     port: {
+        type: 'number',
         description: 'The unique identifier for a product',
-        type: 'integer',
         default: 8000,
-        alias: 'i',
+        group: GROUPS.COMMON,
+        alias: 'p',
+        required: true,
         ui: true // export to ui
     },
     reload: {
         type: 'boolean',
+        description: 'Enable auto reload',
         default: true,
         ui: true
-    },
-    dir: {}
+    }
+    // dir: {}
 };

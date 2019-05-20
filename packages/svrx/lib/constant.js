@@ -1,4 +1,10 @@
 const libPath = require('path');
+
+const COMMON = 'Common';
+const GROUPS = {
+    COMMON
+};
+
 module.exports = {
     PLUGIN_PREFIX: 'svrx-plugin-',
 
@@ -12,5 +18,6 @@ module.exports = {
 
     ASSET_FIELDS: ['script', 'style'],
     // REMOVE POSTFIX like `-beta` in  0.0.1-beta.
-    VERSION: require(libPath.join(__dirname, '../package.json')).version.replace(/-.*$/, '')
+    VERSION: require(libPath.join(__dirname, '../package.json')).version.replace(/-.*$/, ''),
+    GROUPS
 };

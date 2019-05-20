@@ -22,6 +22,7 @@ class Manager {
     constructor() {
         try {
             config.createDirs();
+            this.setWorkRoot();
         } catch (e) {
             Manager.log('error', e);
             process.exit(1);
