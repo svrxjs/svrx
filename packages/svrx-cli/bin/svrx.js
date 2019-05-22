@@ -18,7 +18,9 @@ program
     .allowUnknownOption()
     .action(async () => {
         const options = argvParse(process.argv.slice(2));
-        delete options['_']; // remove cmd name: serve
+        // remove not-option cmd(not started with '-'
+        delete options['_'];
+
         const svrx = await manager.loadSvrx(options);
         svrx.start((port) => {
             Manager.log('success', `Successfully started a server at ${port}`);
@@ -35,8 +37,8 @@ program
         // help info of command:serve
         console.log('serve|s    Start a develop server');
         const svrx = await manager.loadSvrx();
-        const options = svrx.loadOptionList();
-        commands.printServeHelp(options);
+        const optionList = svrx.loadOptionList();
+        commands.printServeHelp(optionList);
     });
 
 program.parse(process.argv);

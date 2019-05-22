@@ -45,10 +45,9 @@ class Manager {
 
     async loadSvrx(optionsFromCli = {}) {
         try {
-            const cliVersion = optionsFromCli.options || optionsFromCli.v;
-            const rcVersion = config.getConfig().version;
+            const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
+            const rcVersion = config.getConfig().svrx;
             const version = cliVersion || (await registry.getSatisfiedVersion(rcVersion));
-
             if (!local.exists(version)) {
                 await registry.install(version);
             }
