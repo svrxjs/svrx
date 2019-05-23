@@ -44,10 +44,10 @@ module.exports = {
         description: 'The unique identifier for a product',
         group: GROUPS.COMMON
     },
-    reload: {
+    livereload: {
         type: 'boolean',
         default: true,
-        description: 'Enable auto reload',
+        description: 'Enable auto live reload',
         group: GROUPS.COMMON
     }
 };

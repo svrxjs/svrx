@@ -4,11 +4,15 @@ const path = require('path');
 const OPTIONS = require('../option-list');
 const logger = require('../util/logger');
 const { PLUGIN_PREFIX } = require('../constant');
+const Validator = require('./validator');
+
+const validator = new Validator();
 
 class Option {
     constructor() {
         this._rcFilePath = null;
         this._svrxOptionList = OPTIONS || {};
+        // todo read plugin option list
     }
 
     formatInlineOptions(raw = {}) {
@@ -34,6 +38,19 @@ class Option {
     }
 
     /**
+     * merge inline and rcfile options, validate and fill with defaults
+     * @param inline
+     * @param addon
+     * @returns {*}
+     */
+    generate(inline = {}, addon = {}) {
+        const merged = this._merge(inline, addon);
+        const validated = validator.validate(merged);
+
+        return this._fillWithDefaults(validated);
+    }
+
+    /**
      * merged inline and rcfile options
      *   addons has a lower priority
      *   if the value type is array, the values will concat
@@ -42,14 +59,15 @@ class Option {
      * merged
      * @param options
      * @param addons
+     * @private
      */
-    merge(options = {}, addons = {}) {
+    _merge(options = {}, addons = {}) {
         const pluginMap = new Map();
 
-        addons.plugins.forEach((p) => {
+        (addons.plugins || []).forEach((p) => {
             pluginMap.set(p.name, p);
         });
-        options.plugins.forEach((p) => {
+        (options.plugins || []).forEach((p) => {
             if (pluginMap.has(p.name)) {
                 pluginMap.set(p.name, _.assign(pluginMap.get(p.name), p));
             } else {
@@ -68,7 +86,13 @@ class Option {
         return merged;
     }
 
-    fillWithDefaults(raw = {}) {
+    /**
+     *
+     * @param raw
+     * @returns {*}
+     * @private
+     */
+    _fillWithDefaults(raw = {}) {
         const result = _.cloneDeep(raw);
         _.keys(this._svrxOptionList).forEach((path) => {
             const defaultValue = this._svrxOptionList[path].default;
@@ -77,6 +101,10 @@ class Option {
             }
         });
         return result;
+    }
+
+    getRcfilePath() {
+        return this._rcFilePath;
     }
 
     /**

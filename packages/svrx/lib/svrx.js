@@ -35,6 +35,14 @@ class Svrx {
 
         // @TODO: need dynamic
         app.use(this.koaMiddleware());
+
+        this.config.watch((evt) => {
+            const pluginChange = evt.affect('plugins');
+            if (pluginChange) {
+                // todo plugins change
+                console.log('plugin options changed:', this.config.get('plugins'));
+            }
+        });
     }
 
     async ready() {
