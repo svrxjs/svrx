@@ -172,7 +172,7 @@ class Option {
      */
     _formatPlugins(raw = {}) {
         const result = _.cloneDeep(raw);
-        result.plugins = raw.plugins.map((p) => {
+        result.plugins = (raw.plugins || []).map((p) => {
             if (_.isString(p)) {
                 return {
                     name: p
