@@ -1,25 +1,53 @@
 const { GROUPS } = require('./constant');
 
 module.exports = {
-    version: {
+    'urls.script': {
+        type: 'string',
+        default: '/svrx/svrx-client.js',
+        group: GROUPS.CORE,
+        cli: false,
+        ui: false
+    },
+    'urls.style': {
+        type: 'string',
+        default: '/svrx/svrx-client.css',
+        group: GROUPS.CORE,
+        cli: false,
+        ui: false
+    },
+    root: {
+        type: 'string',
+        default: process.cwd(),
+        group: GROUPS.CORE,
+        cli: false,
+        ui: false
+    },
+    dir: {
+        type: 'string',
+        default: process.cwd(),
+        group: GROUPS.CORE,
+        cli: false,
+        ui: false
+    },
+    svrx: {
+        // todo default to the latest at local
+        alias: 'v',
         type: 'string',
         description: "The version of svrx you want to use(default to 'latest' if not present)",
         group: GROUPS.COMMON,
-        alias: 'v'
+        ui: false
     },
     port: {
-        type: 'number',
-        description: 'The unique identifier for a product',
-        default: 8000,
-        group: GROUPS.COMMON,
         alias: 'p',
-        ui: true // export to ui
+        type: 'number',
+        default: 8000,
+        description: 'The unique identifier for a product',
+        group: GROUPS.COMMON
     },
     reload: {
         type: 'boolean',
-        description: 'Enable auto reload',
         default: true,
-        ui: true
+        description: 'Enable auto reload',
+        group: GROUPS.COMMON
     }
-    // dir: {}
 };

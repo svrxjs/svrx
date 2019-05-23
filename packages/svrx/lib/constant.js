@@ -1,7 +1,9 @@
 const libPath = require('path');
 
+const CORE = 'Core';
 const COMMON = 'Common';
 const GROUPS = {
+    CORE,
     COMMON
 };
 
