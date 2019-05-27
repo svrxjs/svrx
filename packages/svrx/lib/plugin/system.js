@@ -168,8 +168,11 @@ class PluginSystem {
         const onCreate = hooks.onCreate;
         // @TODO Plugin onCreate Logic
         // onActive? onDeactive
-        const assets = module.assets;
-        const services = module.services;
+        const { assets, services, propModels } = module;
+
+        if (propModels) {
+            this.config.updatePluginProps(name, propModels);
+        }
 
         // regist service
         if (services) {

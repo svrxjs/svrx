@@ -25,6 +25,20 @@ class Configure extends IModel {
         }
     }
 
+    /**
+     * update option._svrxProps after one plugin is loaded, and validate the plugin options
+     * @param name
+     * @param props
+     */
+    updatePluginProps(name, props) {
+        const plugins = this.get('plugins');
+        option.updatePluginProps(name, props);
+
+        const pluginIndex = plugins.findIndex((p) => p.name === name);
+        const generatedPlugin = option.generateSinglePlugin(plugins[pluginIndex]);
+        this.set(['plugins', pluginIndex], generatedPlugin, true);
+    }
+
     _watchRcfile() {
         const rcfilePath = option.getRcfilePath();
         if (!rcfilePath) return;

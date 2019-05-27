@@ -6,13 +6,13 @@ const logger = require('../util/logger');
 const { PLUGIN_PREFIX } = require('../constant');
 const Validator = require('./validator');
 
-const validator = new Validator();
-
 class Option {
     constructor() {
         this._rcFilePath = null;
-        this._svrxOptionList = OPTIONS || {};
-        // todo read plugin option list
+        this._svrxProps = _.assign(OPTIONS || {}, {
+            plugins: []
+        });
+        this._validator = new Validator(this._svrxProps);
     }
 
     formatInlineOptions(raw = {}) {
@@ -45,9 +45,30 @@ class Option {
      */
     generate(inline = {}, addon = {}) {
         const merged = this._merge(inline, addon);
-        const validated = validator.validate(merged);
+        const validated = this._validator.validate(merged);
 
         return this._fillWithDefaults(validated);
+    }
+
+    /**
+     * validate a single plugin and fill with default
+     */
+    generateSinglePlugin(plugin = {}) {
+        const validated = this._validator.validateSinglePlugin(plugin);
+        return this._pluginFillWithDefaults(validated);
+    }
+
+    updatePluginProps(name, props = {}) {
+        const { plugins } = this._svrxProps;
+        const index = plugins.findIndex((p) => p.name === name);
+        const pluginProps = _.assign(props, { name });
+
+        // write props into _svrxProps
+        if (index >= 0) {
+            _.set(this._svrxProps, `plugins.${index}`, pluginProps);
+        } else {
+            this._svrxProps.plugins.push(pluginProps);
+        }
     }
 
     /**
@@ -94,8 +115,32 @@ class Option {
      */
     _fillWithDefaults(raw = {}) {
         const result = _.cloneDeep(raw);
-        _.keys(this._svrxOptionList).forEach((path) => {
-            const defaultValue = this._svrxOptionList[path].default;
+        _.keys(this._svrxProps).forEach((path) => {
+            if (path === 'plugins') {
+                const validPluginNames = this._svrxProps.plugins.map((plugin) => plugin.name);
+                result.plugins = result.plugins.map((plugin) => {
+                    if (validPluginNames.includes(plugin.name)) {
+                        return this._pluginFillWithDefaults(plugin);
+                    }
+                    return plugin;
+                });
+                return;
+            }
+            const defaultValue = this._svrxProps[path].default;
+            if (_.get(result, path) === undefined && defaultValue !== undefined) {
+                _.set(result, path, defaultValue);
+            }
+        });
+        return result;
+    }
+
+    _pluginFillWithDefaults(pluginRaw = {}) {
+        const result = _.cloneDeep(pluginRaw);
+        const pluginProps = this._svrxProps.plugins.find((p) => p.name === pluginRaw.name);
+
+        _.keys(pluginProps).forEach((path) => {
+            if (path === 'name') return;
+            const defaultValue = pluginProps[path].default;
             if (_.get(result, path) === undefined && defaultValue !== undefined) {
                 _.set(result, path, defaultValue);
             }
@@ -115,10 +160,10 @@ class Option {
     _removeAlias(raw = {}) {
         const options = _.cloneDeep(raw);
         const allPathAndAlias = [];
-        Object.keys(this._svrxOptionList).forEach((confPath) => {
-            if (this._svrxOptionList[confPath].alias) {
+        Object.keys(this._svrxProps).forEach((confPath) => {
+            if (this._svrxProps[confPath].alias) {
                 allPathAndAlias.push({
-                    alias: this._svrxOptionList[confPath].alias,
+                    alias: this._svrxProps[confPath].alias,
                     path: confPath
                 });
             }
@@ -149,7 +194,7 @@ class Option {
      */
     _pickPlugins(raw = {}) {
         const result = _.cloneDeep(raw);
-        const validKeys = Object.keys(this._svrxOptionList).map((key) => key.split('.')[0]);
+        const validKeys = Object.keys(this._svrxProps).map((key) => key.split('.')[0]);
         const pluginNames = Object.keys(raw).filter((key) => !validKeys.includes(key) && key !== 'plugins');
 
         result.plugins = result.plugins ? result.plugins.split(',') : [];
