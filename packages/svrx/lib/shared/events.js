@@ -1,53 +1,106 @@
-// migrated from https://github.com/leeluolee/mcss/blob/master/lib/helper/Event.js
+// migrated from https://github.com/leeluolee/mcss/blob/master/lib/helper/type.js
+// integrated sorted type broadcast and unsorted version
+//  - on/off/emit
+//  - bind/unbind/trigger
 const API = {
-    on: function(event, fn) {
-        if (typeof event === 'object') {
-            for (var i in event) {
-                this.on(i, event[i]);
+    on(type, fn, opts) {
+        if (typeof opts === 'number') opts = { priority: opts };
+        if (!opts) opts = {};
+
+        const { priority = 10 } = opts;
+
+        if (typeof type === 'object') {
+            for (let i in type) {
+                this.on(i, type[i], fn);
             }
         } else {
-            var handles = this._handles || (this._handles = {});
-            var calls = handles[event] || (handles[event] = []);
-            calls.push(fn);
+            let watcher = { priority, fn };
+            let handles = this._handles || (this._handles = {});
+            let watchers = handles[type] || (handles[type] = []);
+
+            if (!watchers.length) {
+                watchers.push(watcher);
+                return this;
+            }
+
+            for (let j = watchers.length; j--; ) {
+                let call = watchers[j];
+                if (call.priority >= priority) {
+                    watchers.splice(j + 1, 0, watcher);
+                    return this;
+                }
+            }
+            watchers.unshift(watcher);
         }
         return this;
     },
-    off: function(event, fn) {
-        if (!event || !this._handles) this._handles = {};
-        if (!this._handles) return;
+    off(type, fn) {
+        if (!type) throw Error('event type is required');
 
-        var handles = this._handles;
-        var calls;
+        if (!this._handles) this._handles = {};
 
-        if ((calls = handles[event])) {
+        let handles = this._handles;
+        let watchers;
+
+        if ((watchers = handles[type])) {
             if (!fn) {
-                handles[event] = [];
+                handles[type] = [];
                 return this;
             }
-            for (var i = 0, len = calls.length; i < len; i++) {
-                if (fn === calls[i]) {
-                    calls.splice(i, 1);
+            for (let i = 0, len = watchers.length; i < len; i++) {
+                if (fn === watchers[i].fn) {
+                    watchers.splice(i, 1);
                     return this;
                 }
             }
         }
         return this;
     },
-    emit: function(event) {
-        var args = [].slice.call(arguments, 1);
-        var handles = this._handles;
-        var calls;
-
-        if (!handles || !(calls = handles[event])) return this;
-        for (var i = 0, len = calls.length; i < len; i++) {
-            calls[i].apply(this, args);
+    async emit(type, data, sorted) {
+        let handles = this._handles;
+        let watchers, passedEvtObj, pending;
+        if (!sorted) {
+            pending = [];
         }
-        return this;
+
+        if (!handles || !(watchers = handles[type])) return this;
+        for (let i = 0, len = watchers.length; i < len; i++) {
+            const watcher = watchers[i];
+            const fn = watcher && watcher.fn;
+            if (typeof fn !== 'function') continue;
+            if (!sorted) {
+                let evtObj = getEvtObj(type, data);
+                pending.push(fn.call(this, evtObj));
+            } else {
+                if (!passedEvtObj) passedEvtObj = getEvtObj(type, data);
+                await fn.call(this, passedEvtObj);
+                if (passedEvtObj.isStoped) break;
+            }
+        }
+        if (!sorted) {
+            return Promise.all(pending);
+        }
+        return passedEvtObj;
     }
 };
 
+function getEvtObj(type, data) {
+    let _stopped = false;
+    return {
+        type,
+        data,
+        stop() {
+            _stopped = true;
+        },
+        get isStoped() {
+            return _stopped;
+        }
+    };
+}
+
 module.exports = function(obj) {
     obj = typeof obj === 'function' ? obj.prototype : obj;
+    if (!obj) obj = {};
     ['on', 'off', 'emit'].forEach((name) => (obj[name] = API[name]));
     return obj;
 };
