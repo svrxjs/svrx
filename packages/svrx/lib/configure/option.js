@@ -197,7 +197,7 @@ class Option {
         const validKeys = Object.keys(this._svrxProps).map((key) => key.split('.')[0]);
         const pluginNames = Object.keys(raw).filter((key) => !validKeys.includes(key) && key !== 'plugins');
 
-        result.plugins = result.plugins ? result.plugins.split(',') : [];
+        result.plugins = _.isString(result.plugins) ? result.plugins.split(',') : [];
         pluginNames.forEach((name) => {
             const value = raw[name];
             const newValue = { name };

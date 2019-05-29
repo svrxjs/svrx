@@ -91,6 +91,8 @@ class ImmutableModel {
 
 class WatchEvent {
     constructor(prev, now, root) {
+        this.prev = im.get(prev, root);
+        this.now = im.get(now, root);
         this.affect = (pathes) => {
             if (root) {
                 return !im.equal(im.get(prev, root), im.get(now, root), pathes);

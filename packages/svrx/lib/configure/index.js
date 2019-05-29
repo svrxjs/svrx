@@ -9,6 +9,7 @@ const IModel = require('../model');
 const Option = require('./option');
 
 const option = new Option();
+const NOOP = () => {};
 
 class Configure extends IModel {
     constructor(inlineOptions = {}) {
@@ -26,7 +27,37 @@ class Configure extends IModel {
     }
 
     /**
-     * update option._svrxProps after one plugin is loaded, and validate the plugin options
+     * get a plugin's options
+     * @param name
+     * @returns {*}
+     */
+    getPlugin(name) {
+        const plugins = this.get('plugins');
+        return plugins.find((p) => p.name === name);
+    }
+
+    /**
+     * watch plugin with plugin name
+     * @param name
+     * @param callback
+     * @returns {Function}
+     * eg:
+     *  this.config.watchPlugin('markdown', (event) => {
+     *     console.log('markdown plugin changed:', event);
+     *  });
+     */
+    watchPlugin(name, callback) {
+        const plugins = this.get('plugins');
+        const pluginIndex = plugins.findIndex((p) => p.name === name);
+        const pathes = ['plugins', pluginIndex];
+
+        if (pluginIndex >= 0) return this.watch(pathes, callback);
+        return NOOP;
+    }
+
+    /**
+     * update option._svrxProps after one plugin is loaded, and validate the
+     * plugin options
      * @param name
      * @param props
      */
@@ -56,7 +87,7 @@ class Configure extends IModel {
 
         this.produce((draft) => {
             _.keys(options).forEach((key) => {
-                draft[key] = options[key];
+                draft[key] = options[key]; // todo perf: plugins always changed
             });
         });
     }
