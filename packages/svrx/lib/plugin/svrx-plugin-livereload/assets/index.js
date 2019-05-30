@@ -23,14 +23,11 @@ void (function(svrx) {
             return true;
         };
 
-        io.on('file:change', function(data) {
+        io.on('file:change', function(evt) {
+            const data = evt.payload;
             if (data.css && updateStyle(data.css)) return true;
 
-            const evt = { stop: false, path: data.path };
-            svrx.events.emit('livereload:update', evt);
-            if (!evt.stop) {
-                window.location.reload();
-            }
+            window.location.reload();
         });
     };
 

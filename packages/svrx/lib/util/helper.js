@@ -27,6 +27,21 @@ function npCall(callback, args, ctx) {
     });
 }
 
+// node callback style result
+// ================================
+// const [err, data] = await nodeCall( func, 1,2,3 );
+function nodeCall(fnReturnPromise, ...args) {
+    return new Promise((resolve) => {
+        fnReturnPromise(...args)
+            .then((data) => {
+                resolve([null, data]);
+            })
+            .catch((err) => {
+                resolve([err]);
+            });
+    });
+}
+
 function normalizePluginName(name) {
     return name.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + name : name;
 }
@@ -41,12 +56,13 @@ function isReadableStream(test) {
 }
 
 function typeOf(o) {
-    return o == null
-        ? String(o)
-        : o2str
-              .call(o)
-              .slice(8, -1)
-              .toLowerCase();
+    if (o == null) {
+        return String(o);
+    }
+    return o2str
+        .call(o)
+        .slice(8, -1)
+        .toLowerCase();
 }
 
 // simple clone
@@ -110,6 +126,7 @@ exports.isAcceptGzip = isAcceptGzip;
 exports.openBrowser = openBrowser;
 exports.isRespGzip = isRespGzip;
 exports.isHtmlType = isHtmlType;
+exports.nodeCall = nodeCall;
 exports.typeOf = typeOf;
 exports.npCall = npCall;
 exports.clone = clone;

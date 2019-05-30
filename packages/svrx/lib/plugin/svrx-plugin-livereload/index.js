@@ -8,7 +8,7 @@ module.exports = {
     },
     hooks: {
         // on plugin enable
-        async onCreate({ config, io }) {
+        async onCreate({ config, events, io }) {
             if (config.get('livereload') === false) {
                 return;
             }
@@ -27,11 +27,16 @@ module.exports = {
                     debounce((path) => {
                         const data = { path: path };
                         const extname = libPath.extname(path);
+
                         if (extname === '.css') {
                             data.css = path.slice(dir.length);
                         }
-                        // helper.log(path + ' is changed');
-                        io.emit('file:change', data);
+
+                        events.emit('file:change', data, true).then((evt) => {
+                            if (!evt.isStoped) {
+                                io.emit('file:change', data);
+                            }
+                        });
                     }, 200)
                 );
         }

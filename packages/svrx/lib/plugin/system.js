@@ -15,10 +15,11 @@ class PluginSystem {
     /**
      * @param {Array} pluginlist
      */
-    constructor({ config, middleware, injector, io }) {
+    constructor({ events, config, middleware, injector, io }) {
         this.middleware = middleware;
-        this.config = config;
         this.injector = injector;
+        this.events = events;
+        this.config = config;
         this.io = io;
         this[PLUGIN_MAP] = {};
     }
@@ -125,7 +126,6 @@ class PluginSystem {
                     installOptions.name = path;
                     installOptions.localInstall = true;
                 }
-
                 let installRet = await install(installOptions);
 
                 logger.log(`plugin ${name} installed completely!`);
@@ -209,7 +209,7 @@ class PluginSystem {
                 priority: module.priority,
                 onCreate(config) {
                     return async (ctx, next) => {
-                        return onRoute(ctx, next, { props, config });
+                        return onRoute(ctx, next, { props, config, logger });
                     };
                 }
             });
@@ -219,8 +219,10 @@ class PluginSystem {
             return onCreate.call(plugin, {
                 middleware: this.middleware,
                 injector: this.injector,
+                events: this.events,
                 config: this.config,
-                io: this.io
+                io: this.io,
+                logger
             });
         }
     }

@@ -2,16 +2,13 @@
 const ioClient = require('socket.io-client');
 const events = require('../shared/events');
 const cache = require('../shared/cache');
+const uid = require('../shared/uid');
 
 const io = (module.exports = events({}));
 const origin = window.location.origin;
 const socket = ioClient.connect(origin);
 
-let _id = 0;
-function id() {
-    if (_id > 100000000) _id = 0;
-    return _id++;
-}
+io._socket = socket;
 
 io.call = (function() {
     const MAX_LIMIT_SERVICES = 500;
@@ -25,7 +22,7 @@ io.call = (function() {
 
     const MAX_CALL_TIMEOUT = 2000;
 
-    socket.on('onCall', (evt) => {
+    socket.on('$onCall', (evt) => {
         const callId = evt.callId;
         const handler = CALLBACK_CACHE.get(callId);
         if (handler) {
@@ -40,8 +37,8 @@ io.call = (function() {
 
     return function call(serviceName, payload) {
         return new Promise((resolve, reject) => {
-            let callId = id();
-            socket.emit('call', {
+            let callId = uid();
+            socket.emit('$call', {
                 serviceName,
                 payload,
                 callId
@@ -62,6 +59,6 @@ io.call = (function() {
 })();
 
 // one endpoint to distribute message
-socket.on('message', ({ type, data }) => {
-    io.emit(type, data);
+socket.on('$message', ({ type, payload }) => {
+    io.emit(type, payload);
 });

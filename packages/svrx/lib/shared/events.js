@@ -1,7 +1,5 @@
 // migrated from https://github.com/leeluolee/mcss/blob/master/lib/helper/type.js
 // integrated sorted type broadcast and unsorted version
-//  - on/off/emit
-//  - bind/unbind/trigger
 const API = {
     on(type, fn, opts) {
         if (typeof opts === 'number') opts = { priority: opts };
@@ -56,7 +54,7 @@ const API = {
         }
         return this;
     },
-    async emit(type, data, sorted) {
+    async emit(type, payload, sorted) {
         let handles = this._handles;
         let watchers, passedEvtObj, pending;
         if (!sorted) {
@@ -69,10 +67,10 @@ const API = {
             const fn = watcher && watcher.fn;
             if (typeof fn !== 'function') continue;
             if (!sorted) {
-                let evtObj = getEvtObj(type, data);
+                let evtObj = getEvtObj(type, payload);
                 pending.push(fn.call(this, evtObj));
             } else {
-                if (!passedEvtObj) passedEvtObj = getEvtObj(type, data);
+                if (!passedEvtObj) passedEvtObj = getEvtObj(type, payload);
                 await fn.call(this, passedEvtObj);
                 if (passedEvtObj.isStoped) break;
             }
@@ -84,11 +82,11 @@ const API = {
     }
 };
 
-function getEvtObj(type, data) {
+function getEvtObj(type, payload) {
     let _stopped = false;
     return {
         type,
-        data,
+        payload,
         stop() {
             _stopped = true;
         },
@@ -98,9 +96,9 @@ function getEvtObj(type, data) {
     };
 }
 
-module.exports = function(obj) {
-    obj = typeof obj === 'function' ? obj.prototype : obj;
+module.exports = function(origin) {
+    let obj = typeof origin === 'function' ? origin.prototype : origin;
     if (!obj) obj = {};
     ['on', 'off', 'emit'].forEach((name) => (obj[name] = API[name]));
-    return obj;
+    return origin || obj;
 };

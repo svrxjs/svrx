@@ -1,14 +1,19 @@
-const http = require('http');
-const https = require('https');
 const ffp = require('find-free-port');
+const https = require('https');
+const http = require('http');
 const Koa = require('koa');
-const { getCert } = require('./util/helper');
-const Middleware = require('./middleware');
+
 const PluginSystem = require('./plugin/system');
+const Middleware = require('./middleware');
 const Configure = require('./configure');
 const Injector = require('./injector');
 const IO = require('./io');
+
+
+const { getCert } = require('./util/helper');
+const getEvents = require('./shared/events');
 const OPTIONS = require('./option-list');
+const logger = require('./util/logger');
 
 const NOOP = () => {};
 
@@ -21,6 +26,7 @@ class Svrx {
             : http.createServer(app.callback()));
 
         const middleware = (this.middleware = new Middleware(config));
+        const events = (this.events = getEvents());
 
         const injector = (this.injector = new Injector({ config, middleware }));
 
@@ -29,6 +35,7 @@ class Svrx {
         this.system = new PluginSystem({
             io,
             config,
+            events,
             injector,
             middleware
         });
@@ -96,6 +103,9 @@ class Svrx {
             .then(() => {
                 ffp(port, '127.0.0.1', (err, p1) => {
                     if (err) throw Error('NO PORT FREE');
+                    if (port !== p1) {
+                        logger.warn(`port ${port} is in use, using port ${p1} instead`);
+                    }
                     // this.setup().then(()=>{
                     this._server.listen(p1, () => {
                         config.set('port', p1);

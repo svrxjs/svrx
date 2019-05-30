@@ -116,10 +116,10 @@ describe('Svrx Utility', () => {
             const bus = events({});
             const marks = [];
             bus.on('a', (evt) => {
-                marks.push(evt.data + '1');
+                marks.push(evt.payload + '1');
             });
             bus.on('a', (evt) => {
-                marks.push(evt.data + '2');
+                marks.push(evt.payload + '2');
             });
             bus.emit('a', 'hello').then(() => {
                 expect(marks).to.eql(['hello1', 'hello2']);
@@ -127,22 +127,22 @@ describe('Svrx Utility', () => {
             });
         });
 
-        it('basic batch on', (done)=>{
+        it('basic batch on', (done) => {
             const bus = events({});
             const marks = [];
-            bus.on( {
-                'a': (evt) => {
-                    marks.push( 'a');
+            bus.on({
+                a: (evt) => {
+                    marks.push('a');
                 },
-                'b': (evt)=>{
-                    marks.push('b')
+                b: (evt) => {
+                    marks.push('b');
                 }
             });
-            Promise.all([bus.emit('a'), bus.emit('b')]).then(()=>{
-                expect(marks).to.eql(['a', 'b'])
-                done()
-            })
-        })
+            Promise.all([bus.emit('a'), bus.emit('b')]).then(() => {
+                expect(marks).to.eql(['a', 'b']);
+                done();
+            });
+        });
 
         it('priority unordered emit', (done) => {
             const bus = events({});
@@ -150,14 +150,14 @@ describe('Svrx Utility', () => {
             bus.on(
                 'a',
                 (evt) => {
-                    marks.push(evt.data + '1');
+                    marks.push(evt.payload + '1');
                 },
                 9
             );
             bus.on(
                 'a',
                 (evt) => {
-                    marks.push(evt.data + '2');
+                    marks.push(evt.payload + '2');
                 },
                 { priority: 11 }
             );
@@ -173,7 +173,7 @@ describe('Svrx Utility', () => {
             bus.on(
                 'a',
                 (evt) => {
-                    marks.push(evt.data + '1');
+                    marks.push(evt.payload + '1');
                     evt.stop();
                 },
                 { priority: 9 }
@@ -181,7 +181,7 @@ describe('Svrx Utility', () => {
             bus.on(
                 'a',
                 (evt) => {
-                    marks.push(evt.data + '2');
+                    marks.push(evt.payload + '2');
                 },
                 { priority: 11 }
             );
@@ -194,8 +194,12 @@ describe('Svrx Utility', () => {
         it('basic off', (done) => {
             const bus = events({});
 
-            expect(()=>{bus.off('a')}).to.not.throwError()
-            expect(()=>{bus.off()}).to.throwError()
+            expect(() => {
+                bus.off('a');
+            }).to.not.throwError();
+            expect(() => {
+                bus.off();
+            }).to.throwError();
 
             let count = 0;
             const fn = (evt) => {
@@ -213,50 +217,54 @@ describe('Svrx Utility', () => {
                     done();
                 });
         });
-        it('off all event', (done)=>{
-
+        it('off all event', (done) => {
             const bus = events();
-            let count = 0
+            let count = 0;
 
-            bus.on('a', ()=>{ count++; })
-            bus.on('a', ()=>{ count++; })
-            bus.on('a', ()=>{ count++; })
+            bus.on('a', () => {
+                count++;
+            });
+            bus.on('a', () => {
+                count++;
+            });
+            bus.on('a', () => {
+                count++;
+            });
             bus.off('a');
-            bus.emit('a').then(()=>{
-                expect(count).to.equal(0)
-                done()
-            })
-
-        })
+            bus.emit('a').then(() => {
+                expect(count).to.equal(0);
+                done();
+            });
+        });
 
         it('ordered emit: shared evt object ', (done) => {
             const bus = events({});
             bus.on(
                 'a',
                 (evt) => {
-                    evt.data += ' world';
+                    evt.payload += ' world';
                 },
                 { priority: 11 }
             );
             bus.on(
                 'a',
                 (evt) => {
-                    expect(evt.data).to.equal('hello world');
-                    evt.done = true
+                    expect(evt.payload).to.equal('hello world');
+                    evt.done = true;
                 },
                 { priority: 9 }
             );
-            bus.emit('a', 'hello', true).then(evtObj=>{
-                expect(evtObj.done).to.equal(true)
-                done()
-            })
+            bus.emit('a', 'hello', true).then((evtObj) => {
+                expect(evtObj.done).to.equal(true);
+                done();
+            });
         });
         it('ordered emit: stop', (done) => {
             const bus = events({});
             bus.on(
                 'a',
                 (evt) => {
-                    evt.data+='1'
+                    evt.payload += '1';
                     evt.stop();
                 }
                 // default priority === 10
@@ -264,19 +272,19 @@ describe('Svrx Utility', () => {
             bus.on(
                 'a',
                 (evt) => {
-                    evt.data+='2'
+                    evt.payload += '2';
                 },
                 { priority: 9 }
             );
             bus.on(
                 'a',
                 (evt) => {
-                    evt.data+='3'
+                    evt.payload += '3';
                 },
                 { priority: 11 }
             );
-            bus.emit('a', '', true).then(evt => {
-                expect(evt.data).to.eql('31');
+            bus.emit('a', '', true).then((evt) => {
+                expect(evt.payload).to.eql('31');
                 done();
             });
         });
