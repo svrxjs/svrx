@@ -14,11 +14,7 @@ const { PLUGIN_PREFIX, BUILTIN_PLUGIN } = require('../constant');
 
 class Configure {
     constructor(data = {}) {
-        if (Configure.prototype.Instance === undefined) {
-            this._bootstrap(data);
-            Configure.prototype.Instance = this;
-        }
-        return Configure.prototype.Instance;
+        this._bootstrap(data);
     }
 
     /**

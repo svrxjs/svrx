@@ -67,5 +67,14 @@ module.exports = {
     },
     https: {
         type: 'boolean'
+    },
+    static: {
+        type: 'object',
+        properties: {
+            root: { type: 'string' }
+        }
+    },
+    middlewares: {
+        type: 'array'
     }
 };

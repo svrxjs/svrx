@@ -39,7 +39,9 @@ class PluginSystem {
         const path = BUILTIN_PLUGIN.includes(name)
             ? libPath.join(__dirname, `./svrx-plugin-${name}`)
             : pluginConfig.getInfo('path');
-        const inplace = pluginConfig.getInfo('inplace');
+        const hooks = pluginConfig.getInfo('hooks');
+        const assets = pluginConfig.getInfo('assets');
+        const inplace = pluginConfig.getInfo('inplace') || hooks || assets;
 
         if (pluginMap[name]) return pluginMap[name];
 
@@ -110,7 +112,7 @@ class PluginSystem {
                 prefix: config.get('root')
             }
         };
-        if (path === null) {
+        if (path === undefined) {
             // remote
             const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
             if (!targetVersion) {
@@ -133,14 +135,14 @@ class PluginSystem {
 
         let pkg;
         try {
-            pkg = require(libPath.join(path, 'package.json'));
+            pkg = require(libPath.join(path || installRet.path, 'package.json'));
         } catch (e) {
             pkg = {};
         }
         return (pluginMap[name] = {
             name,
-            path: installRet.path,
-            module: require(path),
+            path: path || installRet.path,
+            module: require(path || installRet.path),
             version: pkg.version,
             pluginConfig
         });
@@ -222,6 +224,7 @@ class PluginSystem {
             this.middleware.add(name, {
                 priority: module.priority,
                 onCreate(config) {
+                    // todo here is this.config
                     return async (ctx, next) => {
                         return onRoute(ctx, next, { config, logger });
                     };
