@@ -28,6 +28,7 @@
     "nyc": "^13.3.0"
   },
   "dependencies": {
+    "ajv": "^6.10.0",
     "chalk": "^2.4.2",
     "commander": "^2.20.0",
     "cosmiconfig": "^5.2.1",
@@ -35,11 +36,11 @@
     "fs-extra": "^8.0.1",
     "inquirer": "^6.3.1",
     "lodash": "^4.17.11",
-    "minimist": "^1.2.0",
     "ora": "^3.4.0",
     "semver": "^6.0.0",
     "svrx-util": "^0.0.2",
     "tmp": "^0.1.0",
-    "user-home": "^2.0.0"
+    "user-home": "^2.0.0",
+    "yargs-parser": "^13.1.0"
   }
 }

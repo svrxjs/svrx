@@ -2,14 +2,13 @@ const nodeResolve = require('resolve');
 const libPath = require('path');
 
 // const Plugin = require('./plugin')
-const { PLUGIN_PREFIX, ASSET_FIELDS } = require('../constant');
+const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
 const { install, getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
 
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
-const BUILTIN_PLUGIN = ['livereload', 'proxy', 'serve', 'cors'];
 
 class PluginSystem {
     /**
@@ -32,45 +31,31 @@ class PluginSystem {
         return plugins.reduce((left, right) => left.then(() => this.loadOne(right)), Promise.resolve());
     }
 
-    // {name: 'test', version:'0.0.1', }
     // @TODO: 重构重复代码过多
-    async loadOne(cfg) {
-        if (typeof cfg === 'string') cfg = { name: cfg };
-        let { name, path } = cfg;
-
-        if (BUILTIN_PLUGIN.includes(name)) {
-            path = libPath.join(__dirname, `./svrx-plugin-${name}`);
-        }
-
-        let config = this.config;
-        let pluginMap = this[PLUGIN_MAP];
-        let pkg, plugin;
-
-        if (!name && path) {
-            let tmpName = libPath.basename(path);
-            if (tmpName.indexOf(PLUGIN_PREFIX) === 0) {
-                name = tmpName.replace(PLUGIN_PREFIX, '');
-            }
-        }
-
-        if (!name) throw Error('plugin name is required');
+    async loadOne(pluginConfig) {
+        const config = this.config;
+        const pluginMap = this[PLUGIN_MAP];
+        const name = pluginConfig.getInfo('name');
+        const path = BUILTIN_PLUGIN.includes(name)
+            ? libPath.join(__dirname, `./svrx-plugin-${name}`)
+            : pluginConfig.getInfo('path');
+        const inplace = pluginConfig.getInfo('inplace');
 
         if (pluginMap[name]) return pluginMap[name];
 
-        // if has hooks or assets
-        const inplace = cfg.hooks || cfg.assets;
-
+        // load inplace plugin
         if (inplace) {
             return (pluginMap[name] = {
                 name,
-                module: cfg,
+                module: pluginConfig.getInfo(),
                 path: config.get('root'),
-                props: this.handleProps(cfg.propModels, cfg.props)
+                pluginConfig
             });
         }
 
-        const resolveRet = await new Promise((resolve, reject) => {
-            let normalizedName = normalizePluginName(name);
+        // load local plugin by name
+        const resolveRet = await new Promise((resolve) => {
+            const normalizedName = normalizePluginName(name);
             nodeResolve(
                 normalizedName,
                 {
@@ -89,60 +74,75 @@ class PluginSystem {
                 }
             );
         });
-
         if (resolveRet) {
-            pkg = resolveRet.pkg;
-            plugin = resolveRet.module;
-            path = resolveRet.path;
-        } else {
-            // no install , just require
-            if (path && !cfg.install) {
-                plugin = require(path);
-                try {
-                    pkg = require(libPath.join(path, 'package.json'));
-                } catch (e) {
-                    pkg = {};
-                }
-            } else {
-                const installOptions = {
-                    path: config.get('root'),
-                    npmLoad: {
-                        // loaded: true,
-                        prefix: config.get('root')
-                    }
-                };
-                if (path == null) {
-                    const targetVersion = await getSatisfiedVersion(name, cfg.version);
-                    if (!targetVersion) {
-                        // @TODO
-                        throw Error(
-                            `unmatched plugin version, please use other version\n` +
-                                `${(await listMatchedPackageVersion(name)).join('\n')}`
-                        );
-                    }
-                    installOptions.name = normalizePluginName(name);
-                    installOptions.version = targetVersion;
-                } else {
-                    installOptions.name = path;
-                    installOptions.localInstall = true;
-                }
-                let installRet = await install(installOptions);
-
-                logger.log(`plugin ${name} installed completely!`);
-
-                path = installRet.path;
-                plugin = require(path);
-                pkg = require(libPath.join(path, 'package.json'));
-            }
+            return (pluginMap[name] = {
+                name,
+                path: resolveRet.path,
+                module: resolveRet.module,
+                version: resolveRet.pkg.version,
+                pluginConfig
+            });
         }
 
-        // has path
+        // load local plugin by path
+        if (path && !pluginConfig.getInfo('install')) {
+            // no install , just require
+            let pkg;
+            try {
+                pkg = require(libPath.join(path, 'package.json'));
+            } catch (e) {
+                pkg = {};
+            }
+            return (pluginMap[name] = {
+                name,
+                path,
+                module: require(path),
+                version: pkg.version,
+                pluginConfig
+            });
+        }
+
+        // install and load plugin
+        const installOptions = {
+            path: config.get('root'),
+            npmLoad: {
+                // loaded: true,
+                prefix: config.get('root')
+            }
+        };
+        if (path === null) {
+            // remote
+            const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
+            if (!targetVersion) {
+                // @TODO
+                throw Error(
+                    `Unmatched plugin version, please use other version\n` +
+                        `${(await listMatchedPackageVersion(name)).join('\n')}`
+                );
+            }
+            installOptions.name = normalizePluginName(name);
+            installOptions.version = targetVersion;
+        } else {
+            // local install
+            installOptions.name = path;
+            installOptions.localInstall = true;
+        }
+        const installRet = await install(installOptions);
+
+        logger.log(`plugin ${name} installed completely!`);
+
+        let pkg;
+        try {
+            pkg = require(libPath.join(path, 'package.json'));
+        } catch (e) {
+            pkg = {};
+        }
         return (pluginMap[name] = {
             name,
-            path,
-            module: plugin,
+            path: installRet.path,
+            module: require(path),
             version: pkg.version,
-            props: this.handleProps(plugin.propModels, cfg.props)
+            pluginConfig
         });
     }
 
@@ -161,17 +161,28 @@ class PluginSystem {
     }
 
     async buildOne(plugin) {
-        const { module, name, props, path } = plugin;
+        const { module, name, path, pluginConfig } = plugin;
         const io = this.io;
-        const hooks = module.hooks || {};
-        const onRoute = hooks.onRoute;
-        const onCreate = hooks.onCreate;
+        const { hooks = {}, assets, services, configs, watches = [] } = module;
+        const { onRoute, onCreate, onOptionChange } = hooks;
         // @TODO Plugin onCreate Logic
         // onActive? onDeactive
-        const { assets, services, propModels } = module;
 
-        if (propModels) {
-            this.config.updatePluginProps(name, propModels);
+        // watch builtin option change
+        this.config.watch((event) => {
+            const changedKeys = watches.filter((key) => event.affect(key));
+
+            if (onOptionChange) {
+                onOptionChange.call(plugin, {
+                    keys: changedKeys,
+                    prevConfig: event.prev,
+                    config: event.current
+                });
+            }
+        });
+
+        if (configs) {
+            // todo update plugin configs
         }
 
         // regist service
@@ -212,7 +223,7 @@ class PluginSystem {
                 priority: module.priority,
                 onCreate(config) {
                     return async (ctx, next) => {
-                        return onRoute(ctx, next, { props, config, logger });
+                        return onRoute(ctx, next, { config, logger });
                     };
                 }
             });
@@ -223,7 +234,7 @@ class PluginSystem {
                 middleware: this.middleware,
                 injector: this.injector,
                 events: this.events,
-                config: this.config,
+                config: BUILTIN_PLUGIN.includes(name) ? this.config : pluginConfig,
                 io: this.io,
                 logger
             });

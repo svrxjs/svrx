@@ -1,25 +1,26 @@
-const ffp = require('find-free-port');
-const https = require('https');
 const http = require('http');
+const https = require('https');
+const ffp = require('find-free-port');
 const Koa = require('koa');
-
-const PluginSystem = require('./plugin/system');
+const cosmiconfig = require('cosmiconfig');
+const chokidar = require('chokidar');
+const { getCert } = require('./util/helper');
 const Middleware = require('./middleware');
+const PluginSystem = require('./plugin/system');
 const Configure = require('./configure');
 const Injector = require('./injector');
 const IO = require('./io');
-
-
-const { getCert } = require('./util/helper');
+const CONFIGS = require('./config-list');
 const getEvents = require('./shared/events');
-const OPTIONS = require('./option-list');
 const logger = require('./util/logger');
 
 const NOOP = () => {};
 
 class Svrx {
-    constructor(options) {
-        const config = (this.config = new Configure(options));
+    constructor(inlineOptions) {
+        this._rcFilePath = null;
+        const rcOptions = this._rcFileRead();
+        const config = (this.config = new Configure({ cli: inlineOptions, rc: rcOptions }));
         const app = (this.app = new Koa());
         const server = (this._server = config.get('https')
             ? https.createServer(getCert(), app.callback())
@@ -42,6 +43,9 @@ class Svrx {
 
         // @TODO: need dynamic
         app.use(this.koaMiddleware());
+
+        // watch file change
+        this._watchRcfile();
     }
 
     async ready() {
@@ -66,31 +70,50 @@ class Svrx {
         this._server.close(callback);
     }
 
-    loadOptionList() {
-        return OPTIONS;
+    getConfigList() {
+        return CONFIGS;
     }
 
     async setup() {
-        const plugins = this._getPlugins();
+        const plugins = this.config.getPlugins();
         return this.system.load(plugins).then(() => {
             return this.system.build();
         });
     }
 
-    _getPlugins(plugins) {
-        // auto load builtin plugin
-        return [
-            // @TODO: livereload settings
-            { name: 'livereload' },
-            { name: 'serve' },
-            { name: 'proxy' },
-            { name: 'cors' }
-        ].concat(this.config.get('plugins') || []);
+    _rcFileRead() {
+        try {
+            const explorer = cosmiconfig('svrx', {
+                searchPlaces: [`.svrxrc.js`, `svrx.config.js`]
+            });
+            const result = explorer.searchSync();
+            if (result && !result.isEmpty) {
+                this._rcFilePath = result.filepath;
+                return result.config;
+            }
+        } catch (e) {
+            logger.error(`Config file loaded fail because \n\n` + e.message);
+        }
+
+        return {};
+    }
+
+    _watchRcfile() {
+        const rcfilePath = this._rcFilePath;
+        if (!rcfilePath) return;
+        chokidar.watch(rcfilePath).on('change', () => {
+            const rcOptions = this._rcFileRead(); // xxx perf
+            this.config.updateBuiltinOptions(rcOptions);
+            this._updatePlugins(rcOptions);
+        });
+    }
+
+    _updatePlugins(rcOptions = {}) {
+        // todo plugin change
     }
 
     _tryStart(port, callback) {
         const config = this.config;
-
         this.setup()
             .then(() => {
                 ffp(port, '127.0.0.1', (err, p1) => {

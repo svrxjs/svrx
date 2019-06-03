@@ -1,19 +1,24 @@
 const { GROUPS } = require('./constant');
 
 module.exports = {
-    'urls.script': {
-        type: 'string',
-        default: '/svrx/svrx-client.js',
-        group: GROUPS.CORE,
-        cli: false,
-        ui: false
-    },
-    'urls.style': {
-        type: 'string',
-        default: '/svrx/svrx-client.css',
-        group: GROUPS.CORE,
-        cli: false,
-        ui: false
+    urls: {
+        type: 'object',
+        properties: {
+            style: {
+                type: 'string',
+                default: '/svrx/svrx-client.css',
+                group: GROUPS.CORE,
+                cli: false,
+                ui: false
+            },
+            script: {
+                type: 'string',
+                default: '/svrx/svrx-client.js',
+                group: GROUPS.CORE,
+                cli: false,
+                ui: false
+            }
+        }
     },
     root: {
         type: 'string',
@@ -45,9 +50,22 @@ module.exports = {
         group: GROUPS.COMMON
     },
     livereload: {
-        type: 'boolean',
-        default: true,
+        group: GROUPS.COMMON,
         description: 'Enable auto live reload',
-        group: GROUPS.COMMON
+        antOf: [
+            {
+                type: 'boolean',
+                default: true
+            },
+            {
+                type: 'object',
+                properties: {
+                    exclude: { type: 'string' }
+                }
+            }
+        ]
+    },
+    https: {
+        type: 'boolean'
     }
 };
