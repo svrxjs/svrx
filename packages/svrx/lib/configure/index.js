@@ -140,7 +140,7 @@ class Configure {
 
         const traverse = (obj, path = '') => {
             if (obj.type === 'object') {
-                _.keys(obj.pro).forEach((key) => {
+                _.keys(obj.properties).forEach((key) => {
                     traverse(obj.properties[key], path === '' ? key : `${path}.${key}`);
                 });
                 return;
@@ -153,7 +153,7 @@ class Configure {
                 });
             }
         };
-        traverse(this._builtinConfig);
+        traverse({ type: 'object', properties: this._builtinConfig });
 
         allPathAndAlias
             .filter((pair) => raw[pair.alias] !== undefined)
