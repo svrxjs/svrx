@@ -51,7 +51,7 @@ class Configure {
         const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
 
         _.forEach(plugins, (plugin) => {
-            this[PLUGINS].push(new Plugin(plugin));
+            this[PLUGINS].push(new Plugin(plugin, this[BUILTIN_OPTION], this[BUILTIN_DEFAULTS]));
         });
     }
 
@@ -93,10 +93,6 @@ class Configure {
      */
     watch(pathes, callback) {
         this[BUILTIN_OPTION].watch(pathes, callback);
-    }
-
-    watchPlugin(name, callback) {
-        // todo
     }
 
     updateBuiltinOptions(rcOptions = {}) {
