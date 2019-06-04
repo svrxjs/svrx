@@ -30,11 +30,10 @@ class Svrx {
             ? https.createServer(getCert(), app.callback())
             : http.createServer(app.callback()));
 
+        // todo move into pluginSystem
         const middleware = (this.middleware = new Middleware(config));
         const events = (this.events = getEvents());
-
         const injector = (this.injector = new Injector({ config, middleware }));
-
         const io = (this.io = new IO({ config, server, middleware }));
 
         this.system = new PluginSystem({

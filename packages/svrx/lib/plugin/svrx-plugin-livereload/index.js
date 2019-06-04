@@ -8,7 +8,7 @@ module.exports = {
     },
     watches: ['livereload'],
     hooks: {
-        onOptionChange({ keys, prevConfig, config }) {
+        onOptionChange(event, { isBuiltin }) {
             // todo do sth when option change
         },
 

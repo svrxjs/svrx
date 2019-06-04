@@ -164,25 +164,38 @@ class PluginSystem {
 
     async buildOne(plugin) {
         const { module, name, path, pluginConfig } = plugin;
-        const io = this.io;
-        const { hooks = {}, assets, services, configs, watches = [] } = module;
+        const { hooks = {}, assets, services, configs } = module;
         const { onRoute, onCreate, onOptionChange } = hooks;
+
+        const isBuiltin = BUILTIN_PLUGIN.includes(name);
+        const config = isBuiltin ? this.config : pluginConfig;
+        // todo all variables below should be a new instance init with 'config'
+        const middleware = this.middleware;
+        const injector = this.injector;
+        const io = this.io;
+        const events = this.events;
+
         // @TODO Plugin onCreate Logic
         // onActive? onDeactive
 
-        // watch builtin option change
-        this.config.watch((event) => {
-            const changedKeys = watches.filter((key) => event.affect(key));
+        // option change
+        // todo unwatch?
+        if (onOptionChange) {
+            // watch builtin option change
+            // not-builtin plugins should also watch builtin option change
+            this.config.watch((event) => {
+                onOptionChange.call(plugin, event, {
+                    isBuiltin: true
+                });
+            });
 
-            if (onOptionChange) {
-                onOptionChange.call(plugin, {
-                    // todo 只要有变化 不管插件还是内置 都触发
-                    keys: changedKeys,
-                    prevConfig: event.prev,
-                    config: event.current
+            // watch plugin option change
+            if (!isBuiltin) {
+                config.watch((event) => {
+                    onOptionChange.call(plugin, event);
                 });
             }
-        });
+        }
 
         if (configs) {
             // todo update plugin configs
@@ -216,13 +229,13 @@ class PluginSystem {
                         }
                         if (!def.test) def.test = test;
 
-                        this.injector.add(field, def);
+                        injector.add(field, def);
                     });
                 }
             });
         }
         if (onRoute) {
-            this.middleware.add(name, {
+            middleware.add(name, {
                 priority: module.priority,
                 onCreate(config) {
                     // todo here is this.config
@@ -235,11 +248,11 @@ class PluginSystem {
 
         if (onCreate) {
             return onCreate.call(plugin, {
-                middleware: this.middleware,
-                injector: this.injector,
-                events: this.events,
-                config: BUILTIN_PLUGIN.includes(name) ? this.config : pluginConfig,
-                io: this.io,
+                middleware,
+                injector,
+                events,
+                config,
+                io,
                 logger
             });
         }
