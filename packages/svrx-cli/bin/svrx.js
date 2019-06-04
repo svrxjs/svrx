@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const argvParse = require('minimist');
+const parse = require('yargs-parser');
 const Manager = require('../lib');
 const commands = require('../lib/commands');
 
@@ -17,7 +17,7 @@ program
     .alias('s')
     .allowUnknownOption()
     .action(async () => {
-        const options = argvParse(process.argv.slice(2));
+        const options = parse(process.argv.slice(2));
         // remove not-option cmd(not started with '-'
         delete options['_'];
 
@@ -37,7 +37,7 @@ program
         // help info of command:serve
         console.log('serve|s    Start a develop server');
         const svrx = await manager.loadSvrx();
-        const optionList = svrx.loadOptionList();
+        const optionList = svrx.getConfigList();
         commands.printServeHelp(optionList);
     });
 

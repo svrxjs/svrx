@@ -27,6 +27,8 @@ function createServer(option) {
     return new Svrx(option);
 }
 
+const { BUILTIN_PLUGIN } = constants;
+
 describe('Plugin System', () => {
     function cleanModule(done) {
         rimraf(libPath.join(MODULE_PATH, 'node_modules'), () => {
@@ -107,12 +109,17 @@ describe('Plugin System', () => {
         });
 
         it('system#loadOne with path', (done) => {
-            const system = new System({
-                config: new Configure({
-                    root: MODULE_PATH
-                })
+            const config = new Configure({
+                rc: {
+                    root: MODULE_PATH,
+                    plugins: [{ path: TEST_PLUGIN_PATH }]
+                }
             });
-            system.load([{ path: TEST_PLUGIN_PATH }]).then((res) => {
+            const system = new System({
+                config
+            });
+            const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+            system.load(plugins).then((res) => {
                 expect(system.get('test').name).to.equal('test');
                 expect(system.get('test').module.priority).to.equal(100);
                 done();
@@ -120,25 +127,42 @@ describe('Plugin System', () => {
         }).timeout(10000);
 
         it('system#loadOne with name', (done) => {
-            const system = new System({
-                config: new Configure({
-                    root: MODULE_PATH
-                })
+            const config = new Configure({
+                rc: {
+                    root: MODULE_PATH,
+                    plugins: [{ name: 'demo' }]
+                }
             });
-            system.load([{ name: 'demo' }]).then((res) => {
+            const system = new System({
+                config
+            });
+            const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+            console.log('===plugins', plugins);
+            console.log('===plugins', plugins[0].getInfo('name'));
+            system.load(plugins).then((res) => {
                 expect(system.get('demo').name).to.equal('demo');
                 done();
             });
         }).timeout(10000);
 
         it('system#loadOne with path has depend, force install', (done) => {
-            const system = new System({
-                config: new Configure({
-                    root: MODULE_PATH
-                })
+            const config = new Configure({
+                rc: {
+                    root: MODULE_PATH,
+                    plugins: [
+                        {
+                            path: libPath.join(MODULE_PATH, 'svrx-plugin-depend'),
+                            install: true
+                        }
+                    ]
+                }
             });
+            const system = new System({
+                config
+            });
+            const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
             system
-                .loadOne({ path: libPath.join(MODULE_PATH, 'svrx-plugin-depend'), install: true })
+                .loadOne(plugins[0])
                 .then((res) => {
                     expect(system.get('depend').name).to.equal('depend');
                     done();
@@ -147,32 +171,50 @@ describe('Plugin System', () => {
         }).timeout(10000);
 
         it('system#load: path should correct', (done) => {
-            const system = new System({
-                config: new Configure({
-                    root: MODULE_PATH
-                })
+            const config = new Configure({
+                rc: {
+                    root: MODULE_PATH,
+                    plugins: [
+                        {
+                            path: libPath.join(MODULE_PATH, 'svrx-plugin-test')
+                        }
+                    ]
+                }
             });
-            system.load([{ path: libPath.join(MODULE_PATH, 'svrx-plugin-test') }]).then((res) => {
+            const system = new System({
+                config
+            });
+            const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+            system.load(plugins).then((res) => {
                 expect(system.get('test').path).to.equal(TEST_PLUGIN_PATH);
                 done();
             });
         });
 
         it('wont install twice if installed', (done) => {
-            const system = new System({
-                config: new Configure({
-                    root: MODULE_PATH
-                })
+            const config = new Configure({
+                rc: {
+                    root: MODULE_PATH,
+                    plugins: [
+                        {
+                            name: 'demo'
+                        }
+                    ]
+                }
             });
+            const system = new System({
+                config
+            });
+            const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
             system
-                .load([{ name: 'demo' }])
+                .load(plugins)
                 .then((res) => {
                     const plugModule = system.get('demo');
                     expect(plugModule.name).to.equal('demo');
                     return plugModule;
                 })
                 .then((plugModule) => {
-                    system.load([{ name: 'demo' }]).then((res) => {
+                    system.load(plugins).then((res) => {
                         expect(plugModule).to.equal(system.get('demo'));
                         done();
                     });
@@ -180,44 +222,52 @@ describe('Plugin System', () => {
         }).timeout(10000);
 
         it('inplace load', (done) => {
-            const system = new System({
-                config: new Configure({
-                    root: MODULE_PATH
-                })
-            });
-            system
-                .load([
-                    {
-                        name: 'inplace',
-                        priority: 10,
-                        hooks: {
-                            async onRoute(props, ctx, next) {}
+            const config = new Configure({
+                rc: {
+                    root: MODULE_PATH,
+                    plugins: [
+                        {
+                            name: 'inplace',
+                            priority: 10,
+                            hooks: {
+                                async onRoute(props, ctx, next) {}
+                            }
                         }
-                    }
-                ])
-                .then((res) => {
-                    const plugModule = system.get('inplace');
-                    expect(plugModule.name).to.equal('inplace');
-                    expect(plugModule.path).to.eql(MODULE_PATH);
-                    done();
-                });
+                    ]
+                }
+            });
+            const system = new System({
+                config
+            });
+            const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+            system.load(plugins).then((res) => {
+                const plugModule = system.get('inplace');
+                expect(plugModule.name).to.equal('inplace');
+                expect(plugModule.path).to.eql(MODULE_PATH);
+                done();
+            });
         });
 
         describe('Engine', () => {
             it('loadVersion', (done) => {
                 const revert = changeVersion('0.0.2');
-                const system = new System({
-                    config: new Configure({
-                        root: MODULE_PATH
-                    })
+                const config = new Configure({
+                    rc: {
+                        root: MODULE_PATH,
+                        plugins: [
+                            {
+                                name: 'demo',
+                                version: '1.0.2'
+                            }
+                        ]
+                    }
                 });
+                const system = new System({
+                    config
+                });
+                const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
                 system
-                    .load([
-                        {
-                            name: 'demo',
-                            version: '1.0.2'
-                        }
-                    ])
+                    .load(plugins)
                     .then((res) => {
                         const plugModule = system.get('demo');
                         expect(plugModule.version).to.equal('1.0.2');
@@ -228,17 +278,24 @@ describe('Plugin System', () => {
                     .catch(done);
             });
             it('load unmatched Version ', (done) => {
-                const system = new System({
-                    config: new Configure({
-                        root: MODULE_PATH
-                    })
+                const config = new Configure({
+                    rc: {
+                        root: MODULE_PATH,
+                        plugins: [
+                            {
+                                name: 'demo',
+                                version: '1.0.10'
+                            }
+                        ]
+                    }
                 });
+                const system = new System({
+                    config
+                });
+                const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
                 const revert = changeVersion('0.0.3');
                 system
-                    .loadOne({
-                        name: 'demo',
-                        version: '1.0.10'
-                    })
+                    .loadOne(plugins[0])
                     .then((res) => {
                         done('Expect Throw Error, but not');
                     })
@@ -255,15 +312,14 @@ describe('Plugin System', () => {
         it('plugin-test onRoute', (done) => {
             const svrx = createServer({
                 root: MODULE_PATH,
-                plugins: [
-                    {
-                        path: TEST_PLUGIN_PATH,
-                        props: {
-                            limit: 300
-                        }
+                test: {
+                    path: TEST_PLUGIN_PATH,
+                    options: {
+                        limit: 300
                     }
-                ]
+                }
             });
+
             svrx.setup().then(() => {
                 request(svrx.callback())
                     .get('/djaldajl')
@@ -276,14 +332,12 @@ describe('Plugin System', () => {
         it('asset building', (done) => {
             const svrx = createServer({
                 root: MODULE_PATH,
-                plugins: [
-                    {
-                        path: TEST_PLUGIN_PATH,
-                        props: {
-                            limit: 300
-                        }
+                test: {
+                    path: TEST_PLUGIN_PATH,
+                    options: {
+                        limit: 300
                     }
-                ]
+                }
             });
             svrx.setup().then(() => {
                 request(svrx.callback())

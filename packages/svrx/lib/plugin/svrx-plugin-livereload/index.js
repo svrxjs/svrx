@@ -6,7 +6,12 @@ module.exports = {
     assets: {
         script: ['./assets/index.js']
     },
+    watches: ['livereload'],
     hooks: {
+        onOptionChange({ keys, prevConfig, config }) {
+            // todo do sth when option change
+        },
+
         // on plugin enable
         async onCreate({ config, events, io }) {
             if (config.get('livereload') === false) {
