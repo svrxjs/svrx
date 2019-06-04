@@ -2,15 +2,19 @@ const _ = require('lodash');
 const defaults = require('json-schema-defaults');
 const PluginOption = require('./pluginOption');
 const PluginInfo = require('./pluginInfo');
+const INFO = Symbol('info');
+const OPTION = Symbol('option');
+const CONFIG = Symbol('config');
+const DEFAULTS = Symbol('defaults');
 
 class Plugin {
     constructor(data) {
-        this._info = new PluginInfo(_.omit(data, 'options'));
-        this._option = new PluginOption(data.options);
-        this._config = {}; // todo
-        this._defaults = defaults({
+        this[INFO] = new PluginInfo(_.omit(data, 'options'));
+        this[OPTION] = new PluginOption(data.options);
+        this[CONFIG] = {}; // todo
+        this[DEFAULTS] = defaults({
             type: 'object',
-            properties: this._config
+            properties: this[CONFIG]
         }); // todo
     }
 
@@ -19,8 +23,9 @@ class Plugin {
      * @param pathes
      */
     get(pathes) {
-        const userOption = this._option.get(pathes);
-        if (userOption === undefined) return _.get(this._defaults, pathes);
+        // todo need get builtin option eg: get('$root') get(['$root', 'rootPath'])
+        const userOption = this[OPTION].get(pathes);
+        if (userOption === undefined) return _.get(this[DEFAULTS], pathes);
         return userOption;
     }
 
@@ -30,7 +35,7 @@ class Plugin {
      * @returns {*}
      */
     getInfo(infoPathes) {
-        return this._info.get(infoPathes);
+        return this[INFO].get(infoPathes);
     }
 }
 

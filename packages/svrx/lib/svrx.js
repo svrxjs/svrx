@@ -17,10 +17,14 @@ const logger = require('./util/logger');
 const NOOP = () => {};
 
 class Svrx {
-    constructor(inlineOptions) {
+    constructor(inlineOptions = {}, cliOptions = {}) {
         this._rcFilePath = null;
         const rcOptions = this._rcFileRead();
-        const config = (this.config = new Configure({ cli: inlineOptions, rc: rcOptions }));
+        const config = (this.config = new Configure({
+            inline: inlineOptions,
+            cli: cliOptions,
+            rc: rcOptions
+        }));
         const app = (this.app = new Koa());
         const server = (this._server = config.get('https')
             ? https.createServer(getCert(), app.callback())

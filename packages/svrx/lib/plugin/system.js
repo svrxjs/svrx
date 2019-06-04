@@ -118,7 +118,7 @@ class PluginSystem {
             if (!targetVersion) {
                 // @TODO
                 throw Error(
-                    `Unmatched plugin version, please use other version\n` +
+                    `unmatched plugin version, please use other version\n` +
                         `${(await listMatchedPackageVersion(name)).join('\n')}`
                 );
             }
@@ -176,6 +176,7 @@ class PluginSystem {
 
             if (onOptionChange) {
                 onOptionChange.call(plugin, {
+                    // todo 只要有变化 不管插件还是内置 都触发
                     keys: changedKeys,
                     prevConfig: event.prev,
                     config: event.current

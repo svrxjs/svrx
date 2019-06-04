@@ -137,8 +137,6 @@ describe('Plugin System', () => {
                 config
             });
             const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-            console.log('===plugins', plugins);
-            console.log('===plugins', plugins[0].getInfo('name'));
             system.load(plugins).then((res) => {
                 expect(system.get('demo').name).to.equal('demo');
                 done();
@@ -312,12 +310,14 @@ describe('Plugin System', () => {
         it('plugin-test onRoute', (done) => {
             const svrx = createServer({
                 root: MODULE_PATH,
-                test: {
-                    path: TEST_PLUGIN_PATH,
-                    options: {
-                        limit: 300
+                plugins: [
+                    {
+                        path: TEST_PLUGIN_PATH,
+                        options: {
+                            limit: 300
+                        }
                     }
-                }
+                ]
             });
 
             svrx.setup().then(() => {
@@ -332,12 +332,14 @@ describe('Plugin System', () => {
         it('asset building', (done) => {
             const svrx = createServer({
                 root: MODULE_PATH,
-                test: {
-                    path: TEST_PLUGIN_PATH,
-                    options: {
-                        limit: 300
+                plugins: [
+                    {
+                        path: TEST_PLUGIN_PATH,
+                        options: {
+                            limit: 300
+                        }
                     }
-                }
+                ]
             });
             svrx.setup().then(() => {
                 request(svrx.callback())

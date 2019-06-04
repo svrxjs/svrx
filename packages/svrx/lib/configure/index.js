@@ -2,6 +2,8 @@
  *  todo 如何处理rcfile plugin更新
  *  onOptionChange的意义
  *  第三方plugin如何获取builtin option
+ *       Plugin需要拿到builtin参数 不可set  $.root
+ *  需要存在计算参数urls.local
  */
 
 const _ = require('lodash');
@@ -11,10 +13,46 @@ const CONFIG_LIST = require('../config-list');
 const BuiltinOption = require('./builtinOption');
 const Plugin = require('./plugin');
 const { PLUGIN_PREFIX, BUILTIN_PLUGIN } = require('../constant');
+const BUILTIN_OPTION = Symbol('builtinOption');
+const BUILTIN_CONFIG = Symbol('builtinConfig');
+const BUILTIN_DEFAULTS = Symbol('builtinDefaults');
+const PLUGINS = Symbol('plugins');
 
 class Configure {
     constructor(data = {}) {
-        this._bootstrap(data);
+        const { inline, rc, cli } = data;
+        this[BUILTIN_CONFIG] = CONFIG_LIST;
+        this[BUILTIN_OPTION] = null;
+        this[PLUGINS] = [];
+        this[BUILTIN_DEFAULTS] = defaults({
+            type: 'object',
+            properties: this[BUILTIN_CONFIG]
+        });
+
+        const rcOption = _.assign(rc, inline);
+        const cliOption = this._parseCliOption(cli); // parse cli option
+
+        // generate builtin option ( remove plugin info
+        const rcOpionWithoutPlugins = _.pickBy(rcOption, (value, key) => key !== 'plugins');
+        const configKeys = _.keys(this[BUILTIN_CONFIG]);
+        // (keys that not list in _builtinConfig will be recognized as plugin
+        // names)
+        const cliOptionWithoutPlugins = _.pickBy(cliOption, (value, key) => configKeys.includes(key));
+        this[BUILTIN_OPTION] = new BuiltinOption({
+            cli: cliOptionWithoutPlugins,
+            rc: rcOpionWithoutPlugins
+        });
+
+        // pick plugins and plugin options from rcOption & cliOption
+        const builtinPlugins = BUILTIN_PLUGIN.map((p) => ({ name: p }));
+        const cliPlugins = this._pickPluginsFromCli(cliOption);
+        const rcPlugins = this._pickPluginsFromRc(rcOption);
+        const userPlugins = this._mergePlugins(cliPlugins, rcPlugins);
+        const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
+
+        _.forEach(plugins, (plugin) => {
+            this[PLUGINS].push(new Plugin(plugin));
+        });
     }
 
     /**
@@ -22,13 +60,13 @@ class Configure {
      * @param builtinPathes
      */
     get(builtinPathes) {
-        const userOption = this._builtinOption.get(builtinPathes);
-        if (userOption === undefined) return _.get(this._builtinDefaults, builtinPathes);
+        const userOption = this[BUILTIN_OPTION].get(builtinPathes);
+        if (userOption === undefined) return _.get(this[BUILTIN_DEFAULTS], builtinPathes);
         return userOption;
     }
 
     set(builtinPathes, value) {
-        this._builtinOption.set(value);
+        this[BUILTIN_OPTION].set(value);
     }
 
     /**
@@ -36,7 +74,7 @@ class Configure {
      * @returns {Array}
      */
     getPlugins() {
-        return this._plugins;
+        return this[PLUGINS];
     }
 
     /**
@@ -45,7 +83,7 @@ class Configure {
      * @returns {*}
      */
     getPlugin(name) {
-        return this._plugins.find((p) => p.getInfo('name') === name);
+        return this[PLUGINS].find((p) => p.getInfo('name') === name);
     }
 
     /**
@@ -54,7 +92,7 @@ class Configure {
      * @param callback
      */
     watch(pathes, callback) {
-        this._builtinOption.watch(pathes, callback);
+        this[BUILTIN_OPTION].watch(pathes, callback);
     }
 
     watchPlugin(name, callback) {
@@ -63,43 +101,7 @@ class Configure {
 
     updateBuiltinOptions(rcOptions = {}) {
         const opionWithoutPlugins = _.pickBy(rcOptions, (value, key) => key !== 'plugins');
-        this._builtinOption.updateOptions(opionWithoutPlugins);
-    }
-
-    _bootstrap(data) {
-        const { rc, cli } = data;
-        this._builtinConfig = CONFIG_LIST;
-        this._builtinOption = null;
-        this._plugins = [];
-        this._builtinDefaults = defaults({
-            type: 'object',
-            properties: this._builtinConfig
-        });
-
-        const rcfileOption = rc;
-        const cliOption = this._parseCliOption(cli); // parse cli option
-
-        // generate builtin option ( remove plugin info
-        const rcOpionWithoutPlugins = _.pickBy(rcfileOption, (value, key) => key !== 'plugins');
-        const configKeys = _.keys(this._builtinConfig);
-        // (keys that not list in _builtinConfig will be recognized as plugin
-        // names)
-        const cliOptionWithoutPlugins = _.pickBy(cliOption, (value, key) => configKeys.includes(key));
-        this._builtinOption = new BuiltinOption({
-            cli: cliOptionWithoutPlugins,
-            rc: rcOpionWithoutPlugins
-        });
-
-        // pick plugins and plugin options from rcOption & cliOption
-        const builtinPlugins = BUILTIN_PLUGIN.map((p) => ({ name: p }));
-        const cliPlugins = this._pickPluginsFromCli(cliOption);
-        const rcPlugins = this._pickPluginsFromRc(rcfileOption);
-        const userPlugins = this._mergePlugins(cliPlugins, rcPlugins);
-        const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
-
-        _.forEach(plugins, (plugin) => {
-            this._plugins.push(new Plugin(plugin));
-        });
+        this[BUILTIN_OPTION].updateOptions(opionWithoutPlugins);
     }
 
     _parseCliOption(raw = {}) {
@@ -149,7 +151,7 @@ class Configure {
                 });
             }
         };
-        traverse({ type: 'object', properties: this._builtinConfig });
+        traverse({ type: 'object', properties: this[BUILTIN_CONFIG] });
 
         allPathAndAlias
             .filter((pair) => raw[pair.alias] !== undefined)
@@ -201,7 +203,7 @@ class Configure {
      */
     _pickPluginsFromCli(raw = {}) {
         const plugins = [];
-        const configKeys = _.keys(this._builtinConfig);
+        const configKeys = _.keys(this[BUILTIN_CONFIG]);
         const cliPlugins = _.pickBy(raw, (value, key) => !configKeys.includes(key));
 
         _.keys(cliPlugins).forEach((name) => {
