@@ -41,6 +41,12 @@ program
         commands.printServeHelp(optionList);
     });
 
+const options = parse(process.argv.slice(2));
+const cmds = options['_'];
+
+if (cmds.length === 0) {
+    process.argv.splice(2, 0, 'serve');
+}
 program.parse(process.argv);
 
 if (!program.args.length) {

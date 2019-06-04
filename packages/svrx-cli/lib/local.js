@@ -11,6 +11,6 @@ module.exports = {
     load: (version, optionsFromCli = {}) =>
         new Promise((resolve) => {
             const Svrx = require(getSvrxPath(version));
-            resolve(new Svrx(optionsFromCli));
+            resolve(new Svrx({}, optionsFromCli));
         })
 };
