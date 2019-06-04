@@ -5,9 +5,10 @@ const { isHtmlType, isRespGzip } = require('../../util/helper');
 
 const { PRIORITY } = require('../../constant');
 
+const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
+
 module.exports = {
     priority: PRIORITY.PROXY,
-
     hooks: {
         async onRoute(ctx, next, { config }) {
             const proxyConfig = config.get('proxy');
@@ -35,7 +36,7 @@ module.exports = {
             ctx.status = rsp.statusCode;
 
             Object.keys(rsp.headers)
-                .filter((item) => item !== 'transfer-encoding')
+                .filter((item) => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
                 .forEach((item) => ctx.set(item, rsp.headers[item]));
 
             ctx.body = rsp.body;
@@ -55,8 +56,6 @@ async function proxy({ target, ctx, host }) {
     let req = ctx.request;
 
     headers.host = host || urlObj.hostname || headers.host;
-
-    console.log(headers.host, urlObj);
 
     const options = {
         method: ctx.method,
