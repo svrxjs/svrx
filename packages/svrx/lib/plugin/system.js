@@ -1,5 +1,6 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
+const _ = require('lodash');
 
 // const Plugin = require('./plugin')
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
@@ -148,15 +149,6 @@ class PluginSystem {
         });
     }
 
-    /**
-     * [{ name: 'live-reload', version: '0.9.0', config: { enable: true} }]
-     * @param {Array} plugins
-     */
-    handleProps(models, props) {
-        // @TODO
-        return props;
-    }
-
     async build() {
         const plugins = Object.values(this[PLUGIN_MAP]);
         return Promise.all(plugins.map((plugin) => this.buildOne(plugin)));
@@ -184,10 +176,22 @@ class PluginSystem {
             // watch builtin option change
             // not-builtin plugins should also watch builtin option change
             this.config.watch((event) => {
-                onOptionChange.call(plugin, event, {
-                    isBuiltin: true
-                });
-            });
+                // check builtin options change:
+                //    affect('$.root') or affect(['$', 'root'])
+                const watchEvent = {
+                    ...event,
+                    affect: (pathes) => {
+                        if (_.isString(pathes)) {
+                            pathes = pathes.split('.');
+                        }
+                        if (_.isArray(pathes) && pathes.length > 0 && pathes[0] === '$') {
+                            return event.affect(pathes.slice(1));
+                        }
+                        return false;
+                    }
+                };
+                onOptionChange.call(plugin, watchEvent);
+            }); // todo check
 
             // watch plugin option change
             if (!isBuiltin) {
@@ -234,11 +238,11 @@ class PluginSystem {
                 }
             });
         }
+
         if (onRoute) {
             middleware.add(name, {
                 priority: module.priority,
                 onCreate() {
-                    // todo here is this.config
                     return async (ctx, next) => {
                         return onRoute(ctx, next, { config, logger });
                     };

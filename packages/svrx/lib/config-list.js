@@ -52,7 +52,7 @@ module.exports = {
     livereload: {
         group: GROUPS.COMMON,
         description: 'Enable auto live reload',
-        antOf: [
+        anyOf: [
             {
                 type: 'boolean',
                 default: true

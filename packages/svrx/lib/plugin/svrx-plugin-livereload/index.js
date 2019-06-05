@@ -6,9 +6,8 @@ module.exports = {
     assets: {
         script: ['./assets/index.js']
     },
-    watches: ['livereload'],
     hooks: {
-        onOptionChange(event, { isBuiltin }) {
+        onOptionChange(event) {
             // todo do sth when option change
         },
 
