@@ -1,8 +1,5 @@
 /**
  *  todo 如何处理rcfile plugin更新
- *  onOptionChange的意义
- *  第三方plugin如何获取builtin option
- *       Plugin需要拿到builtin参数 不可set  $.root
  *  需要存在计算参数urls.local
  */
 
@@ -51,8 +48,11 @@ class Configure {
         const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
 
         _.forEach(plugins, (plugin) => {
-            this[PLUGINS].push(new Plugin(plugin, this[BUILTIN_OPTION], this[BUILTIN_DEFAULTS]));
+            const pIns = new Plugin(plugin, this[BUILTIN_OPTION], this[BUILTIN_DEFAULTS]);
+            this[PLUGINS].push(pIns);
         });
+
+        this[BUILTIN_OPTION].validate(this[BUILTIN_CONFIG]);
     }
 
     /**

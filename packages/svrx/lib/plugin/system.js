@@ -191,7 +191,7 @@ class PluginSystem {
                     }
                 };
                 onOptionChange.call(plugin, watchEvent);
-            }); // todo check
+            });
 
             // watch plugin option change
             if (!isBuiltin) {
@@ -201,8 +201,9 @@ class PluginSystem {
             }
         }
 
-        if (configs) {
-            // todo update plugin configs
+        // set plugin configs
+        if (!isBuiltin && configs) {
+            config.setConfigs(configs);
         }
 
         // regist service

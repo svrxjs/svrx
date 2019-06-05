@@ -15,11 +15,8 @@ class Plugin {
         this[BUILTIN_DEFAULTS] = builtinDefaults;
         this[INFO] = new PluginInfo(_.omit(data, 'options'));
         this[OPTION] = new PluginOption(data.options);
-        this[CONFIG] = {}; // todo
-        this[DEFAULTS] = defaults({
-            type: 'object',
-            properties: this[CONFIG]
-        }); // todo
+        this[CONFIG] = {};
+        this[DEFAULTS] = {};
     }
 
     /**
@@ -53,6 +50,15 @@ class Plugin {
      */
     getInfo(infoPathes) {
         return this[INFO].get(infoPathes);
+    }
+
+    setConfigs(configs = {}) {
+        this[CONFIG] = configs;
+        this[DEFAULTS] = defaults({
+            type: 'object',
+            properties: configs
+        });
+        this[OPTION].validate(configs);
     }
 
     /**

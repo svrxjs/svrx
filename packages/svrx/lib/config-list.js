@@ -52,7 +52,7 @@ module.exports = {
     livereload: {
         group: GROUPS.COMMON,
         description: 'Enable auto live reload',
-        anyOf: [
+        oneOf: [
             {
                 type: 'boolean',
                 default: true
@@ -63,7 +63,8 @@ module.exports = {
                     exclude: { type: 'string' }
                 }
             }
-        ]
+        ],
+        errorMessage: 'should be one of boolean or string'
     },
     https: {
         type: 'boolean'
