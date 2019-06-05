@@ -12,7 +12,7 @@ module.exports = {
             let webpackConfig = false;
             if (!webpackConfig) {
                 try {
-                    webpackConfig = require(libPath.join(config.get('root'), 'webpack.config.js'));
+                    webpackConfig = require(libPath.join(config.get('$.root'), 'webpack.config.js'));
                 } catch (e) {
                     logger.error('webpack config file missed!');
                 }
