@@ -237,7 +237,7 @@ class PluginSystem {
         if (onRoute) {
             middleware.add(name, {
                 priority: module.priority,
-                onCreate(config) {
+                onCreate() {
                     // todo here is this.config
                     return async (ctx, next) => {
                         return onRoute(ctx, next, { config, logger });
