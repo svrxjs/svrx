@@ -62,7 +62,7 @@ class MiddlewareManager {
             return (b.priority || 10) - (a.priority || 10);
         });
 
-        this[COMPOSE_KEY] = compose(middlewares.map((m) => m.onCreate(this.config)));
+        this[COMPOSE_KEY] = compose(middlewares.map((m) => m.onCreate()));
     }
 }
 

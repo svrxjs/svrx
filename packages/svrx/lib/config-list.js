@@ -1,6 +1,14 @@
 const { GROUPS } = require('./constant');
 
 module.exports = {
+    root: {
+        type: 'string',
+        default: process.cwd(),
+        description: 'Where to start svrx',
+        defaultHint: 'Default to the current working directory',
+        group: GROUPS.CORE,
+        ui: false
+    },
     urls: {
         type: 'object',
         properties: {
@@ -20,13 +28,6 @@ module.exports = {
             }
         }
     },
-    root: {
-        type: 'string',
-        default: process.cwd(),
-        group: GROUPS.CORE,
-        cli: false,
-        ui: false
-    },
     dir: {
         type: 'string',
         default: process.cwd(),
@@ -38,8 +39,9 @@ module.exports = {
         // todo default to the latest at local
         alias: 'v',
         type: 'string',
-        description: "The version of svrx you want to use(default to 'latest' if not present)",
-        group: GROUPS.COMMON,
+        description: 'The version of svrx you want to use',
+        defaultHint: 'Default to the latest published version of svrx',
+        group: GROUPS.CORE,
         ui: false
     },
     port: {
@@ -47,11 +49,47 @@ module.exports = {
         type: 'number',
         default: 8000,
         description: 'The unique identifier for a product',
-        group: GROUPS.COMMON
+        group: GROUPS.CORE
+    },
+
+    https: {
+        type: 'boolean'
+    },
+
+    middlewares: {
+        type: 'array'
+    },
+
+    // built plugin configs
+
+    serve: {
+        group: GROUPS.COMMON,
+        oneOf: [
+            {
+                type: 'boolean',
+                default: true
+            },
+            {
+                type: 'object',
+                properties: {
+                    base: {
+                        type: 'string',
+                        description: 'Where to serve content from',
+                        defaultHint: 'Default to the current working directory(root)'
+                    },
+                    headers: {
+                        type: 'object',
+                        default: {},
+                        description: 'Add headers to all responses'
+                    }
+                }
+            }
+        ],
+        errorMessage: 'should be one of boolean or object'
     },
     livereload: {
-        group: GROUPS.COMMON,
         description: 'Enable auto live reload',
+        group: GROUPS.COMMON,
         oneOf: [
             {
                 type: 'boolean',
@@ -64,18 +102,6 @@ module.exports = {
                 }
             }
         ],
-        errorMessage: 'should be one of boolean or string'
-    },
-    https: {
-        type: 'boolean'
-    },
-    static: {
-        type: 'object',
-        properties: {
-            root: { type: 'string' }
-        }
-    },
-    middlewares: {
-        type: 'array'
+        errorMessage: 'should be one of boolean or object'
     }
 };
