@@ -156,7 +156,7 @@ class PluginSystem {
 
     async buildOne(plugin) {
         const { module, name, path, pluginConfig } = plugin;
-        const { hooks = {}, assets, services, configs } = module;
+        const { hooks = {}, assets, services, configSchema } = module;
         const { onRoute, onCreate, onOptionChange } = hooks;
 
         const isBuiltin = BUILTIN_PLUGIN.includes(name);
@@ -202,8 +202,8 @@ class PluginSystem {
         }
 
         // set plugin configs
-        if (!isBuiltin && configs) {
-            config.setConfigs(configs);
+        if (!isBuiltin && configSchema) {
+            config.setConfigs(configSchema);
         }
 
         // regist service
