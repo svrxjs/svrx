@@ -4,16 +4,18 @@
  */
 
 const _ = require('lodash');
-const defaults = require('json-schema-defaults');
 const path = require('path');
 const CONFIG_LIST = require('../config-list');
 const BuiltinOption = require('./builtinOption');
 const Plugin = require('./plugin');
 const { PLUGIN_PREFIX, BUILTIN_PLUGIN } = require('../constant');
+const defaults = require('../util/jsonSchemaDefaults');
+
 const BUILTIN_OPTION = Symbol('builtinOption');
 const BUILTIN_CONFIG = Symbol('builtinConfig');
 const BUILTIN_DEFAULTS = Symbol('builtinDefaults');
 const PLUGINS = Symbol('plugins');
+const CLI_OPTION = Symbol('cliOption');
 
 class Configure {
     constructor(data = {}) {
@@ -21,6 +23,8 @@ class Configure {
         this[BUILTIN_CONFIG] = CONFIG_LIST;
         this[BUILTIN_OPTION] = null;
         this[PLUGINS] = [];
+        this[CLI_OPTION] = {};
+
         this[BUILTIN_DEFAULTS] = defaults({
             type: 'object',
             properties: this[BUILTIN_CONFIG]
@@ -28,6 +32,7 @@ class Configure {
 
         const rcOption = _.assign(rc, inline);
         const cliOption = this._parseCliOption(cli); // parse cli option
+        this[CLI_OPTION] = cliOption;
 
         // generate builtin option ( remove plugin info
         const rcOpionWithoutPlugins = _.pickBy(rcOption, (value, key) => key !== 'plugins');
@@ -61,7 +66,9 @@ class Configure {
      */
     get(builtinPathes) {
         const userOption = this[BUILTIN_OPTION].get(builtinPathes);
-        if (userOption === undefined) return _.get(this[BUILTIN_DEFAULTS], builtinPathes);
+        if (userOption === undefined) {
+            return _.get(this[BUILTIN_DEFAULTS], builtinPathes);
+        }
         return userOption;
     }
 
@@ -95,9 +102,24 @@ class Configure {
         this[BUILTIN_OPTION].watch(pathes, callback);
     }
 
-    updateBuiltinOptions(rcOptions = {}) {
+    updateRcOptions(rcOptions = {}) {
+        // builtins
         const opionWithoutPlugins = _.pickBy(rcOptions, (value, key) => key !== 'plugins');
         this[BUILTIN_OPTION].updateOptions(opionWithoutPlugins);
+
+        // plugins
+        // pick plugins and plugin options from rcOption & cliOption
+        const builtinPlugins = BUILTIN_PLUGIN.map((p) => ({ name: p }));
+        const cliPlugins = this._pickPluginsFromCli(this[CLI_OPTION]);
+        const rcPlugins = this._pickPluginsFromRc(rcOptions);
+        const userPlugins = this._mergePlugins(cliPlugins, rcPlugins);
+        const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
+        // rc file change, reload all plugins
+        this[PLUGINS] = [];
+        _.forEach(plugins, (plugin) => {
+            const pIns = new Plugin(plugin, this[BUILTIN_OPTION], this[BUILTIN_DEFAULTS]);
+            this[PLUGINS].push(pIns);
+        });
     }
 
     _parseCliOption(raw = {}) {

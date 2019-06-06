@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const defaults = require('json-schema-defaults');
 const PluginOption = require('./pluginOption');
 const PluginInfo = require('./pluginInfo');
 const INFO = Symbol('info');
@@ -8,6 +7,7 @@ const CONFIG = Symbol('config');
 const DEFAULTS = Symbol('defaults');
 const BUILTIN_OPTION = Symbol('builtinOption');
 const BUILTIN_DEFAULTS = Symbol('builtinDefaults');
+const defaults = require('../util/jsonSchemaDefaults');
 
 class Plugin {
     constructor(data = {}, builtinOption = {}, builtinDefaults = {}) {
@@ -41,6 +41,14 @@ class Plugin {
         const userOption = this[OPTION].get(pathes);
         if (userOption === undefined) return _.get(this[DEFAULTS], pathes);
         return userOption;
+    }
+
+    /**
+     * set plugin option
+     * @param pluginPathes
+     */
+    set(pluginPathes, value) {
+        this[OPTION].set(pluginPathes, value);
     }
 
     /**

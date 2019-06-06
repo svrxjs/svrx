@@ -33,14 +33,12 @@
   },
   "dependencies": {
     "@koa/cors": "^2.2.3",
-    "ajv": "^6.10.0",
     "ajv-errors": "^1.0.1",
     "chalk": "^2.4.2",
     "co-request": "^1.0.0",
     "cosmiconfig": "^5.2.1",
     "find-free-port": "^2.0.0",
     "immer": "^2.1.2",
-    "json-schema-defaults": "^0.4.0",
     "koa": "^2.7.0",
     "koa-send": "^5.0.0",
     "koa2-connect": "^1.0.2",
@@ -50,7 +48,8 @@
     "resolve": "^1.10.0",
     "semver": "^6.0.0",
     "serve-index": "^1.9.1",
-    "socket.io": "^2.2.0"
+    "socket.io": "^2.2.0",
+    "super-ajv": "^1.1.6"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",

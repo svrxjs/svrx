@@ -106,13 +106,9 @@ class Svrx {
         if (!rcfilePath) return;
         chokidar.watch(rcfilePath).on('change', () => {
             const rcOptions = this._rcFileRead(); // xxx perf
-            this.config.updateBuiltinOptions(rcOptions);
-            this._updatePlugins(rcOptions);
+            this.config.updateRcOptions(rcOptions);
+            // todo reloadPlugins();
         });
-    }
-
-    _updatePlugins(rcOptions = {}) {
-        // todo plugin change
     }
 
     _tryStart(port, callback) {

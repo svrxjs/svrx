@@ -22,5 +22,6 @@ module.exports = {
     // REMOVE POSTFIX like `-beta` in  0.0.1-beta.
     VERSION: require(libPath.join(__dirname, '../package.json')).version.replace(/-.*$/, ''),
     BUILTIN_PLUGIN: ['livereload', 'proxy', 'serve', 'cors'],
+    CUSTOM_SCHEMA_TYPES: ['compute', 'function'],
     GROUPS
 };
