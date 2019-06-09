@@ -7,6 +7,7 @@ const { PRIORITY } = require('../../constant');
 
 const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
 
+// todo use http-proxy-middleware
 module.exports = {
     priority: PRIORITY.PROXY,
     hooks: {

@@ -85,8 +85,36 @@ module.exports = {
                 }
             }
         ],
-        errorMessage: 'should be one of boolean or object'
+        errorMessage: 'should be boolean or object'
     },
+
+    // todo
+    proxy: {
+        group: GROUPS.COMMON,
+        oneOf: [
+            {
+                type: 'boolean',
+                default: true
+            },
+            {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        path: {
+                            oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+                            errorMessage: 'should be string or array of string'
+                        },
+                        target: {
+                            type: 'string'
+                        }
+                    }
+                }
+            }
+        ],
+        errorMessage: 'should be boolean or array of object'
+    },
+
     livereload: {
         description: 'Enable auto live reload',
         group: GROUPS.COMMON,
@@ -98,10 +126,13 @@ module.exports = {
             {
                 type: 'object',
                 properties: {
-                    exclude: { type: 'string' }
+                    exclude: {
+                        oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+                        errorMessage: 'should be string or array of string'
+                    }
                 }
             }
         ],
-        errorMessage: 'should be one of boolean or object'
+        errorMessage: 'should be boolean or object'
     }
 };

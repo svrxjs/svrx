@@ -1,4 +1,4 @@
-const { debounce } = require('lodash');
+const _ = require('lodash');
 const chokidar = require('chokidar');
 const libPath = require('path');
 
@@ -7,29 +7,30 @@ module.exports = {
         script: ['./assets/index.js']
     },
     hooks: {
-        onOptionChange(event) {
-            // todo do sth when option change
-        },
-
-        // on plugin enable
         async onCreate({ config, events, io }) {
-            if (config.get('livereload') === false) {
-                return;
+            const reloadConfig = config.get('livereload');
+            if (reloadConfig === false) return;
+
+            const dir = config.get('serve.base') || config.get('root');
+            const exclude = config.get('livereload.exclude');
+            const ignoreList = [/node_modules/];
+
+            if (_.isString(exclude)) ignoreList.push(new RegExp(exclude));
+            if (_.isArray(exclude)) {
+                _.forEach(exclude, (ex) => {
+                    ignoreList.push(new RegExp(ex));
+                });
             }
 
-            const dir = config.get('static.root') || config.get('root');
-            let exclude = config.get('livereload.exclude');
-
-            if (typeof exclude === 'string') exclude = new RegExp(exclude);
             chokidar
                 .watch(dir, {
                     persistent: true,
-                    ignored: [exclude, /node_modules/]
+                    ignored: ignoreList
                 })
                 .on(
                     'change',
-                    debounce((path) => {
-                        const data = { path: path };
+                    _.debounce((path) => {
+                        const data = { path };
                         const extname = libPath.extname(path);
 
                         if (extname === '.css') {
