@@ -34,21 +34,25 @@ class Option extends IModel {
         // errors formatting
         ajvErrorParse(ajv);
 
-        const valid = ajv.validate(
-            {
-                type: 'object',
-                properties: configs
-            },
-            options
-        );
+        try {
+            const valid = ajv.validate(
+                {
+                    type: 'object',
+                    properties: configs
+                },
+                options
+            );
 
-        if (!valid) {
-            const ajvErrors = ajv.errors;
-            logger.error('Config Error:');
-            _.forEach(ajvErrors, (err) => {
-                logger.error(`${err.dataPath.replace('/', '.')} ${err.message}`);
-            });
-            process.exit(1);
+            if (!valid) {
+                const ajvErrors = ajv.errors;
+                logger.error('Config Error:');
+                _.forEach(ajvErrors, (err) => {
+                    logger.error(`${err.dataPath.replace('/', '.')} ${err.message}`);
+                });
+                process.exit(1);
+            }
+        } catch (e) {
+            logger.warn(e);
         }
     }
 }

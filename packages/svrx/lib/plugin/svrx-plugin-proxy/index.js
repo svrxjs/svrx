@@ -1,70 +1,27 @@
-const request = require('co-request');
-const libUrl = require('url');
-const { gunzip } = require('../../util/gzip');
-const { isHtmlType, isRespGzip } = require('../../util/helper');
-
+const _ = require('lodash');
+const proxy = require('http-proxy-middleware');
+const k2c = require('koa2-connect');
+const compose = require('koa-compose');
 const { PRIORITY } = require('../../constant');
 
-const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
-
-// todo use http-proxy-middleware
 module.exports = {
     priority: PRIORITY.PROXY,
     hooks: {
-        async onRoute(ctx, next, { config }) {
+        async onCreate({ middleware, config }) {
             const proxyConfig = config.get('proxy');
 
-            if (!proxyConfig) return next();
+            if (!proxyConfig) return;
 
-            if (proxyConfig.match && !proxyConfig.match(ctx.url)) {
-                return next();
-            }
+            const formattedConfig = _.isPlainObject(proxyConfig)
+                ? _.keys(proxyConfig).map((k) => ({ context: k, ...proxyConfig[k] }))
+                : proxyConfig;
 
-            const rsp = await proxy({
-                target: proxyConfig.target,
-                host: proxyConfig.host,
-                ctx
+            const proxyMiddleware = compose(formattedConfig.map((conf) => k2c(proxy(conf.context, conf))));
+
+            middleware.add('$proxy', {
+                priority: PRIORITY.PROXY,
+                onCreate: () => async (ctx, next) => proxyMiddleware(ctx, next)
             });
-
-            const isGzipHtml = isRespGzip(rsp.headers) && isHtmlType(rsp.headers);
-            if (isGzipHtml) {
-                rsp.body = await gunzip(rsp.body);
-            }
-
-            // @TODO:  unzip content, make it easy to modify
-            // const isGzipped = rsp.headers['content-encoding'] === 'gzip';
-
-            ctx.status = rsp.statusCode;
-
-            Object.keys(rsp.headers)
-                .filter((item) => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
-                .forEach((item) => ctx.set(item, rsp.headers[item]));
-
-            ctx.body = rsp.body;
-            if (isGzipHtml) {
-                ctx.set('content-encoding', 'identity');
-            }
-
-            await next();
         }
     }
 };
-
-// 简化版 request
-async function proxy({ target, ctx, host }) {
-    let urlObj = new libUrl.URL(ctx.originalUrl, target);
-    let headers = ctx.headers;
-    let req = ctx.request;
-
-    headers.host = host || urlObj.hostname || headers.host;
-
-    const options = {
-        method: ctx.method,
-        url: urlObj.toString(),
-        body: req.body || '',
-        encoding: null,
-        headers
-    };
-
-    return request(options);
-}

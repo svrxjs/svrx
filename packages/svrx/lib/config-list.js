@@ -9,25 +9,6 @@ module.exports = {
         group: GROUPS.CORE,
         ui: false
     },
-    urls: {
-        type: 'object',
-        properties: {
-            style: {
-                type: 'string',
-                default: '/svrx/svrx-client.css',
-                group: GROUPS.CORE,
-                cli: false,
-                ui: false
-            },
-            script: {
-                type: 'string',
-                default: '/svrx/svrx-client.js',
-                group: GROUPS.CORE,
-                cli: false,
-                ui: false
-            }
-        }
-    },
     dir: {
         type: 'string',
         default: process.cwd(),
@@ -51,17 +32,35 @@ module.exports = {
         description: 'The unique identifier for a product',
         group: GROUPS.CORE
     },
-
     https: {
-        type: 'boolean'
+        type: 'boolean',
+        group: GROUPS.CORE
     },
-
+    urls: {
+        type: 'object',
+        properties: {
+            style: {
+                type: 'string',
+                default: '/svrx/svrx-client.css',
+                group: GROUPS.CORE,
+                cli: false,
+                ui: false
+            },
+            script: {
+                type: 'string',
+                default: '/svrx/svrx-client.js',
+                group: GROUPS.CORE,
+                cli: false,
+                ui: false
+            }
+        }
+    },
     middlewares: {
-        type: 'array'
+        type: 'array',
+        group: GROUPS.CORE
     },
 
     // built plugin configs
-
     serve: {
         group: GROUPS.COMMON,
         oneOf: [
@@ -88,31 +87,17 @@ module.exports = {
         errorMessage: 'should be boolean or object'
     },
 
-    // todo
     proxy: {
         group: GROUPS.COMMON,
         oneOf: [
             {
-                type: 'boolean',
-                default: true
+                type: 'object'
             },
             {
-                type: 'array',
-                items: {
-                    type: 'object',
-                    properties: {
-                        path: {
-                            oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
-                            errorMessage: 'should be string or array of string'
-                        },
-                        target: {
-                            type: 'string'
-                        }
-                    }
-                }
+                type: 'array'
             }
         ],
-        errorMessage: 'should be boolean or array of object'
+        errorMessage: 'should be array or object'
     },
 
     livereload: {
