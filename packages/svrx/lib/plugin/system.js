@@ -166,6 +166,7 @@ class PluginSystem {
         const injector = this.injector;
         const io = this.io;
         const events = this.events;
+        const pluginLogger = logger.getPluginLogger(name);
 
         // @TODO Plugin onCreate Logic
         // onActive? onDeactive
@@ -245,7 +246,7 @@ class PluginSystem {
                 priority: module.priority,
                 onCreate() {
                     return async (ctx, next) => {
-                        return onRoute(ctx, next, { config, logger });
+                        return onRoute(ctx, next, { config, logger: pluginLogger });
                     };
                 }
             });
@@ -258,7 +259,7 @@ class PluginSystem {
                 events,
                 config,
                 io,
-                logger
+                logger: pluginLogger
             });
         }
     }

@@ -1,30 +1,83 @@
 const chalk = require('chalk');
-const LEVELS = ['error', 'warn', 'info', 'verbose', 'debug'];
 
-function write(msg, label) {
-    const labelColor = {
-        error: 'Red',
-        warn: 'Yellow',
-        debug: 'White',
-        verbose: 'White',
-        info: 'Green'
-    };
+const LABEL_CONFIG = {
+    silent: {
+        index: 100
+    },
+    error: {
+        color: 'Red',
+        index: 10
+    },
+    warn: {
+        color: 'Yellow',
+        index: 5
+    },
+    info: {
+        color: 'Green',
+        index: 3
+    },
+    debug: {
+        color: 'Gray',
+        index: 1
+    }
+};
 
-    label = label || 'info';
+const LEVELS = ['error', 'warn', 'info', 'debug'];
 
-    const color = labelColor[label];
-    const foreColor = color === 'White' ? 'gray' : 'white';
-    const bgColor = 'bg' + color;
-    const padText = '[' + label + ']';
-    const labelText = color ? chalk[foreColor][bgColor](padText) : padText;
+class Logger {
+    static setLevel(level) {
+        if (level in LABEL_CONFIG) {
+            Logger.levelIndex = LABEL_CONFIG[level].index;
+        }
+    }
 
-    process.stdout.write(`${labelText} ${new Date().toLocaleString()} - ` + msg + '\n');
+    constructor(category = 'global') {
+        this.category = category;
+    }
+
+    _write(labelText, msg) {
+        process.stdout.write(`${labelText} (${new Date().toLocaleString()})  ` + msg + '\n');
+    }
+
+    write(msg, label) {
+        label = label || 'info';
+
+        if (LEVELS.indexOf(label) === -1) {
+            throw Error(`logger.${label}() isn't exsits`);
+        }
+
+        const index = LABEL_CONFIG[label].index;
+
+        if (index < Logger.levelIndex) return;
+
+        const category = this.category;
+        const color = LABEL_CONFIG[label].color;
+        const foreColor = color === 'White' ? 'gray' : 'white';
+        const bgColor = 'bg' + color;
+        const padText = '[' + label + (category === 'global' ? '' : ` - ${category}`) + ']';
+        const labelText = color ? chalk[foreColor][bgColor](padText) : padText;
+
+        this._write(labelText, msg);
+    }
 }
 
+Logger.levelIndex = 0;
+
 LEVELS.forEach((level) => {
-    exports[level] = function(msg) {
-        write(msg, level);
+    Logger.prototype[level] = function(msg) {
+        this.write(msg, level);
     };
 });
 
-exports.log = exports.info;
+function getPluginLogger(name) {
+    const categoryName = `plugin-${name}`;
+    return new Logger(categoryName);
+}
+
+const logger = (module.exports = new Logger());
+
+logger.setLevel = Logger.setLevel;
+
+logger.Logger = Logger;
+
+logger.getPluginLogger = getPluginLogger;
