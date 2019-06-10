@@ -29,7 +29,7 @@ module.exports = {
 
             const serveConfig = config.get('serve');
             const root = config.get('serve.base') || config.get('root');
-            const headers = config.get('serve.headers');
+            const headers = config.get('serve.headers') || {};
 
             if (serveConfig === false) return;
 

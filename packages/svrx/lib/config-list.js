@@ -4,8 +4,8 @@ module.exports = {
     root: {
         type: 'string',
         default: process.cwd(),
-        description: 'Where to start svrx',
-        defaultHint: 'Default to the current working directory',
+        description: 'where to start svrx',
+        defaultHint: 'default to the current working directory',
         group: GROUPS.CORE,
         ui: false
     },
@@ -20,8 +20,8 @@ module.exports = {
         // todo default to the latest at local
         alias: 'v',
         type: 'string',
-        description: 'The version of svrx you want to use',
-        defaultHint: 'Default to the latest published version of svrx',
+        description: 'the version of svrx you want to use',
+        defaultHint: 'default to the latest published version of svrx',
         group: GROUPS.CORE,
         ui: false
     },
@@ -29,7 +29,7 @@ module.exports = {
         alias: 'p',
         type: 'number',
         default: 8000,
-        description: 'The unique identifier for a product',
+        description: 'the unique identifier for a product',
         group: GROUPS.CORE
     },
     https: {
@@ -63,23 +63,23 @@ module.exports = {
     // built plugin configs
     serve: {
         group: GROUPS.COMMON,
-        oneOf: [
+        default: true,
+        anyOf: [
             {
-                type: 'boolean',
-                default: true
+                type: 'boolean'
             },
             {
                 type: 'object',
                 properties: {
                     base: {
                         type: 'string',
-                        description: 'Where to serve content from',
-                        defaultHint: 'Default to the current working directory(root)'
+                        description: 'where to serve content from',
+                        defaultHint: 'default to the current working directory(root)'
                     },
                     headers: {
                         type: 'object',
                         default: {},
-                        description: 'Add headers to all responses'
+                        description: 'add headers to all responses'
                     }
                 }
             }
@@ -89,7 +89,7 @@ module.exports = {
 
     proxy: {
         group: GROUPS.COMMON,
-        oneOf: [
+        anyOf: [
             {
                 type: 'object'
             },
@@ -101,21 +101,36 @@ module.exports = {
     },
 
     livereload: {
-        description: 'Enable auto live reload',
+        description: 'enable auto live reload',
         group: GROUPS.COMMON,
-        oneOf: [
+        default: true,
+        anyOf: [
             {
-                type: 'boolean',
-                default: true
+                type: 'boolean'
             },
             {
                 type: 'object',
                 properties: {
                     exclude: {
-                        oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+                        anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
                         errorMessage: 'should be string or array of string'
                     }
                 }
+            }
+        ],
+        errorMessage: 'should be boolean or object'
+    },
+
+    cors: {
+        description: 'Cross-Origin Resource Sharing(CORS)',
+        group: GROUPS.COMMON,
+        default: true,
+        anyOf: [
+            {
+                type: 'boolean'
+            },
+            {
+                type: 'object'
             }
         ],
         errorMessage: 'should be boolean or object'

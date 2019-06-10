@@ -32,7 +32,6 @@
     "prepublish": "npm run webpack:build"
   },
   "dependencies": {
-    "@koa/cors": "^2.2.3",
     "ajv-errors": "^1.0.1",
     "chalk": "^2.4.2",
     "co-request": "^1.0.0",
@@ -44,6 +43,7 @@
     "koa-compose": "^4.1.0",
     "koa-send": "^5.0.0",
     "koa2-connect": "^1.0.2",
+    "koa2-cors": "^2.0.6",
     "lodash": "^4.17.11",
     "npm": "^6.9.0",
     "npmi": "^2.0.1",
