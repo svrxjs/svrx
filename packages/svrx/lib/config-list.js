@@ -91,13 +91,16 @@ module.exports = {
         group: GROUPS.COMMON,
         anyOf: [
             {
+                type: 'boolean'
+            },
+            {
                 type: 'object'
             },
             {
                 type: 'array'
             }
         ],
-        errorMessage: 'should be array or object'
+        errorMessage: 'should be boolean, array or object'
     },
 
     livereload: {
