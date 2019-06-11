@@ -372,8 +372,8 @@ describe('Plugin System', () => {
         it('serveStatic: basic', (done) => {
             const svrx = createServer({
                 port: 3000,
-                static: {
-                    root: libPath.join(MODULE_PATH, 'serve')
+                serve: {
+                    base: libPath.join(MODULE_PATH, 'serve')
                 }
             });
 
@@ -386,8 +386,8 @@ describe('Plugin System', () => {
         it('serveStatic: injector', (done) => {
             const svrx = createServer({
                 port: 3000,
-                static: {
-                    root: libPath.join(MODULE_PATH, 'serve')
+                serve: {
+                    base: libPath.join(MODULE_PATH, 'serve')
                 }
             });
 
