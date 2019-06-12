@@ -52,6 +52,18 @@ module.exports = {
                 group: GROUPS.CORE,
                 cli: false,
                 ui: false
+            },
+            external: {
+                type: 'string',
+                group: GROUPS.CORE,
+                cli: false,
+                ui: false
+            },
+            local: {
+                type: 'string',
+                group: GROUPS.CORE,
+                cli: false,
+                ui: false
             }
         }
     },

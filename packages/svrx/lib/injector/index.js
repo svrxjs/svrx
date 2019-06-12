@@ -93,7 +93,7 @@ module.exports = class Injector {
             try {
                 def.content = fs.readFileSync(filename, 'utf8');
             } catch (e) {
-                logger.error(e.message);
+                logger.error(`readFile(${filename}) failed \n ${e.message}` + e.message);
                 def.content = '';
             }
         }

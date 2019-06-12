@@ -73,7 +73,7 @@ class Configure {
     }
 
     set(builtinPathes, value) {
-        this[BUILTIN_OPTION].set(value);
+        this[BUILTIN_OPTION].set(builtinPathes, value);
     }
 
     /**
