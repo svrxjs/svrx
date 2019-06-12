@@ -2,7 +2,11 @@ const chalk = require('chalk');
 
 const LABEL_CONFIG = {
     silent: {
-        index: 100
+        index: 101
+    },
+    notify: {
+        index: 100,
+        color: 'Blue'
     },
     error: {
         color: 'Red',
@@ -22,7 +26,7 @@ const LABEL_CONFIG = {
     }
 };
 
-const LEVELS = ['error', 'warn', 'info', 'debug'];
+const LEVELS = ['notify', 'error', 'warn', 'info', 'debug'];
 
 class Logger {
     static setLevel(level) {

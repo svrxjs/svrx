@@ -3,6 +3,7 @@ const EventEmitter = require('events');
 const libPath = require('path');
 const libFs = require('fs');
 const _ = require('lodash');
+const os = require('os');
 
 const CONST = require('../constant');
 const o2str = {}.toString;
@@ -117,7 +118,21 @@ function getCert() {
     };
 }
 
+function getExternalIp() {
+    const ifaces = os.networkInterfaces();
+    const ips = [];
+    for (let dev in ifaces) {
+        ifaces[dev].forEach(function(details) {
+            if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
+                ips.push(details.address);
+            }
+        });
+    }
+    return ips;
+}
+
 exports.normalizePluginName = normalizePluginName;
+exports.getExternalIp = _.memoize(getExternalIp);
 exports.isWritableStream = isWritableStream;
 exports.isReadableStream = isReadableStream;
 exports.noopMiddleware = noopMiddleware;

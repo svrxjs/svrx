@@ -1,15 +1,18 @@
+const chalk = require('chalk');
 const http = require('http');
 const https = require('https');
 const ffp = require('find-free-port');
 const Koa = require('koa');
 const cosmiconfig = require('cosmiconfig');
 const chokidar = require('chokidar');
-const { getCert } = require('./util/helper');
-const Middleware = require('./middleware');
+const { getCert, getExternalIp } = require('./util/helper');
+
 const PluginSystem = require('./plugin/system');
+const Middleware = require('./middleware');
 const Configure = require('./configure');
 const Injector = require('./injector');
 const IO = require('./io');
+
 const CONFIGS = require('./config-list');
 const getEvents = require('./shared/events');
 const logger = require('./util/logger');
@@ -37,11 +40,11 @@ class Svrx {
         const io = (this.io = new IO({ config, server, middleware }));
 
         this.system = new PluginSystem({
-            io,
+            middleware,
+            injector,
             config,
             events,
-            injector,
-            middleware
+            io
         });
 
         // @TODO: need dynamic
@@ -112,7 +115,6 @@ class Svrx {
     }
 
     _tryStart(port, callback) {
-        const config = this.config;
         this.setup()
             .then(() => {
                 ffp(port, '127.0.0.1', (err, p1) => {
@@ -120,17 +122,35 @@ class Svrx {
                     if (port !== p1) {
                         logger.warn(`port ${port} is in use, using port ${p1} instead`);
                     }
-                    // this.setup().then(()=>{
+
                     this._server.listen(p1, () => {
-                        config.set('port', p1);
+                        this._afterStart(port);
                         callback(p1);
                     });
-                    // })
                 });
             })
             .catch((e) => {
                 throw e;
             });
+    }
+    _afterStart(port) {
+        const config = this.config;
+        const events = this.events;
+
+        config.set('port', port);
+
+        const [ip] = getExternalIp();
+        const protocal = `http${config.get('https') ? 's' : ''}`;
+
+        config.set('urls.external', `${protocal}://${ip}:${port}`);
+        config.set('urls.local', `${protocal}://localhost:${port}`);
+
+        logger.notify(`puer successfully started at
+
+${'External'.padStart(12)}: ${chalk.underline.blue(config.get('urls.external'))}
+${'Local'.padStart(12)}: ${chalk.underline.blue(config.get('urls.local'))}
+`);
+        events.emit('ready');
     }
 }
 
