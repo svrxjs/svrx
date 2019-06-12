@@ -38,6 +38,25 @@ const rewritePath = (path, rules) => {
     }
     return path;
 };
+async function proxy({ proxyRule, ctx }) {
+    const { target, pathRewrite, changeOrigin } = proxyRule;
+    const path = rewritePath(ctx.originalUrl, pathRewrite);
+    const urlObj = new libUrl.URL(path, target);
+    const headers = ctx.headers;
+    const req = ctx.request;
+
+    headers.host = changeOrigin ? urlObj.hostname : headers.host;
+
+    const options = {
+        method: ctx.method,
+        url: urlObj.toString(),
+        body: req.body || '',
+        encoding: null,
+        headers
+    };
+
+    return request(options);
+}
 
 module.exports = {
     priority: PRIORITY.PROXY,
@@ -71,24 +90,3 @@ module.exports = {
         }
     }
 };
-
-// 简化版 request
-async function proxy({ proxyRule, ctx }) {
-    const { target, pathRewrite } = proxyRule;
-    const path = rewritePath(ctx.originalUrl, pathRewrite);
-    const urlObj = new libUrl.URL(path, target);
-    const headers = ctx.headers;
-    const req = ctx.request;
-
-    headers.host = urlObj.hostname || headers.host;
-
-    const options = {
-        method: ctx.method,
-        url: urlObj.toString(),
-        body: req.body || '',
-        encoding: null,
-        headers
-    };
-
-    return request(options);
-}
