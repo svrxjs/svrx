@@ -1,27 +1,94 @@
+const request = require('co-request');
+const libUrl = require('url');
 const _ = require('lodash');
-const proxy = require('http-proxy-middleware');
-const k2c = require('koa2-connect');
-const compose = require('koa-compose');
+const micromatch = require('micromatch');
+const { gunzip } = require('../../util/gzip');
+const { isHtmlType, isRespGzip } = require('../../util/helper');
 const { PRIORITY } = require('../../constant');
+
+const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
+const match = (url, config) => {
+    const wildcardAndGlobMatch = (url, pattern) => {
+        if (_.isString(pattern) && url.startsWith(pattern)) return true;
+        if (_.isArray(pattern) && pattern.some((p) => url.startsWith(p))) return true;
+        return micromatch.isMatch(url, pattern);
+    };
+
+    if (_.isPlainObject(config)) {
+        const matchedPattern = _.keys(config).find((pattern) => wildcardAndGlobMatch(url, pattern));
+        return config[matchedPattern];
+    }
+    if (_.isArray(config)) {
+        return config.find((conf) => {
+            if (_.isString(conf.context)) return wildcardAndGlobMatch(url, conf.context);
+            if (_.isArray(conf.context)) return wildcardAndGlobMatch(url, conf.context);
+            return conf.context === undefined; // no context supplied will match any path
+        });
+    }
+    return null;
+};
+const rewritePath = (path, rules) => {
+    const matchedRule = _.keys(rules).find((rule) => {
+        const reg = new RegExp(rule);
+        return path.match(reg);
+    });
+    if (matchedRule) {
+        const reg = new RegExp(matchedRule);
+        return path.replace(reg, rules[matchedRule]);
+    }
+    return path;
+};
 
 module.exports = {
     priority: PRIORITY.PROXY,
     hooks: {
-        async onCreate({ middleware, config }) {
+        async onRoute(ctx, next, { config }) {
             const proxyConfig = config.get('proxy');
 
-            if (!proxyConfig) return;
+            if (!proxyConfig) return next();
 
-            const formattedConfig = _.isPlainObject(proxyConfig)
-                ? _.keys(proxyConfig).map((k) => ({ context: k, ...proxyConfig[k] }))
-                : proxyConfig;
+            const proxyRule = match(ctx.url, proxyConfig);
 
-            const proxyMiddleware = compose(formattedConfig.map((conf) => k2c(proxy(conf.context, conf))));
+            if (!proxyRule) return next();
 
-            middleware.add('$proxy', {
-                priority: PRIORITY.PROXY,
-                onCreate: () => async (ctx, next) => proxyMiddleware(ctx, next)
-            });
+            const rsp = await proxy({ proxyRule, ctx });
+            const isGzipHtml = isRespGzip(rsp.headers) && isHtmlType(rsp.headers);
+
+            if (isGzipHtml) {
+                rsp.body = await gunzip(rsp.body);
+            }
+
+            ctx.status = rsp.statusCode;
+            Object.keys(rsp.headers)
+                .filter((item) => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
+                .forEach((item) => ctx.set(item, rsp.headers[item]));
+            ctx.body = rsp.body;
+            if (isGzipHtml) {
+                ctx.set('content-encoding', 'identity');
+            }
+
+            await next();
         }
     }
 };
+
+// 简化版 request
+async function proxy({ proxyRule, ctx }) {
+    const { target, pathRewrite } = proxyRule;
+    const path = rewritePath(ctx.originalUrl, pathRewrite);
+    const urlObj = new libUrl.URL(path, target);
+    const headers = ctx.headers;
+    const req = ctx.request;
+
+    headers.host = urlObj.hostname || headers.host;
+
+    const options = {
+        method: ctx.method,
+        url: urlObj.toString(),
+        body: req.body || '',
+        encoding: null,
+        headers
+    };
+
+    return request(options);
+}
