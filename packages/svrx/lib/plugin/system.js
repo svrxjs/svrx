@@ -1,7 +1,7 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
+const chalk = require('chalk');
 const _ = require('lodash');
-
 // const Plugin = require('./plugin')
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
@@ -113,9 +113,19 @@ class PluginSystem {
                 prefix: config.get('root')
             }
         };
+
+        let release;
+
         if (path === undefined) {
             // remote
-            const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
+            const done = logger.progress(`detecting satisfied plugin: ${chalk.gray(name)}`);
+            let targetVersion;
+            try {
+                targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
+                done();
+            } catch (e) {
+                done();
+            }
             if (!targetVersion) {
                 // @TODO
                 throw Error(
@@ -125,9 +135,7 @@ class PluginSystem {
             } else {
                 installOptions.name = normalizePluginName(name);
                 installOptions.version = targetVersion;
-                logger.notify(
-                    `start installing satisfied plugin - ${installOptions.name}@${installOptions.version} ...`
-                );
+                release = logger.progress(`installing ${installOptions.name}@${installOptions.version}`, 'notify');
             }
         } else {
             // local install
@@ -136,7 +144,8 @@ class PluginSystem {
         }
         const installRet = await install(installOptions);
 
-        logger.notify(`plugin ${installOptions.name} installed completely!`);
+        if (release) release();
+        logger.notify(`${chalk.gray(name)} installed completely!`);
 
         let pkg;
         try {

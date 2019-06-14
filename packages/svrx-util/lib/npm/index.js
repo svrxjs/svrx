@@ -1,11 +1,11 @@
 // @TODO;
-const npm = require('npm');
-const npmi = require('npmi');
-const _ = require('lodash');
-const nUtil = require('util');
-const libPath = require('path');
 const DevNull = require('./devnull');
 const npCall = require('../npCall');
+const libPath = require('path');
+const nUtil = require('util');
+const npmi = require('npmi');
+const _ = require('lodash');
+const npm = require('npm');
 
 // @TODO
 const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
@@ -17,11 +17,13 @@ const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
 
 const load = _.memoize(nUtil.promisify(npm.load).bind(npm, SILENT_SUGAR_NOT_NECESSARILY_WORKS));
 
-const normalizeNpmCommand = (command) =>
-    async function(...args) {
+const normalizeNpmCommand = (command) => {
+    return async function(...args) {
         await load();
-        return npCall(npm.commands[command], args);
+        const ret = await npCall(npm.commands[command], args);
+        return ret;
     };
+};
 
 const view = normalizeNpmCommand('view');
 const search = normalizeNpmCommand('search');

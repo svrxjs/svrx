@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-const { formatDate } = require('./helper');
+const ora = require('ora');
 
 const LABEL_CONFIG = {
     silent: {
@@ -7,6 +7,7 @@ const LABEL_CONFIG = {
     },
     notify: {
         index: 100,
+        text: 'svrx',
         color: 'Blue'
     },
     error: {
@@ -22,18 +23,40 @@ const LABEL_CONFIG = {
         index: 3
     },
     debug: {
-        color: 'Gray',
+        color: 'Black',
         index: 1
     }
 };
 
 const LEVELS = ['notify', 'error', 'warn', 'info', 'debug'];
 
+const STATE = {
+    LOCKED: Symbol('LOCKED'),
+    UNLOCKED: Symbol('UNLOCKED')
+};
+
 class Logger {
     static setLevel(level) {
         if (level in LABEL_CONFIG) {
             Logger.levelIndex = LABEL_CONFIG[level].index;
         }
+    }
+    static lock() {
+        const stdout = Logger.stream;
+        Logger.oldWrite = stdout._write;
+
+        stdout._write = function(...args) {
+            args[0] = '';
+            return Logger.oldWrite.apply(this, args);
+        };
+
+        Logger.state = STATE.LOCKED;
+    }
+    static release() {
+        if (Logger.state !== STATE.LOCKED) return;
+        Logger.stream._write = Logger.oldWrite;
+        delete Logger.oldWrite;
+        Logger.state = STATE.UNLOCKED;
     }
 
     get chalk() {
@@ -44,12 +67,8 @@ class Logger {
         this.category = category;
     }
 
-    _write(labelText, msg) {
-        process.stdout.write(`${labelText}<${formatDate(new Date(), 'HH:mm:ss')}> ` + msg + '\n');
-    }
-
-    write(msg, label) {
-        label = label || 'info';
+    _getWriteMsg(msg, label) {
+        label = label || 'notify';
 
         if (LEVELS.indexOf(label) === -1) {
             throw Error(`logger.${label}() isn't exsits`);
@@ -57,16 +76,41 @@ class Logger {
 
         const index = LABEL_CONFIG[label].index;
 
+        const text = LABEL_CONFIG[label].text || label;
+
         if (index < Logger.levelIndex) return;
 
         const category = this.category;
         const color = LABEL_CONFIG[label].color;
         const foreColor = color === 'White' ? 'gray' : 'white';
         const bgColor = 'bg' + color;
-        const padText = '[' + label + (category === 'global' ? '' : ` - ${category}`) + ']';
+        const padText = '[' + text + (category === 'global' ? '' : `:${category}`) + ']';
         const labelText = color ? chalk[foreColor][bgColor](padText) : padText;
 
-        this._write(labelText, msg);
+        return `${labelText} ` + msg + '\n';
+    }
+
+    write(msg, label, options) {
+        options = options || {};
+        if (Logger.state === STATE.LOCKED && options.force !== true) {
+            this.write('Logger is locked, some progress task need release', 'warn', { force: true });
+            return;
+        }
+
+        const content = this._getWriteMsg(msg, label);
+
+        if (content) Logger.stream.write(content);
+    }
+
+    progress(msg, label) {
+        const spinner = ora(this._getWriteMsg(msg, label)).start();
+
+        Logger.lock();
+
+        return function(msg, label) {
+            Logger.release();
+            spinner.stop();
+        };
     }
 
     log(...args) {
@@ -75,6 +119,8 @@ class Logger {
 }
 
 Logger.levelIndex = 0;
+Logger.state = STATE.UNLOCKED;
+Logger.stream = process.stdout;
 
 LEVELS.forEach((level) => {
     Logger.prototype[level] = function(msg) {

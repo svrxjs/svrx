@@ -124,13 +124,14 @@ class Svrx {
                     }
 
                     this._server.listen(p1, () => {
-                        this._afterStart(port);
+                        this._afterStart(p1);
                         callback(p1);
                     });
                 });
             })
             .catch((e) => {
-                throw e;
+                logger.error(e.message);
+                process.exit(0);
             });
     }
     _afterStart(port) {
