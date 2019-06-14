@@ -17,6 +17,7 @@ describe('Injector', () => {
         const MARK_TESTING = `__svrx_testing__`;
 
         injector.add('style', { content: `body{padding:10px}` });
+        injector.add('style', { content: `body{color:black}` });
         injector.add('script', { content: `window.test=true;` });
         injector.add('style', {
             content: MARK_TESTING,
@@ -24,6 +25,7 @@ describe('Injector', () => {
                 return /\.md$/.test(referer);
             }
         });
+
 
         it('Integration: Basic', (done) => {
             request(svrx.callback())
@@ -39,7 +41,14 @@ describe('Injector', () => {
                 });
         });
 
-        it('Integration: Gzip Content', (done) => {
+        it('Integration: style join', (done) => {
+            request(svrx.callback())
+                .get(svrx.config.get('urls.style'))
+                .set('accept-encoding', 'identity')
+                .expect(/body\{padding:10px\}\nbody\{color:black\}/, done)
+        });
+
+        it('Integration:  Gzip content-encoding', (done) => {
             request(svrx.callback())
                 .get(svrx.config.get('urls.script'))
                 .set('accept-encoding', 'gzip')

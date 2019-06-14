@@ -122,9 +122,13 @@ class PluginSystem {
                     `unmatched plugin version, please use other version\n` +
                         `${(await listMatchedPackageVersion(name)).join('\n')}`
                 );
+            } else {
+                installOptions.name = normalizePluginName(name);
+                installOptions.version = targetVersion;
+                logger.notify(
+                    `start installing satisfied plugin - ${installOptions.name}@${installOptions.version} ...`
+                );
             }
-            installOptions.name = normalizePluginName(name);
-            installOptions.version = targetVersion;
         } else {
             // local install
             installOptions.name = path;
@@ -132,7 +136,7 @@ class PluginSystem {
         }
         const installRet = await install(installOptions);
 
-        logger.log(`plugin ${name} installed completely!`);
+        logger.notify(`plugin ${installOptions.name} installed completely!`);
 
         let pkg;
         try {
@@ -147,6 +151,10 @@ class PluginSystem {
             version: pkg.version,
             pluginConfig
         });
+    }
+
+    getInstalledPluginNames() {
+        return Object.keys(this[PLUGIN_MAP]);
     }
 
     async build() {

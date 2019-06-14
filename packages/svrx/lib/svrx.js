@@ -149,6 +149,8 @@ class Svrx {
 
 ${'External'.padStart(12)}: ${chalk.underline.blue(config.get('urls.external'))}
 ${'Local'.padStart(12)}: ${chalk.underline.blue(config.get('urls.local'))}
+
+${'Plugins'.padStart(12)}: ${chalk.gray(this.system.getInstalledPluginNames().join(','))}
 `);
         events.emit('ready');
     }

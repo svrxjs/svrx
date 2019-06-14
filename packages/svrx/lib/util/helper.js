@@ -131,6 +131,43 @@ function getExternalIp() {
     return ips;
 }
 
+const formatDate = (function() {
+    function fix(str) {
+        str = '' + (str || '');
+        return str.length <= 1 ? '0' + str : str;
+    }
+    var maps = {
+        yyyy: function(date) {
+            return date.getFullYear();
+        },
+        MM: function(date) {
+            return fix(date.getMonth() + 1);
+        },
+        dd: function(date) {
+            return fix(date.getDate());
+        },
+        HH: function(date) {
+            return fix(date.getHours());
+        },
+        mm: function(date) {
+            return fix(date.getMinutes());
+        },
+        ss: function(date) {
+            return fix(date.getSeconds());
+        }
+    };
+
+    const trunk = new RegExp(Object.keys(maps).join('|'), 'g');
+    return function(value, format) {
+        format = format || 'yyyy-MM-dd HH:mm';
+        value = new Date(value);
+
+        return format.replace(trunk, function(capture) {
+            return maps[capture] ? maps[capture](value) : '';
+        });
+    };
+})();
+
 exports.normalizePluginName = normalizePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
 exports.isWritableStream = isWritableStream;
@@ -140,6 +177,7 @@ exports.getCert = _.memoize(getCert);
 exports.isAcceptGzip = isAcceptGzip;
 exports.openBrowser = openBrowser;
 exports.isRespGzip = isRespGzip;
+exports.formatDate = formatDate;
 exports.isHtmlType = isHtmlType;
 exports.nodeCall = nodeCall;
 exports.typeOf = typeOf;

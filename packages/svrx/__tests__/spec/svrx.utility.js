@@ -14,6 +14,7 @@ describe('Svrx Utility', () => {
             expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false);
             expect(semver.satisfies('~0.0.1', '0.0.1')).to.equal(true);
             expect(semver.satisfies('~0.1.1', '0.1.9')).to.equal(true);
+            expect(semver.satisfies('~0.1.1', '0.1.9')).to.equal(true);
         });
         it('getClosetPackages', () => {
             const PRE_VERSION = consts.VERSION;

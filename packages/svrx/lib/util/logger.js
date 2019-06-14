@@ -1,4 +1,5 @@
 const chalk = require('chalk');
+const { formatDate } = require('./helper');
 
 const LABEL_CONFIG = {
     silent: {
@@ -35,12 +36,16 @@ class Logger {
         }
     }
 
+    get chalk() {
+        return chalk;
+    }
+
     constructor(category = 'global') {
         this.category = category;
     }
 
     _write(labelText, msg) {
-        process.stdout.write(`${labelText} (${new Date().toLocaleString()})  ` + msg + '\n');
+        process.stdout.write(`${labelText}<${formatDate(new Date(), 'HH:mm:ss')}> ` + msg + '\n');
     }
 
     write(msg, label) {
@@ -62,6 +67,10 @@ class Logger {
         const labelText = color ? chalk[foreColor][bgColor](padText) : padText;
 
         this._write(labelText, msg);
+    }
+
+    log(...args) {
+        return this.notify.apply(this, args);
     }
 }
 
