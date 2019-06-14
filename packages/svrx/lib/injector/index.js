@@ -14,6 +14,10 @@ const MINE_TYPES = {
     style: 'text/css',
     script: 'application/javascript'
 };
+const TYPE_SPLITS = {
+    style: '\n',
+    script: ';\n'
+};
 
 module.exports = class Injector {
     constructor({ config, middleware }) {
@@ -79,7 +83,7 @@ module.exports = class Injector {
             })
             .map((m) => m.content + (m.name ? '\n//' + `source from ${m.name}` : ''))
             .filter((m) => !!m)
-            .join('\n;');
+            .join(TYPE_SPLITS[type] || '\n');
 
         const output = type === 'script' ? BASIC_SCRIPT + '\n' + appendContent : appendContent;
 
