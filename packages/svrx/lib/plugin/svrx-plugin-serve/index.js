@@ -33,6 +33,9 @@ module.exports = {
                 middleware.add('$serve-history-api-fallback', {
                     priority: PRIORITY.SERVE,
                     onCreate: () => async (ctx, next) => {
+                        if (ctx.status !== 404) {
+                            return next();
+                        }
                         return historyApiFallbackMiddleware(ctx, next);
                     }
                 });
