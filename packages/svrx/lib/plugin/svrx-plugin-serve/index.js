@@ -1,6 +1,7 @@
 const send = require('koa-send');
 const c2k = require('koa2-connect');
 const serveIndex = require('serve-index');
+const historyApiFallback = require('koa-history-api-fallback');
 
 const { PRIORITY } = require('../../constant');
 
@@ -10,7 +11,9 @@ module.exports = {
     priority: PRIORITY.SERVE,
     hooks: {
         async onCreate({ middleware, config }) {
+            // serve index
             const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }));
+
             middleware.add('$serve-index', {
                 priority: PRIORITY.SERVE,
                 onCreate: () => async (ctx, next) => {
@@ -20,6 +23,20 @@ module.exports = {
                     return serveIndexMiddleware(ctx, next);
                 }
             });
+
+            // historyApiFallback
+            const historyApiFallbackOptions = config.get('serve.historyApiFallback');
+            if (historyApiFallbackOptions) {
+                const historyApiFallbackMiddleware = historyApiFallback(
+                    historyApiFallbackOptions === true ? {} : historyApiFallbackOptions
+                );
+                middleware.add('$serve-history-api-fallback', {
+                    priority: PRIORITY.SERVE,
+                    onCreate: () => async (ctx, next) => {
+                        return historyApiFallbackMiddleware(ctx, next);
+                    }
+                });
+            }
         },
 
         async onRoute(ctx, next, { config }) {

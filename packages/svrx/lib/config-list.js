@@ -92,6 +92,11 @@ module.exports = {
                         type: 'object',
                         default: {},
                         description: 'add headers to all responses'
+                    },
+                    historyApiFallback: {
+                        default: false,
+                        anyOf: [{ type: 'boolean' }, { type: 'object' }],
+                        errorMessage: 'should be boolean or object'
                     }
                 }
             }
