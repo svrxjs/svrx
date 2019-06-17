@@ -12,17 +12,21 @@ module.exports = {
     hooks: {
         async onCreate({ middleware, config }) {
             // serve index
-            const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }));
+            const serveIndexOptions = config.get('serve.serveIndex');
+            // undefined = true
+            if (serveIndexOptions || serveIndexOptions === undefined) {
+                const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }));
 
-            middleware.add('$serve-index', {
-                priority: PRIORITY.SERVE,
-                onCreate: () => async (ctx, next) => {
-                    if (!ACCEPT_METHOD.test(ctx.method) || ctx.status !== 404 || ctx.body != null) {
-                        return next();
+                middleware.add('$serve-index', {
+                    priority: PRIORITY.SERVE,
+                    onCreate: () => async (ctx, next) => {
+                        if (!ACCEPT_METHOD.test(ctx.method) || ctx.status !== 404 || ctx.body != null) {
+                            return next();
+                        }
+                        return serveIndexMiddleware(ctx, next);
                     }
-                    return serveIndexMiddleware(ctx, next);
-                }
-            });
+                });
+            }
 
             // historyApiFallback
             const historyApiFallbackOptions = config.get('serve.historyApiFallback');

@@ -14,8 +14,8 @@ module.exports = {
         DEFAULT: 10,
         SERVE: 20,
         PROXY: 21,
-        INJECTOR: 101,
-        TRANSFORM: 100
+        TRANSFORM: 100,
+        INJECTOR: 101
     },
 
     ASSET_FIELDS: ['script', 'style'],

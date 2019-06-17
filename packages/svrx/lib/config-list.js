@@ -90,11 +90,12 @@ module.exports = {
                     },
                     headers: {
                         type: 'object',
-                        default: {},
                         description: 'add headers to all responses'
                     },
+                    serveIndex: {
+                        type: 'boolean'
+                    },
                     historyApiFallback: {
-                        default: false,
                         anyOf: [{ type: 'boolean' }, { type: 'object' }],
                         errorMessage: 'should be boolean or object'
                     }
