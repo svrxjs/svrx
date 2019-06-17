@@ -22,7 +22,8 @@ const match = (url, config) => {
         return config.find((conf) => {
             if (_.isString(conf.context)) return wildcardAndGlobMatch(url, conf.context);
             if (_.isArray(conf.context)) return wildcardAndGlobMatch(url, conf.context);
-            return conf.context === undefined; // no context supplied will match any path
+            return conf.context === undefined; // no context supplied will
+            // match any path
         });
     }
     return null;
@@ -38,6 +39,24 @@ const rewritePath = (path, rules) => {
     }
     return path;
 };
+// const setCookieJar = (ctx, url) => {
+//     const jar = request.jar();
+//     const cookieHeader = ctx.headers.cookie;
+//
+//     console.log(cookieHeader)
+//     console.log(ctx.headers['set-cookie'])
+//
+//     if (cookieHeader) {
+//         const cookies = cookieHeader.split(';');
+//         cookies.forEach((item) => {
+//             jar.setCookie(item, url, err => {
+//                 console.error(err)
+//             });
+//         });
+//     }
+//     return jar;
+// };
+
 async function proxy({ proxyRule, ctx }) {
     const { target, pathRewrite, changeOrigin } = proxyRule;
     const path = rewritePath(ctx.originalUrl, pathRewrite);
@@ -46,12 +65,17 @@ async function proxy({ proxyRule, ctx }) {
     const req = ctx.request;
 
     headers.host = changeOrigin ? urlObj.hostname : headers.host;
+    headers['User-Agent'] = 'request';
+
+    // const jar = setCookieJar(ctx, headers.host);
+    // const jar = setCookieJar(ctx, '127.0.0.1');
 
     const options = {
         method: ctx.method,
         url: urlObj.toString(),
         body: req.body || '',
         encoding: null,
+        jar: true,
         headers
     };
 
@@ -71,20 +95,19 @@ module.exports = {
             if (!proxyRule) return next();
 
             const rsp = await proxy({ proxyRule, ctx });
-            const isGzipHtml = isRespGzip(rsp.headers) && isHtmlType(rsp.headers);
 
-            if (isGzipHtml) {
-                rsp.body = await gunzip(rsp.body);
-            }
-
-            ctx.status = rsp.statusCode;
             Object.keys(rsp.headers)
                 .filter((item) => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
                 .forEach((item) => ctx.set(item, rsp.headers[item]));
-            ctx.body = rsp.body;
+
+            const isGzipHtml = isRespGzip(rsp.headers) && isHtmlType(rsp.headers);
             if (isGzipHtml) {
+                rsp.body = await gunzip(rsp.body);
                 ctx.set('content-encoding', 'identity');
             }
+
+            ctx.status = rsp.statusCode;
+            ctx.body = rsp.body;
 
             await next();
         }
