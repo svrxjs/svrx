@@ -39,23 +39,6 @@ const rewritePath = (path, rules) => {
     }
     return path;
 };
-// const setCookieJar = (ctx, url) => {
-//     const jar = request.jar();
-//     const cookieHeader = ctx.headers.cookie;
-//
-//     console.log(cookieHeader)
-//     console.log(ctx.headers['set-cookie'])
-//
-//     if (cookieHeader) {
-//         const cookies = cookieHeader.split(';');
-//         cookies.forEach((item) => {
-//             jar.setCookie(item, url, err => {
-//                 console.error(err)
-//             });
-//         });
-//     }
-//     return jar;
-// };
 
 async function proxy({ proxyRule, ctx }) {
     const { target, pathRewrite, changeOrigin } = proxyRule;
@@ -65,17 +48,13 @@ async function proxy({ proxyRule, ctx }) {
     const req = ctx.request;
 
     headers.host = changeOrigin ? urlObj.hostname : headers.host;
-    headers['User-Agent'] = 'request';
-
-    // const jar = setCookieJar(ctx, headers.host);
-    // const jar = setCookieJar(ctx, '127.0.0.1');
 
     const options = {
         method: ctx.method,
         url: urlObj.toString(),
         body: req.body || '',
         encoding: null,
-        jar: true,
+        followRedirect: false,
         headers
     };
 
