@@ -1,30 +1,16 @@
-const chalk = require('chalk');
 const path = require('path');
+const { logger } = require('svrx-util');
 const config = require('./config');
 const local = require('./local');
 const registry = require('./registry');
 
 class Manager {
-    static log(type = 'info', message = '') {
-        switch (type) {
-            case 'success':
-                console.log(chalk.green(`\n${message}\n`));
-                break;
-            case 'error':
-                console.log(chalk.bold.red(`\n${message}\n`));
-                break;
-            default:
-                console.log(message);
-                break;
-        }
-    }
-
     constructor() {
         try {
             config.createDirs();
             this.setWorkRoot();
         } catch (e) {
-            Manager.log('error', e);
+            logger.error(e);
             process.exit(1);
         }
     }
@@ -38,7 +24,7 @@ class Manager {
         try {
             await config.loadFile();
         } catch (e) {
-            Manager.log('error', e);
+            logger.error(e);
             process.exit(1);
         }
     }
@@ -48,12 +34,13 @@ class Manager {
             const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
             const rcVersion = config.getConfig().svrx;
             const version = cliVersion || (await registry.getSatisfiedVersion(rcVersion));
+
             if (!local.exists(version)) {
                 await registry.install(version);
             }
             return local.load(version, optionsFromCli);
         } catch (e) {
-            Manager.log('error', e);
+            logger.error(e);
             process.exit(1);
         }
     }

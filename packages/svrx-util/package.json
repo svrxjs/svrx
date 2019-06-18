@@ -12,6 +12,9 @@
   "files": [
     "lib"
   ],
+  "scripts": {
+    "test": "nyc --reporter=html --reporter=text mocha __tests__/spec"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/x-orpheus/svrx.git"
@@ -20,8 +23,10 @@
     "url": "https://github.com/x-orpheus/svrx/issues"
   },
   "dependencies": {
+    "chalk": "^2.4.2",
     "lodash": "^4.17.11",
     "npm": "^6.9.0",
-    "npmi": "^4.0.0"
+    "npmi": "^4.0.0",
+    "ora": "^3.4.0"
   }
 }

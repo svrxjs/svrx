@@ -2,7 +2,8 @@
     "env": {
         "browser": true,
         "commonjs": true,
-        "es6": true
+        "es6": true,
+        "mocha": true
     },
     "extends": [
         "standard",
@@ -10,7 +11,8 @@
     ],
     "globals": {
         "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+        "SharedArrayBuffer": "readonly",
+        "expect":"readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2018

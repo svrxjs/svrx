@@ -2,6 +2,7 @@
 
 const program = require('commander');
 const parse = require('yargs-parser');
+const { logger } = require('svrx-util');
 const Manager = require('../lib');
 const commands = require('../lib/commands');
 
@@ -21,10 +22,10 @@ program
         // remove not-option cmd(not started with '-'
         delete options['_'];
 
+        const spinner = logger.progress('Loading svrx...');
         const svrx = await manager.loadSvrx(options);
-        svrx.start((port) => {
-            Manager.log('success', `Successfully started a server at ${port}`);
-        });
+        spinner('Successfully loaded svrx');
+        svrx.start();
     });
 
 program
@@ -36,7 +37,9 @@ program
 
         // help info of command:serve
         console.log('serve|s    Start a develop server');
+        const spinner = logger.progress('Loading svrx...');
         const svrx = await manager.loadSvrx();
+        spinner('Successfully loaded svrx');
         const optionList = svrx.getConfigList();
         commands.printServeHelp(optionList);
     });

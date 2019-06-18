@@ -1,116 +1,13 @@
 const events = require('../../lib/shared/events');
 const semver = require('../../lib/util/semver');
-const logger = require('../../lib/util/logger');
 const consts = require('../../lib/constant');
-const _ = require('../../lib/util/helper');
 const im = require('../../lib/util/im');
 const expect = require('expect.js');
 
-const Logger = logger.Logger;
 const util = require('util');
 const setImmediatePromise = util.promisify(setImmediate);
 
 describe('Svrx Utility', () => {
-
-    describe('helper.logger', ()=>{
-
-        const { Writable } = require('stream');
-
-        function log(msg, label ){
-            return new Promise( (resolve, reject)=>{
-                let cached = '';
-                Logger.stream = new Writable({ });
-                Logger.stream._write = (chunk, encode, cb)=>{
-                    cached += chunk.toString()
-                    cb()
-                }
-
-                const l = new logger.Logger()
-
-                Logger.stream.on('finish', ()=>{
-                    Logger.stream = process.stdout;
-                    resolve(cached)
-                })
-                l[label](msg);
-                Logger.stream.destroy();
-            })
-        }
-
-    
-
-        it('log function', (done)=>{
-            
-            Logger.setLevel('debug')
-            log('hello world', 'notify')
-                .then(content=>{
-                    expect(content).to.match(/\[svrx\]/)
-                    return log('hello world', 'error')
-                })
-                .then(content=>{
-                    expect(content).to.match(/\[error\]/)
-                    return log('hello world', 'debug')
-                })
-                .then(content=>{
-                    expect(content).to.match(/\[debug\]/)
-                    return log('hello world', 'info')
-                })
-                .then(content=>{
-                    expect(content).to.match(/\[info\]/)
-                    return log('hello world', 'warn')
-                })
-                .then(content=>{
-                    expect(content).to.match(/\[warn\]/)
-                    Logger.setLevel('error')
-                    done();
-                })
-
-        })
-
-        it('log level', (done)=>{
-            Logger.setLevel('error')
-            log('hello world', 'notify')
-                .then(content=>{
-                    expect(content).to.match(/\[svrx\]/)
-                    return log('hello world', 'error')
-                })
-                .then(content=>{
-                    expect(content).to.match(/\[error\]/)
-                    return log('hello world', 'debug')
-                })
-                .then(content=>{
-                    expect(content).to.equal('')
-                    return log('hello world', 'info')
-                })
-                .then(content=>{
-                    expect(content).to.equal('')
-                    return log('hello world', 'warn')
-                })
-                .then(content=>{
-                    expect(content).to.equal('')
-                    Logger.setLevel('error')
-                    done();
-                })
-        })
-
-
-        it('Logger.lock', (done)=>{
-            Logger.lock();
-
-            log('hello world', 'notify')
-                .then(content=>{
-                    expect(content).to.equal('')
-                    Logger.release()
-                    log('hello world', 'notify')
-                        .then(content=>{
-                            expect(content).to.match(/hello world/)
-                            done()
-                        })
-                })
-            
-            
-        })
-
-    })
     describe('helper.semver', () => {
         it('satisfies', () => {
             expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false);
@@ -187,9 +84,6 @@ describe('Svrx Utility', () => {
         it('im#del Basic', () => {
             const obj1 = { a: [{ b: 1 }] };
             expect('b' in im.del(obj1, 'a.0.b').a[0]).to.equal(false);
-
-            const obj2 = { a: [{ b: 1 }] };
-
             expect('b' in im.del(obj1, 'a.b').a).to.equal(false);
         });
 

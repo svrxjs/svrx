@@ -21,7 +21,7 @@
     "url": "git+https://github.com/x-orpheus/svrx.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "nyc --reporter=html --reporter=text mocha __tests__/"
   },
   "bugs": {
     "url": "https://github.com/x-orpheus/svrx/issues"

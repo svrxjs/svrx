@@ -1,9 +1,8 @@
-const chalk = require('chalk');
 const path = require('path');
+const { logger } = require('svrx-util');
 const { prompt } = require('inquirer');
 const { npm } = require('svrx-util');
 const _ = require('lodash');
-const ora = require('ora');
 const tmp = require('tmp');
 const fs = require('fs-extra');
 const config = require('./config');
@@ -32,11 +31,7 @@ const getSatisfiedVersion = async (userVersion) => {
     if (userVersion === undefined || userVersion === latest) {
         return latest;
     }
-    console.log(
-        '\n',
-        chalk.bold(`There's a new version of svrx (${latest}), and your config version is ${userVersion}`),
-        '\n'
-    );
+    logger.warn(`There's a new version of svrx (${latest}), and your config version is ${userVersion}`);
     const answers = await prompt([
         {
             type: 'confirm',
@@ -65,8 +60,7 @@ const install = async (version) => {
             prefix: tmpPath
         }
     };
-    const spinner = ora(`Installing svrx ${version}...`);
-    spinner.start();
+    const spinner = logger.progress(`Installing svrx ${version}...`);
     const result = await npm.install(options);
     const svrxRoot = result.path;
     const destFolder = path.resolve(config.VERSIONS_ROOT, version);
@@ -74,10 +68,10 @@ const install = async (version) => {
     return new Promise((resolve, reject) => {
         fs.copy(svrxRoot, destFolder, (err) => {
             if (err) {
-                spinner.fail('Download failed');
+                spinner('Download failed', 'error');
                 return reject(err);
             }
-            spinner.succeed(`Successfully downloaded svrx into ${destFolder}`);
+            spinner(`Successfully downloaded svrx into ${destFolder}`, 'info');
             resolve();
         });
     });

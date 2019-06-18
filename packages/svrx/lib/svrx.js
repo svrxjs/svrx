@@ -146,7 +146,7 @@ class Svrx {
         config.set('urls.external', `${protocal}://${ip}:${port}`);
         config.set('urls.local', `${protocal}://localhost:${port}`);
 
-        logger.notify(`puer successfully started at
+        logger.notify(`svrx successfully started at
 
 ${'External'.padStart(12)}: ${chalk.underline.blue(config.get('urls.external'))}
 ${'Local'.padStart(12)}: ${chalk.underline.blue(config.get('urls.local'))}
