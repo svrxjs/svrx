@@ -1,6 +1,5 @@
 'use strict';
-const npm = require('./npm');
-const logger = require('./logger');
 
-exports.npm = npm;
-exports.logger = logger;
+exports.logger = require('./logger')
+exports.npm = require('./npm');
+exports.c2k = require('./c2k');
