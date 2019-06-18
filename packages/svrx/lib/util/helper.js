@@ -168,11 +168,21 @@ const formatDate = (function() {
     };
 })();
 
+function getByteLength(content) {
+    if (Buffer.isBuffer(content)) {
+        return content.length;
+    } else if (typeof content === 'string') {
+        return Buffer.byteLength(content);
+    }
+    return 0;
+}
+
 exports.normalizePluginName = normalizePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
 exports.isWritableStream = isWritableStream;
 exports.isReadableStream = isReadableStream;
 exports.noopMiddleware = noopMiddleware;
+exports.getByteLength = getByteLength;
 exports.getCert = _.memoize(getCert);
 exports.isAcceptGzip = isAcceptGzip;
 exports.openBrowser = openBrowser;

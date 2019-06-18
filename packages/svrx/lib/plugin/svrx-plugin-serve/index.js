@@ -1,5 +1,5 @@
 const send = require('koa-send');
-const c2k = require('koa2-connect');
+const { c2k } = require('svrx-util');
 const serveIndex = require('serve-index');
 const historyApiFallback = require('koa-history-api-fallback');
 
@@ -15,7 +15,7 @@ module.exports = {
             const serveIndexOptions = config.get('serve.serveIndex');
             // undefined = true
             if (serveIndexOptions || serveIndexOptions === undefined) {
-                const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }));
+                const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }), { bubble: true });
 
                 middleware.add('$serve-index', {
                     priority: PRIORITY.SERVE,
