@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "koa-compose": "^4.1.0",
-    "koa2-connect": "^1.0.2",
     "webpack": "^4.32.2",
+    "svrx-util": "^0.0.2",
     "webpack-dev-middleware": "^3.7.0",
     "webpack-hot-middleware": "^2.25.0"
   }
