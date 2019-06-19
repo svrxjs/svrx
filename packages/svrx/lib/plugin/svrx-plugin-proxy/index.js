@@ -53,11 +53,7 @@ async function proxy({ proxyRule, ctx }) {
         method: ctx.method,
         url: urlObj.toString(),
         body: req.body || '',
-<<<<<<< HEAD
-        encoding: null,
-=======
         // encoding: null,
->>>>>>> feat(core): remove koa2-connect , add util.c2k
         followRedirect: false,
         headers
     };

@@ -40,6 +40,7 @@ function handler(ctx, connectMiddleware, options) {
                         default404to200();
 
                         if (options.bubble) {
+                            ctx.respond = true;
                             ctx.body = cnt ? Buffer.concat([buffer, Buffer.from(cnt)]) : buffer;
                             resolve(false); // can't trigger finish or end
                         } else {
@@ -49,6 +50,7 @@ function handler(ctx, connectMiddleware, options) {
                     write(cnt) {
                         default404to200();
                         if (options.bubble) {
+                            ctx.respond = true;
                             buffer = Buffer.concat([buffer, Buffer.from(cnt)]);
                         } else {
                             return res.write.apply(res, arguments);
@@ -111,12 +113,12 @@ function handler(ctx, connectMiddleware, options) {
  */
 function koaConnect(connectMiddleware, options) {
     return async (ctx, next) => {
-        // ctx.respond = false;
+        ctx.respond = false;
         try {
             const goNext = await handler(ctx, connectMiddleware, options);
 
             if (goNext) {
-                // ctx.respond = true;
+                ctx.respond = true;
                 return next();
             }
         } catch (err) {
