@@ -5,4 +5,4 @@ node_js:
   - 10
 
 script:
-  - npx lerna run test
+  - npm test
