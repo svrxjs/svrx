@@ -1,6 +1,7 @@
+
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
-const localWebpack = require('webpack');
+// const nodeResolve = require('resolve');
 const compose = require('koa-compose');
 const { c2k } = require('svrx-util');
 const libPath = require('path');
@@ -9,19 +10,42 @@ module.exports = {
     hooks: {
         async onCreate({ middleware, config, logger, events }) {
             //@TODO: use local webpack first
-            let webpackConfig = false;
+            let webpackConfig = config.get('config'), webpack, localWebpackConfig;
             const root = config.get('$.root');
-            if (!webpackConfig) {
-                try {
-                    webpackConfig = require(libPath.join(root, 'webpack.config.js'));
-                } catch (e) {
-                    logger.error('webpack config file missed!');
-                }
+
+            const configFile = libPath.resolve(root, config.get('file') || 'webpack.config.js')
+
+            try{
+                webpack  = await new Promise((resolve, reject)=>{
+
+                    nodeResolve('webpack', {basedir: root}, (err, res)=>{
+                        if(err) return reject(err)
+                        resolve(require(res))
+                    })
+
+                })
+            }catch(e){
+                webpack = require('webpack')
+                logger.warn(`load localwebpack from (${root}) failed, use webpack@${webpack.version} instead`)
             }
-            if (typeof webpackConfig === 'function') {
-                webpackConfig = webpackConfig('', { mode: 'development' });
+            
+            try {
+                localWebpackConfig = require( configFile );
+            } catch (e) {
+                logger.error('load config file failed at ' + configFile + '\n' + e.stack);
+                process.exit(0)
             }
-            const compiler = localWebpack(webpackConfig);
+
+            if (typeof localWebpackConfig === 'function') {
+                localWebpackConfig = localWebpackConfig('', { mode: 'development' });
+            }
+            prepareConfig(localWebpackConfig)
+
+            const compiler = webpack(
+                prepareConfig(localWebpackConfig)
+            );
+
+            // process local webpack config
 
             const oldCompilerWatch = compiler.watch.bind(compiler);
             const dataToBeRecycle = {
@@ -46,13 +70,15 @@ module.exports = {
                 return watcher;
             };
 
-            logger.notify('webpack is Initializing...');
+            logger.notify('webpack is initializing...');
 
             const hotReloadMiddleware = compose([
                 c2k(webpackDevMiddleware(compiler, {
                     logLevel: 'warn'
                 }), {bubble: true}),
-                c2k(webpackHotMiddleware(compiler, {}))
+                c2k(webpackHotMiddleware(compiler, {
+
+                }))
             ]);
 
             middleware.add('webpack-hot-reload', {
@@ -85,6 +111,12 @@ module.exports = {
         }
     }
 };
+
+
+function prepareConfig( config ) {
+   if(!config.mode) config.mode =  'development'
+   return config
+}
 
 function closeWatcher(watcher) {
     return new Promise((resolve) => {

@@ -25,7 +25,7 @@ function handler(ctx, connectMiddleware, options) {
             res.on('close', whenEnded).on('finish', whenEnded);
 
             // koa2.0 initial assign statusCode to 404, default reset it to 200
-            let dummyRes = res.__dummyRes;
+            let dummyRes;
             if (!dummyRes) {
                 let statusCodeSetted = false;
                 const default404to200 = function() {
@@ -34,27 +34,26 @@ function handler(ctx, connectMiddleware, options) {
                     }
                 };
                 let buffer = Buffer.from([]);
-                dummyRes = res.__dummyRes = {
+                dummyRes = {
                     __proto__: res,
                     end(cnt) {
-                        default404to200();
-
                         if (options.bubble) {
                             ctx.respond = true;
                             ctx.body = cnt ? Buffer.concat([buffer, Buffer.from(cnt)]) : buffer;
                             resolve(false); // can't trigger finish or end
                         } else {
-                            return res.end.apply(res, arguments);
+                            res.end.apply(res, arguments);
                         }
+                        default404to200();
                     },
                     write(cnt) {
-                        default404to200();
                         if (options.bubble) {
                             ctx.respond = true;
                             buffer = Buffer.concat([buffer, Buffer.from(cnt)]);
                         } else {
-                            return res.write.apply(res, arguments);
+                            res.write.apply(res, arguments);
                         }
+                        default404to200();
                     },
                     set statusCode(v) {
                         statusCodeSetted = true;
@@ -63,12 +62,13 @@ function handler(ctx, connectMiddleware, options) {
                     get statusCode() {
                         return res.statusCode;
                     },
-                    writeHead(statusCode) {
+                    writeHead() {
                         statusCodeSetted = true;
                         return res.writeHead.apply(res, arguments);
                     },
                     setHeader() {
-                        ctx.set.apply(ctx, arguments);
+                        statusCodeSetted = true;
+                        return res.setHeader.apply(res, arguments);
                     }
                 };
             }
@@ -95,7 +95,7 @@ function handler(ctx, connectMiddleware, options) {
         if (connectMiddleware.length >= 4) {
             args.unshift(null);
         }
-        connectMiddleware.apply(null, args);
+        connectMiddleware(...args);
         /**
          * If the middleware function does not declare receiving the `next` callback
          * assume that it's synchronous.
