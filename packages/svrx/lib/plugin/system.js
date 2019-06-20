@@ -114,8 +114,6 @@ class PluginSystem {
             }
         };
 
-        let release;
-
         if (path === undefined) {
             // remote
             const done = logger.progress(`detecting satisfied plugin: ${chalk.gray(name)}`);
@@ -135,17 +133,18 @@ class PluginSystem {
             } else {
                 installOptions.name = normalizePluginName(name);
                 installOptions.version = targetVersion;
-                release = logger.progress(`installing ${installOptions.name}@${installOptions.version}`, 'notify');
             }
         } else {
             // local install
             installOptions.name = path;
             installOptions.localInstall = true;
         }
+
+        let release = logger.progress(`installing ${installOptions.name}`, 'notify');
+
         const installRet = await install(installOptions);
 
         if (release) release();
-        logger.notify(`${chalk.gray(name)} installed completely!`);
 
         let pkg;
         try {
@@ -153,6 +152,7 @@ class PluginSystem {
         } catch (e) {
             pkg = {};
         }
+        logger.notify(`${chalk.gray(name)}${pkg.version ? '@' + pkg.version : ''} installed completely!`);
         return (pluginMap[name] = {
             name,
             path: path || installRet.path,
@@ -240,17 +240,25 @@ class PluginSystem {
             const test = assets.test;
 
             ASSET_FIELDS.forEach((field) => {
-                if (Array.isArray(assets[field]) && assets[field].length) {
+                if (assets[field] && !Array.isArray(assets[field])) {
+                    assets[field] = [assets[field]];
+                }
+                if (assets[field] && assets[field].length) {
                     assets[field].forEach((def) => {
                         // short way support
                         if (typeof def === 'string') {
                             def = { filename: def };
+                        }
+
+                        if (typeof def === 'function') {
+                            def = { content: def };
                         }
                         // to absolute filepath
                         if (def.filename && !libPath.isAbsolute(def.filename)) {
                             def.filename = libPath.join(path, def.filename);
                         }
                         if (!def.test) def.test = test;
+                        def.config = pluginConfig;
 
                         injector.add(field, def);
                     });

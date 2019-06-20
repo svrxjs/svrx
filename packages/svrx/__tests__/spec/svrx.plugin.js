@@ -357,6 +357,35 @@ describe('Plugin System', () => {
             });
         });
 
+        it('asset content with function', (done) => {
+            const svrx = createServer({
+                root: MODULE_PATH,
+                plugins: [
+                    {
+                        name: 'test',
+                        inplace: true,
+                        options: {
+                            limit: 300
+                        },
+                        assets: {
+                            script: (config)=>{
+                                return `
+                                    window.limit=${config.get('limit')};
+                                `
+                            }
+                        }
+                    }
+                ]
+            });
+            svrx.setup().then(() => {
+                request(svrx.callback())
+                    .get('/svrx/svrx-client.js')
+                    .expect(/window\.limit=300/)
+                    .expect(200)
+                    .end(done);
+            });
+        });
+
         it('plugin url parser', () => {});
 
         it('only one plugin is enable', () => {});

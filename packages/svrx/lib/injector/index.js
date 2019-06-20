@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const replaceStream = require('./replace');
 const { isReadableStream, isHtmlType, isAcceptGzip } = require('../util/helper');
+const { PRIORITY } = require('../constant');
 const { gzip } = require('../util/gzip');
 const logger = require('../util/logger');
-const { PRIORITY } = require('../constant');
 
 // const
 const ASSETS = Symbol('assets');
@@ -81,7 +81,14 @@ module.exports = class Injector {
             .filter((m) => {
                 return !m.test || m.test(ctx.get('Referer'));
             })
-            .map((m) => m.content + (m.name ? '\n//' + `source from ${m.name}` : ''))
+            .map((m) => {
+                let content = m.content;
+                if (typeof content === 'function') {
+                    content = content(m.config || this.config);
+                }
+                if (!content) return;
+                return content + (m.name ? '\n//' + `source from ${m.name}` : '');
+            })
             .filter((m) => !!m)
             .join(TYPE_SPLITS[type] || '\n');
 

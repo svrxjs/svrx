@@ -130,7 +130,7 @@ class Svrx {
                 });
             })
             .catch((e) => {
-                logger.error(e.message);
+                logger.error(e.stack || e.message);
                 process.exit(0);
             });
     }
