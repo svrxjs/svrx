@@ -21,8 +21,10 @@ class Manager {
     }
 
     async loadConfigFile() {
+        if (this.loaded) return;
         try {
             await config.loadFile();
+            this.loaded = true;
         } catch (e) {
             logger.error(e);
             process.exit(1);
@@ -33,10 +35,11 @@ class Manager {
         try {
             const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
             const rcVersion = config.getConfig().svrx;
-            const version = cliVersion || (await registry.getSatisfiedVersion(rcVersion));
+            // use the latest version in local if no version supplied
+            const version = cliVersion || rcVersion || (await local.getLatestVersion());
 
-            if (!local.exists(version)) {
-                await registry.install(version);
+            if (!version || !local.exists(version)) {
+                await registry.install(version || 'latest');
             }
             return local.load(version, optionsFromCli);
         } catch (e) {

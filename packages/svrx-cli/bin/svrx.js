@@ -8,7 +8,14 @@ const commands = require('../lib/commands');
 
 const manager = new Manager();
 
-manager.loadConfigFile(); // load user config file
+const prepareSvrx = async (options) => {
+    await manager.loadConfigFile(); // load user config file
+    const spinner = logger.progress('Loading svrx...');
+    const svrx = await manager.loadSvrx(options);
+    spinner('Successfully loaded svrx');
+
+    return svrx;
+};
 
 program.version(require('../package').version).usage('<command> [options]');
 
@@ -22,9 +29,7 @@ program
         // remove not-option cmd(not started with '-'
         delete options['_'];
 
-        const spinner = logger.progress('Loading svrx...');
-        const svrx = await manager.loadSvrx(options);
-        spinner('Successfully loaded svrx');
+        const svrx = await prepareSvrx(options);
         svrx.start();
     });
 
@@ -37,9 +42,7 @@ program
 
         // help info of command:serve
         console.log('serve|s    Start a develop server');
-        const spinner = logger.progress('Loading svrx...');
-        const svrx = await manager.loadSvrx();
-        spinner('Successfully loaded svrx');
+        const svrx = await prepareSvrx();
         const optionList = svrx.getConfigList();
         commands.printServeHelp(optionList);
     });

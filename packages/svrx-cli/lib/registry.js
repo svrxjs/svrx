@@ -1,20 +1,20 @@
 const path = require('path');
 const { logger } = require('svrx-util');
-const { prompt } = require('inquirer');
+// const { prompt } = require('inquirer');
 const { npm } = require('svrx-util');
-const _ = require('lodash');
+// const _ = require('lodash');
 const tmp = require('tmp');
 const fs = require('fs-extra');
 const config = require('./config');
 
-const fetchVersionList = async () => {
-    const result = await npm.view(['svrx', 'versions']);
-    return _.chain(result)
-        .values()
-        .first()
-        .value()
-        .versions.reverse();
-};
+// const fetchVersionList = async () => {
+//     const result = await npm.view(['svrx', 'versions']);
+//     return _.chain(result)
+//         .values()
+//         .first()
+//         .value()
+//         .versions.reverse();
+// };
 
 /**
  * if userVersion === undefined : return latest version
@@ -25,23 +25,23 @@ const fetchVersionList = async () => {
  * @param userVersion
  * @returns {string}
  */
-const getSatisfiedVersion = async (userVersion) => {
-    const versionList = await fetchVersionList();
-    const latest = versionList[0];
-    if (userVersion === undefined || userVersion === latest) {
-        return latest;
-    }
-    logger.warn(`There's a new version of svrx (${latest}), and your config version is ${userVersion}`);
-    const answers = await prompt([
-        {
-            type: 'confirm',
-            name: 'update',
-            message: 'Do you wanna get an update?',
-            default: true
-        }
-    ]);
-    return answers.update ? latest : userVersion;
-};
+// const getSatisfiedVersion = async (userVersion) => {
+//     const versionList = await fetchVersionList();
+//     const latest = versionList[0];
+//     if (userVersion === undefined || userVersion === latest) {
+//         return latest;
+//     }
+//     logger.warn(`There's a new version of svrx (${latest}), and your config version is ${userVersion}`);
+//     const answers = await prompt([
+//         {
+//             type: 'confirm',
+//             name: 'update',
+//             message: 'Do you wanna get an update?',
+//             default: true
+//         }
+//     ]);
+//     return answers.update ? latest : userVersion;
+// };
 
 /**
  * install a specific version of svrx
@@ -78,6 +78,6 @@ const install = async (version) => {
 };
 
 module.exports = {
-    getSatisfiedVersion,
+    // getSatisfiedVersion,
     install
 };

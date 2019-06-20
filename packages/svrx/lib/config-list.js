@@ -17,11 +17,10 @@ module.exports = {
         ui: false
     },
     svrx: {
-        // todo default to the latest at local
         alias: 'v',
         type: 'string',
         description: 'the version of svrx you want to use',
-        defaultHint: 'default to the latest published version of svrx',
+        defaultHint: 'default to the latest version installed locally',
         group: GROUPS.CORE,
         ui: false
     },

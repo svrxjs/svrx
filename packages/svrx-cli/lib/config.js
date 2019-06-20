@@ -36,7 +36,9 @@ class Config {
     }
 
     async loadFile() {
-        const explorer = cosmiconfig('svrx');
+        const explorer = cosmiconfig('svrx', {
+            searchPlaces: [`.svrxrc.js`, `svrx.config.js`]
+        });
         const result = await explorer.search();
         if (!result || result.isEmpty) return;
         this.addConfigs(result.config);
