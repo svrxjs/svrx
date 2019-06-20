@@ -2,6 +2,7 @@ const request = require('co-request');
 const libUrl = require('url');
 const _ = require('lodash');
 const micromatch = require('micromatch');
+const { logger } = require('svrx-util');
 const { gunzip } = require('../../util/gzip');
 const { isHtmlType, isRespGzip } = require('../../util/helper');
 const { PRIORITY } = require('../../constant');
@@ -53,7 +54,7 @@ async function proxy({ proxyRule, ctx }) {
         method: ctx.method,
         url: urlObj.toString(),
         body: req.body || '',
-        // encoding: null,
+        encoding: null,
         followRedirect: false,
         headers
     };
@@ -64,6 +65,22 @@ async function proxy({ proxyRule, ctx }) {
 module.exports = {
     priority: PRIORITY.PROXY,
     hooks: {
+        async onCreate({ config }) {
+            const proxyConfig = config.get('proxy');
+            if (proxyConfig) {
+                if (_.isArray(proxyConfig)) {
+                    proxyConfig.forEach((proxy) => {
+                        logger.notify(`Proxy created: ${JSON.stringify(proxy.context)}  ->  ${proxy.target}`);
+                    });
+                }
+                if (_.isPlainObject(proxyConfig)) {
+                    _.keys(proxyConfig).forEach((key) => {
+                        logger.notify(`Proxy created: ${key}  ->  ${proxyConfig[key].target}`);
+                    });
+                }
+            }
+        },
+
         async onRoute(ctx, next, { config }) {
             const proxyConfig = config.get('proxy');
 
