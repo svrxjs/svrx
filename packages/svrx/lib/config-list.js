@@ -64,6 +64,12 @@ module.exports = {
                 group: GROUPS.CORE,
                 cli: false,
                 ui: false
+            },
+            ui: {
+                type: 'string',
+                group: GROUPS.CORE,
+                cli: false,
+                ui: false
             }
         }
     },
@@ -155,5 +161,19 @@ module.exports = {
             }
         ],
         errorMessage: 'should be boolean or object'
+    },
+    open: {
+        description: 'open url after server starting',
+        group: GROUPS.COMMON,
+        default: 'external',
+        anyOf: [
+            {
+                type: 'boolean'
+            },
+            {
+                type: 'string'
+            }
+        ],
+        errorMessage: 'should be boolean or string'
     }
 };

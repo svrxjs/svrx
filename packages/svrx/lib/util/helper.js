@@ -8,7 +8,6 @@ const os = require('os');
 const CONST = require('../constant');
 const o2str = {}.toString;
 const slice = [].slice;
-const exec = require('child_process').exec;
 
 async function noopMiddleware(ctx, next) {
     await next();
@@ -77,17 +76,6 @@ function clone(target) {
         return Object.assign({}, target);
     }
     return target;
-}
-
-function openBrowser(target, callback) {
-    const map = {
-        darwin: 'open',
-        win32: 'start '
-    };
-
-    const opener = map[process.platform] || 'xdg-open';
-
-    return exec('' + opener + ' ' + target, callback);
 }
 
 function is(someThing) {
@@ -185,7 +173,6 @@ exports.noopMiddleware = noopMiddleware;
 exports.getByteLength = getByteLength;
 exports.getCert = _.memoize(getCert);
 exports.isAcceptGzip = isAcceptGzip;
-exports.openBrowser = openBrowser;
 exports.isRespGzip = isRespGzip;
 exports.formatDate = formatDate;
 exports.isHtmlType = isHtmlType;
