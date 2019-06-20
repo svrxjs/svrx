@@ -19,7 +19,6 @@ describe('logger', () => {
             const l = new logger.Logger();
 
             Logger.stream.on('finish', () => {
-                console.log('====finish');
                 Logger.stream = process.stdout;
                 resolve(cached);
             });
