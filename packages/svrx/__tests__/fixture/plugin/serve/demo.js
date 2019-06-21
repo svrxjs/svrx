@@ -1,1 +1,1 @@
-const a = 1;
+parseInt('123', 10);

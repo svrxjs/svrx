@@ -483,7 +483,7 @@ describe('Plugin System', () => {
       svrx.setup().then(() => {
         request(svrx.callback())
           .get('/demo.js')
-          .expect('const a = 1;', done);
+          .expect('parseInt(\'123\', 10);\n', done);
       });
     });
     it('serveStatic: injector', (done) => {
