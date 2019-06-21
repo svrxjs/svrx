@@ -1,0 +1,24 @@
+{
+  "env": {
+    "node": true,
+    "browser": true,
+    "mocha": true
+  },
+  "extends": [
+    "airbnb-base"
+  ],
+  "plugins": [
+    "import"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly",
+    "expect": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "no-param-reassign": "off"
+  }
+}

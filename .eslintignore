@@ -1,1 +1,3 @@
-packages/*/assets/**/*.js
+node_modules
+packages/**/assets/**/*.js
+packages/**/dist/**/*.js
