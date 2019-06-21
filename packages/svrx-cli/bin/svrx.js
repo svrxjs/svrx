@@ -5,10 +5,26 @@ const parse = require('yargs-parser');
 const { logger } = require('svrx-util');
 const updateNotifier = require('update-notifier');
 const pkg = require('../package.json');
-
 const Manager = require('../lib');
 const commands = require('../lib/commands');
 
+const COMMANDS = {
+    help: {
+        description: 'List commands and options of svrx'
+    },
+    serve: {
+        description: 'Start a develop server'
+    },
+    ls: {
+        description: 'List svrx versions installed locally'
+    },
+    'ls-remote': {
+        description: 'List remote svrx versions available for install'
+    },
+    install: {
+        description: 'Download and install a specific svrx < version >'
+    }
+};
 const manager = new Manager();
 const printErrorAndExit = (error) => {
     logger.error(error);
@@ -37,7 +53,7 @@ program.version(require('../package').version).usage('<command> [options]');
 
 program
     .command('serve')
-    .description('Start a develop server')
+    .description(COMMANDS.serve.description)
     .alias('s')
     .allowUnknownOption()
     .action(async () => {
@@ -51,7 +67,7 @@ program
 
 program
     .command('ls')
-    .description('List svrx versions installed locally')
+    .description(COMMANDS.ls.description)
     .action(async () => {
         const spinner = logger.progress('Looking for svrx versions...');
         try {
@@ -77,7 +93,7 @@ program
 
 program
     .command('ls-remote')
-    .description('List remote svrx versions available for install')
+    .description(COMMANDS['ls-remote'].description)
     .action(async () => {
         const spinner = logger.progress('Looking for svrx versions...');
         try {
@@ -99,7 +115,7 @@ program
 
 program
     .command('install')
-    .description('Download and install a specific svrx < version >')
+    .description(COMMANDS.install.description)
     .action(async (version) => {
         if (typeof version !== 'string') {
             version = 'latest';
@@ -118,16 +134,23 @@ program
 
 program
     .command('help')
-    .description('List commands and options for svrx')
+    .description(COMMANDS.help.description)
     .action(async () => {
         console.log('Usage: svrx <command> [options]\n');
         console.log('Commands and options:\n');
 
+        Object.keys(COMMANDS).forEach((cmd) => {
+            if (cmd !== 'serve') {
+                console.log(`* ${cmd.padEnd(20)}${COMMANDS[cmd].description}`);
+            }
+        });
+
         // help info of command:serve
-        console.log('serve|s    Start a develop server');
+        console.log(`* ${'serve|s'.padEnd(20)}Start a develop server`);
         const svrx = await prepareSvrx();
         const optionList = svrx.getConfigList();
         commands.printServeHelp(optionList);
+        process.exit(0);
     });
 
 const options = parse(process.argv.slice(2));
