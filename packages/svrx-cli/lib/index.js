@@ -22,30 +22,36 @@ class Manager {
 
     async loadConfigFile() {
         if (this.loaded) return;
-        try {
-            await config.loadFile();
-            this.loaded = true;
-        } catch (e) {
-            logger.error(e);
-            process.exit(1);
-        }
+        await config.loadFile();
+        this.loaded = true;
     }
 
     async loadSvrx(optionsFromCli = {}) {
-        try {
-            const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
-            const rcVersion = config.getConfig().svrx;
-            // use the latest version in local if no version supplied
-            const version = cliVersion || rcVersion || (await local.getLatestVersion());
+        const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
+        const rcVersion = config.getConfig().svrx;
+        // use the latest version in local if no version supplied
+        const version = cliVersion || rcVersion || (await local.getLatestVersion());
 
-            if (!version || !local.exists(version)) {
-                await registry.install(version || 'latest');
-            }
-            return local.load(version, optionsFromCli);
-        } catch (e) {
-            logger.error(e);
-            process.exit(1);
+        if (!version || !local.exists(version)) {
+            await registry.install(version || 'latest');
         }
+        return local.load(version, optionsFromCli);
+    }
+
+    getLocalVersions() {
+        return local.getVersions();
+    }
+
+    async getRemoteVersions() {
+        return registry.getVersions();
+    }
+
+    async getRemoteTags() {
+        return registry.getTags();
+    }
+
+    async install(version) {
+        return registry.install(version);
     }
 }
 

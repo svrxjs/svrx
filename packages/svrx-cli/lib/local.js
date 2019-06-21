@@ -4,17 +4,22 @@ const semver = require('semver');
 const config = require('./config');
 
 const getSvrxPath = (version) => path.resolve(config.VERSIONS_ROOT, version, 'lib/svrx.js');
+const getVersions = () => {
+    const { lstatSync, readdirSync } = fs;
+    const { join } = path;
+    const isDirectory = (name) => lstatSync(join(config.VERSIONS_ROOT, name)).isDirectory();
+    const getDirectories = (source) => readdirSync(source).filter(isDirectory);
 
+    return getDirectories(config.VERSIONS_ROOT);
+};
 module.exports = {
     getLatestVersion: () => {
-        const { lstatSync, readdirSync } = fs;
-        const { join } = path;
-        const isDirectory = (name) => lstatSync(join(config.VERSIONS_ROOT, name)).isDirectory();
-        const getDirectories = (source) => readdirSync(source).filter(isDirectory);
-        const versions = getDirectories(config.VERSIONS_ROOT);
+        const versions = getVersions();
         versions.sort((v1, v2) => semver.lt(v1, v2));
         return versions.length > 0 ? versions[0] : null;
     },
+
+    getVersions,
 
     exists: (version) => {
         return fs.existsSync(getSvrxPath(version));

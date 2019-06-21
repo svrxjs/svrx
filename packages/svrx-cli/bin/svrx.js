@@ -10,13 +10,22 @@ const Manager = require('../lib');
 const commands = require('../lib/commands');
 
 const manager = new Manager();
+const printErrorAndExit = (error) => {
+    logger.error(error);
+    process.exit(1);
+};
 const prepareSvrx = async (options) => {
-    await manager.loadConfigFile(); // load user config file
     const spinner = logger.progress('Loading svrx...');
-    const svrx = await manager.loadSvrx(options);
-    spinner('Successfully loaded svrx');
+    try {
+        await manager.loadConfigFile(); // load user config file
+        const svrx = await manager.loadSvrx(options);
+        if (spinner) spinner();
 
-    return svrx;
+        return svrx;
+    } catch (e) {
+        if (spinner) spinner();
+        printErrorAndExit(e);
+    }
 };
 
 updateNotifier({
@@ -38,6 +47,73 @@ program
 
         const svrx = await prepareSvrx(options);
         svrx.start();
+    });
+
+program
+    .command('ls')
+    .description('List svrx versions installed locally')
+    .action(async () => {
+        const spinner = logger.progress('Looking for svrx versions...');
+        try {
+            const versions = manager.getLocalVersions();
+            const tags = await manager.getRemoteTags();
+            if (spinner) spinner();
+
+            if (versions && versions.length > 0) {
+                console.log('Svrx Versions Installed:\n');
+                console.log(versions.join(', '), '\n');
+                if (tags.latest !== versions[versions.length - 1]) {
+                    console.log('There is a new version of svrx, run "svrx install" to install the latest one.');
+                }
+            } else {
+                console.log('There is no svrx installed.\n');
+                console.log('You can install the latest version using: "svrx install".');
+            }
+        } catch (e) {
+            if (spinner) spinner();
+            printErrorAndExit(e);
+        }
+    });
+
+program
+    .command('ls-remote')
+    .description('List remote svrx versions available for install')
+    .action(async () => {
+        const spinner = logger.progress('Looking for svrx versions...');
+        try {
+            const versions = await manager.getRemoteVersions();
+            const tags = await manager.getRemoteTags();
+            if (spinner) spinner();
+
+            console.log('Available Svrx Versions:\n');
+            console.log(versions.join(', '));
+            console.log('\nTags:\n');
+            Object.keys(tags).forEach((tag) => {
+                console.log(`${tag}: ${tags[tag]}`);
+            });
+        } catch (e) {
+            if (spinner) spinner();
+            printErrorAndExit(e);
+        }
+    });
+
+program
+    .command('install')
+    .description('Download and install a specific svrx < version >')
+    .action(async (version) => {
+        if (typeof version !== 'string') {
+            version = 'latest';
+        }
+
+        const spinner = logger.progress(`Installing svrx@${version}...`);
+        try {
+            await manager.install(version);
+            if (spinner) spinner();
+            logger.notify(`Successfully installed svrx@${version}`);
+        } catch (e) {
+            if (spinner) spinner();
+            printErrorAndExit(e);
+        }
     });
 
 program
