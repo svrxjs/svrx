@@ -1,4 +1,4 @@
-'use strict';
+
 
 exports.logger = require('./logger');
 exports.npm = require('./npm');

@@ -12,20 +12,20 @@ const { is } = require('../util/helper');
  */
 
 module.exports = function replaceStream(pattern, replaced) {
-    //   const isMaybeMatchedEnd = false
+  //   const isMaybeMatchedEnd = false
 
-    if (typeof replaced === 'string') replaced = is(replaced);
+  if (typeof replaced === 'string') replaced = is(replaced);
 
-    return new Transform({
-        transform(chunk, enc, callback) {
-            const str = chunk.toString().replace(pattern, replaced);
-            this.push(str);
-            callback();
-        },
-        flush(callback) {
-            callback();
-        }
-    });
+  return new Transform({
+    transform(chunk, enc, callback) {
+      const str = chunk.toString().replace(pattern, replaced);
+      this.push(str);
+      callback();
+    },
+    flush(callback) {
+      callback();
+    },
+  });
 };
 
 /**

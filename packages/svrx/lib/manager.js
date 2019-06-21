@@ -1,5 +1,5 @@
 class Manager {
-    static getInstance() {}
+  static getInstance() {}
 }
 
 module.exports = Manager;

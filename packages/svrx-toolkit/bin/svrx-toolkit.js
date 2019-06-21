@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const Scaffold = require('../lib/scaffold');
 const program = require('commander');
+const Scaffold = require('../lib/scaffold');
 
 program.version(require('../package').version).usage('<command> [options]');
 

@@ -2,5 +2,4 @@
 const Svrx = require('./lib/svrx');
 
 
-
-module.exports = Svrx;    
+module.exports = Svrx;

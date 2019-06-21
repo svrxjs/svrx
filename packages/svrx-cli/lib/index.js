@@ -5,54 +5,54 @@ const local = require('./local');
 const registry = require('./registry');
 
 class Manager {
-    constructor() {
-        try {
-            config.createDirs();
-            this.setWorkRoot();
-        } catch (e) {
-            logger.error(e);
-            process.exit(1);
-        }
+  constructor() {
+    try {
+      config.createDirs();
+      this.setWorkRoot();
+    } catch (e) {
+      logger.error(e);
+      process.exit(1);
     }
+  }
 
-    setWorkRoot(dir = '') {
-        this.WORK_ROOT = path.resolve(process.cwd(), dir);
-        config.setWorkRoot(this.WORK_ROOT);
+  setWorkRoot(dir = '') {
+    this.WORK_ROOT = path.resolve(process.cwd(), dir);
+    config.setWorkRoot(this.WORK_ROOT);
+  }
+
+  async loadConfigFile() {
+    if (this.loaded) return;
+    await config.loadFile();
+    this.loaded = true;
+  }
+
+  async loadSvrx(optionsFromCli = {}) {
+    const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
+    const rcVersion = config.getConfig().svrx;
+    // use the latest version in local if no version supplied
+    const version = cliVersion || rcVersion || (await local.getLatestVersion());
+
+    if (!version || !local.exists(version)) {
+      await registry.install(version || 'latest');
     }
+    return local.load(version, optionsFromCli);
+  }
 
-    async loadConfigFile() {
-        if (this.loaded) return;
-        await config.loadFile();
-        this.loaded = true;
-    }
+  getLocalVersions() {
+    return local.getVersions();
+  }
 
-    async loadSvrx(optionsFromCli = {}) {
-        const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
-        const rcVersion = config.getConfig().svrx;
-        // use the latest version in local if no version supplied
-        const version = cliVersion || rcVersion || (await local.getLatestVersion());
+  async getRemoteVersions() {
+    return registry.getVersions();
+  }
 
-        if (!version || !local.exists(version)) {
-            await registry.install(version || 'latest');
-        }
-        return local.load(version, optionsFromCli);
-    }
+  async getRemoteTags() {
+    return registry.getTags();
+  }
 
-    getLocalVersions() {
-        return local.getVersions();
-    }
-
-    async getRemoteVersions() {
-        return registry.getVersions();
-    }
-
-    async getRemoteTags() {
-        return registry.getTags();
-    }
-
-    async install(version) {
-        return registry.install(version);
-    }
+  async install(version) {
+    return registry.install(version);
+  }
 }
 
 module.exports = Manager;

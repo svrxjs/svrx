@@ -6,163 +6,160 @@ const _ = require('lodash');
 const os = require('os');
 
 const CONST = require('../constant');
+
 const o2str = {}.toString;
 const slice = [].slice;
 
 async function noopMiddleware(ctx, next) {
-    await next();
+  await next();
 }
 
 // return promise by callback node-callback-style handler
 function npCall(callback, args, ctx) {
-    args = args || [];
+  args = args || [];
 
-    return new Promise((resolve, reject) => {
-        args.push((err, ret) => {
-            if (err) return reject(err);
-            return resolve(ret);
-        });
-
-        callback.apply(ctx, args);
+  return new Promise((resolve, reject) => {
+    args.push((err, ret) => {
+      if (err) return reject(err);
+      return resolve(ret);
     });
+
+    callback.apply(ctx, args);
+  });
 }
 
 // node callback style result
 // ================================
 // const [err, data] = await nodeCall( func, 1,2,3 );
 function nodeCall(fnReturnPromise, ...args) {
-    return new Promise((resolve) => {
-        fnReturnPromise(...args)
-            .then((data) => {
-                resolve([null, data]);
-            })
-            .catch((err) => {
-                resolve([err]);
-            });
-    });
+  return new Promise((resolve) => {
+    fnReturnPromise(...args)
+      .then((data) => {
+        resolve([null, data]);
+      })
+      .catch((err) => {
+        resolve([err]);
+      });
+  });
 }
 
 function normalizePluginName(name) {
-    return name.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + name : name;
+  return name.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + name : name;
 }
 
 function isWritableStream(test) {
-    // ducking type check
-    return test instanceof EventEmitter && typeof test.write === 'function' && typeof test.end === 'function';
+  // ducking type check
+  return test instanceof EventEmitter && typeof test.write === 'function' && typeof test.end === 'function';
 }
 function isReadableStream(test) {
-    // ducking type check
-    return test instanceof EventEmitter && typeof test.read === 'function';
+  // ducking type check
+  return test instanceof EventEmitter && typeof test.read === 'function';
 }
 
 function typeOf(o) {
-    if (o == null) {
-        return String(o);
-    }
-    return o2str
-        .call(o)
-        .slice(8, -1)
-        .toLowerCase();
+  if (o == null) {
+    return String(o);
+  }
+  return o2str
+    .call(o)
+    .slice(8, -1)
+    .toLowerCase();
 }
 
 // simple clone
 function clone(target) {
-    const type = typeOf(target);
+  const type = typeOf(target);
 
-    if (type === 'array') {
-        return slice.call(target);
-    }
-    if (type === 'object') {
-        return Object.assign({}, target);
-    }
-    return target;
+  if (type === 'array') {
+    return slice.call(target);
+  }
+  if (type === 'object') {
+    return Object.assign({}, target);
+  }
+  return target;
 }
 
 function is(someThing) {
-    return someThing;
+  return someThing;
 }
 
 const acceptMineTypes = /\b(xhtml|html|htm|xml)\b/;
 
 function isHtmlType(headers) {
-    return acceptMineTypes.test(headers['content-type'] || '');
+  return acceptMineTypes.test(headers['content-type'] || '');
 }
 
 function isAcceptGzip(headers) {
-    return (headers['accept-encoding'] || '').indexOf('gzip') !== -1;
+  return (headers['accept-encoding'] || '').indexOf('gzip') !== -1;
 }
 
 function isRespGzip(headers) {
-    return (headers['content-encoding'] || '').indexOf('gzip') !== -1;
+  return (headers['content-encoding'] || '').indexOf('gzip') !== -1;
 }
 
 function getCert() {
-    const read = (type) => {
-        return libFs.readFileSync(libPath.join(__dirname, '../../resource/cert/rootCA.' + type), 'utf8');
-    };
-    return {
-        cert: read('crt'),
-        key: read('key')
-    };
+  const read = type => libFs.readFileSync(libPath.join(__dirname, `../../resource/cert/rootCA.${type}`), 'utf8');
+  return {
+    cert: read('crt'),
+    key: read('key'),
+  };
 }
 
 function getExternalIp() {
-    const ifaces = os.networkInterfaces();
-    const ips = [];
-    for (let dev in ifaces) {
-        ifaces[dev].forEach(function(details) {
-            if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
-                ips.push(details.address);
-            }
-        });
-    }
-    return ips;
+  const ifaces = os.networkInterfaces();
+  const ips = [];
+  for (const dev in ifaces) {
+    ifaces[dev].forEach((details) => {
+      if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
+        ips.push(details.address);
+      }
+    });
+  }
+  return ips;
 }
 
-const formatDate = (function() {
-    function fix(str) {
-        str = '' + (str || '');
-        return str.length <= 1 ? '0' + str : str;
-    }
-    var maps = {
-        yyyy: function(date) {
-            return date.getFullYear();
-        },
-        MM: function(date) {
-            return fix(date.getMonth() + 1);
-        },
-        dd: function(date) {
-            return fix(date.getDate());
-        },
-        HH: function(date) {
-            return fix(date.getHours());
-        },
-        mm: function(date) {
-            return fix(date.getMinutes());
-        },
-        ss: function(date) {
-            return fix(date.getSeconds());
-        }
-    };
+const formatDate = (function () {
+  function fix(str) {
+    str = `${str || ''}`;
+    return str.length <= 1 ? `0${str}` : str;
+  }
+  const maps = {
+    yyyy(date) {
+      return date.getFullYear();
+    },
+    MM(date) {
+      return fix(date.getMonth() + 1);
+    },
+    dd(date) {
+      return fix(date.getDate());
+    },
+    HH(date) {
+      return fix(date.getHours());
+    },
+    mm(date) {
+      return fix(date.getMinutes());
+    },
+    ss(date) {
+      return fix(date.getSeconds());
+    },
+  };
 
-    const trunk = new RegExp(Object.keys(maps).join('|'), 'g');
-    return function(value, format) {
-        format = format || 'yyyy-MM-dd HH:mm';
-        value = new Date(value);
+  const trunk = new RegExp(Object.keys(maps).join('|'), 'g');
+  return function (value, format) {
+    format = format || 'yyyy-MM-dd HH:mm';
+    value = new Date(value);
 
-        return format.replace(trunk, function(capture) {
-            return maps[capture] ? maps[capture](value) : '';
-        });
-    };
-})();
+    return format.replace(trunk, capture => (maps[capture] ? maps[capture](value) : ''));
+  };
+}());
 
 function getByteLength(content) {
-    if (Buffer.isBuffer(content)) {
-        return content.length;
-    } else if (typeof content === 'string') {
-        return Buffer.byteLength(content);
-    }
-    return 0;
+  if (Buffer.isBuffer(content)) {
+    return content.length;
+  } if (typeof content === 'string') {
+    return Buffer.byteLength(content);
+  }
+  return 0;
 }
 
 exports.normalizePluginName = normalizePluginName;
