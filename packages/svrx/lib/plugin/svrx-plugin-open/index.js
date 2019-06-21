@@ -9,7 +9,7 @@ module.exports = {
 
                 let URL_MAPING = {
                     external: config.get('urls.external'),
-                    local: config.get('urls.external')
+                    local: config.get('urls.local')
                 };
 
                 if (open === false) return;
