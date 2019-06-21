@@ -30,6 +30,7 @@
     "semver": "^6.0.0",
     "svrx-util": "^0.0.2",
     "tmp": "^0.1.0",
+    "update-notifier": "^3.0.0",
     "user-home": "^2.0.0",
     "yargs-parser": "^13.1.0"
   }

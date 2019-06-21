@@ -3,11 +3,13 @@
 const program = require('commander');
 const parse = require('yargs-parser');
 const { logger } = require('svrx-util');
+const updateNotifier = require('update-notifier');
+const pkg = require('../package.json');
+
 const Manager = require('../lib');
 const commands = require('../lib/commands');
 
 const manager = new Manager();
-
 const prepareSvrx = async (options) => {
     await manager.loadConfigFile(); // load user config file
     const spinner = logger.progress('Loading svrx...');
@@ -16,6 +18,11 @@ const prepareSvrx = async (options) => {
 
     return svrx;
 };
+
+updateNotifier({
+    pkg,
+    updateCheckInterval: 1000 * 60 * 60 * 24 * 7 // 1 week
+}).notify();
 
 program.version(require('../package').version).usage('<command> [options]');
 
