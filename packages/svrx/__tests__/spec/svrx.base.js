@@ -38,7 +38,8 @@ describe('Basic', () => {
     it('#start', (done) => {
         ffp(3000, '127.0.0.1', (err, p) => {
             const svrx = createServer({
-                port: p
+                port: p,
+                open: false
             });
             svrx.start((port) => {
                 expect(port).to.eql(p);
@@ -48,7 +49,9 @@ describe('Basic', () => {
     });
 
     it('#start with no port', (done) => {
-        const svrx = createServer({});
+        const svrx = createServer({
+            open: false
+        });
         svrx.start((port) => {
             expect(port).to.not.equal(undefined);
             svrx.close(done)
@@ -59,12 +62,13 @@ describe('Basic', () => {
     it('#port conflict', (done) => {
         getPort().then((p) => {
             p = p[0];
-            const svrx = createServer({ port: p });
+            const svrx = createServer({ port: p, open:false });
 
             svrx.start((port) => {
                 expect(port).to.eql(p);
                 const svrx2 = createServer({
-                    port: p
+                    port: p,
+                    open: false
                 });
 
                 const config = svrx2.config;
@@ -115,7 +119,8 @@ describe('Middleware', () => {
                 const targetServer = createServer(
                     Object.assign(
                         {
-                            port: ports[0]
+                            port: ports[0],
+                            open:false
                         },
                         config1
                     )

@@ -290,6 +290,23 @@ describe('Svrx Utility', () => {
     describe('Imodel', () => {
         const Imodel = require('../../lib/model');
 
+        it('model.get()', () => {
+            const model = new Imodel({
+                a: {
+                    b: {
+                        c: 2
+                    }
+                }
+            });
+            expect(model.get()).to.eql({
+                a: {
+                    b: {
+                        c: 2
+                    }
+                }
+            });
+        });
+
         it('model.produce()', () => {
             const model = new Imodel({
                 a: {
