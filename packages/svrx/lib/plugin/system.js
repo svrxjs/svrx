@@ -22,10 +22,23 @@ class PluginSystem {
         this.config = config;
         this.io = io;
         this[PLUGIN_MAP] = {};
+        // regist builtin Service
+        this.initService();
     }
 
     get(name) {
         return this[PLUGIN_MAP][name];
+    }
+
+    initService() {
+        if (!this.io) return;
+        const config = this.config;
+        // regist initialize service
+        this.io.registService('$.config', async (payload) => {
+            const targetConfig = payload.scope ? config.getPlugin(payload.scope) : config;
+            if (!targetConfig) throw Error(`plugin ${payload.scope} doesn't exsits`);
+            return targetConfig[payload.command].apply(targetConfig, payload.params);
+        });
     }
 
     async load(plugins) {
@@ -253,12 +266,25 @@ class PluginSystem {
                         if (typeof def === 'function') {
                             def = { content: def };
                         }
+
+                        if (typeof def.content === 'function') {
+                            def.content = def.content.bind(def, pluginConfig);
+                        }
                         // to absolute filepath
                         if (def.filename && !libPath.isAbsolute(def.filename)) {
                             def.filename = libPath.join(path, def.filename);
                         }
+                        if (field === 'script') {
+                            def.filter = (content) => {
+                                if (!content) return;
+                                return `void function(svrx){${content} }(window.__svrx__._getScopedInstance('${name}'));`;
+                            };
+                        }
                         if (!def.test) def.test = test;
-                        def.config = pluginConfig;
+
+                        if (typeof def.test === 'function') {
+                            def.test.bind(def, pluginConfig);
+                        }
 
                         injector.add(field, def);
                     });

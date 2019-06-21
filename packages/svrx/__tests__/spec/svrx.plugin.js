@@ -306,29 +306,50 @@ describe('Plugin System', () => {
         });
     });
 
-    describe('Integration', () => {
-        it('plugin-test onRoute', (done) => {
+
+    describe('Plugin:assets', ()=>{
+        it('asset wraping', (done)=>{
             const svrx = createServer({
                 root: MODULE_PATH,
                 plugins: [
                     {
-                        path: TEST_PLUGIN_PATH,
+                        name: 'hello-world',
+                        inplace: true,
                         options: {
                             limit: 300
+                        },
+                        assets: {
+                            script: {
+                                content: 'window.name=1'
+                            },
+                            style: {
+                                content: 'body{}'
+                            } 
                         }
                     }
                 ]
             });
-
             svrx.setup().then(() => {
                 request(svrx.callback())
-                    .get('/djaldajl')
-                    .expect('X-Svrx-Limit', '300')
-                    .expect(404)
-                    .end(done);
+                    .get('/svrx/svrx-client.js')
+                    .expect(/window\.name=1/)
+                    .expect(/void function\(svrx\)/)
+                    .expect(/_getScopedInstance\('hello-world'\)/)
+                    .end((err)=>{
+                        if(err) return done(err);
+                        request(svrx.callback())
+                            .get('/svrx/svrx-client.css')
+                            .expect(/body\{\}/)
+                            .expect((res)=>{
+                                if(/void function\(svrx\)/.test(res.text)){
+                                    throw Error('style wont be injected with wraping')
+                                }
+                            })
+                            .end(done)
+                    });
             });
-        });
 
+        })
         it('asset building', (done) => {
             const svrx = createServer({
                 root: MODULE_PATH,
@@ -385,6 +406,63 @@ describe('Plugin System', () => {
                     .end(done);
             });
         });
+    })
+
+    describe('Integration', () => {
+
+        it('builtin service: $.config ', (done)=>{
+            const svrx = createServer({
+                root: MODULE_PATH,
+                plugins: [
+                    {
+                        name: 'hello-world',
+                        inplace: true,
+                        options: {
+                            limit: 300
+                        }
+                    }
+                ]
+            });
+
+            svrx.io.call('$.config', {
+                scope: 'hello-world',
+                command: 'get',
+                params: []
+                
+            }).then(res=>{
+                expect(res).to.eql({limit: 300})
+                return svrx.io.call('$.config', {
+                    scope: 'hello-world',
+                    command: 'get',
+                    params: ['limit']
+                })
+            }).then(res=>{
+                expect(res).to.eql(300)
+            }).then(done).catch(done)
+
+        })
+        it('plugin-test onRoute', (done) => {
+            const svrx = createServer({
+                root: MODULE_PATH,
+                plugins: [
+                    {
+                        path: TEST_PLUGIN_PATH,
+                        options: {
+                            limit: 300
+                        }
+                    }
+                ]
+            });
+
+            svrx.setup().then(() => {
+                request(svrx.callback())
+                    .get('/djaldajl')
+                    .expect('X-Svrx-Limit', '300')
+                    .expect(404)
+                    .end(done);
+            });
+        });
+
 
         it('plugin url parser', () => {});
 

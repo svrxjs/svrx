@@ -86,8 +86,7 @@ module.exports = class Injector {
                 if (typeof content === 'function') {
                     content = content(m.config || this.config);
                 }
-                if (!content) return;
-                return content + (m.name ? '\n//' + `source from ${m.name}` : '');
+                return m.filter ? m.filter(content) : content;
             })
             .filter((m) => !!m)
             .join(TYPE_SPLITS[type] || '\n');
