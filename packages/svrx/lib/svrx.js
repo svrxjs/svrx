@@ -28,6 +28,8 @@ class Svrx {
       cli: cliOptions,
       rc: rcOptions,
     }));
+    logger.debug('Config is loaded');
+
     const app = (this.app = new Koa());
     const server = (this._server = config.get('https')
       ? https.createServer(getCert(), app.callback())
@@ -87,6 +89,7 @@ class Svrx {
 
   _rcFileRead() {
     try {
+      logger.debug('Reading config file...');
       const explorer = cosmiconfig('svrx', {
         searchPlaces: ['.svrxrc.js', 'svrx.config.js'],
       });

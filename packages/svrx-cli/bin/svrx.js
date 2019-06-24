@@ -117,7 +117,7 @@ program
 
     try {
       await Manager.install(version);
-      logger.debug(`Successfully installed svrx@${version}`);
+      logger.notify(`Successfully installed svrx@${version}`);
     } catch (e) {
       printErrorAndExit(e);
     }
