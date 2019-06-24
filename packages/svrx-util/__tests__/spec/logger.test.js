@@ -1,13 +1,12 @@
 const expect = require('expect.js');
+const { Writable } = require('stream');
 const logger = require('../../lib/logger');
 
-const Logger = logger.Logger;
+const { Logger } = logger;
 
 describe('logger', () => {
-  const { Writable } = require('stream');
-
   function log(msg, label) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let cached = '';
       Logger.stream = new Writable({});
       Logger.stream._write = (chunk, encode, cb) => {
@@ -85,8 +84,8 @@ describe('logger', () => {
     log('hello world', 'notify').then((content) => {
       expect(content).to.equal('');
       Logger.release();
-      log('hello world', 'notify').then((content) => {
-        expect(content).to.match(/hello world/);
+      log('hello world', 'notify').then((cnt) => {
+        expect(cnt).to.match(/hello world/);
         done();
       });
     });
