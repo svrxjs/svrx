@@ -14,7 +14,7 @@ module.exports = {
       // serve index
       const serveIndexOptions = config.get('serve.serveIndex');
       // undefined = true
-      if (serveIndexOptions || serveIndexOptions === undefined) {
+      if (serveIndexOptions !== false) {
         const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }), { bubble: true });
 
         middleware.add('$serve-index', {
