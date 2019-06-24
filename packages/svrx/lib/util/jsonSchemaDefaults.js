@@ -130,7 +130,7 @@ module.exports = (() => {
       return defaults(reference, definitions);
     } if (schema.type === 'object') {
       if (!schema.properties) {
-        return {};
+        return undefined;
       }
 
       Object.keys(schema.properties).forEach((key) => {
