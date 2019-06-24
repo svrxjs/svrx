@@ -19,6 +19,7 @@ class BuiltinOption extends Option {
      * @private
      */
   static _merge(options = {}, addons = {}) {
+    /* eslint-disable consistent-return */
     const customizer = (objValue, srcValue) => {
       if (_.isArray(objValue)) {
         return objValue.concat(srcValue);

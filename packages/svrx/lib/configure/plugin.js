@@ -18,6 +18,8 @@ class Plugin {
     this[OPTION] = new PluginOption(data.options);
     this[CONFIG] = {};
     this[DEFAULTS] = {};
+
+    this[INFO].validate();
   }
 
   /**

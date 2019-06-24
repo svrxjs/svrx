@@ -7,6 +7,8 @@
     "fix": "run-p fix:*",
     "fix:js": "eslint \"**/*.js\" --fix",
     "test": "lerna run test",
+    "clean": "run-s clean:*",
+    "clean:dependency": "lerna clean -y && rimraf -rf node_modules",
     "postinstall": "lerna bootstrap"
   },
   "devDependencies": {

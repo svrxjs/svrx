@@ -9,10 +9,10 @@ const { PRIORITY } = require('../../constant');
 
 const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
 const match = (url, config) => {
-  const wildcardAndGlobMatch = (url, pattern) => {
-    if (_.isString(pattern) && url.startsWith(pattern)) return true;
-    if (_.isArray(pattern) && pattern.some(p => url.startsWith(p))) return true;
-    return micromatch.isMatch(url, pattern);
+  const wildcardAndGlobMatch = (str, pattern) => {
+    if (_.isString(pattern) && str.startsWith(pattern)) return true;
+    if (_.isArray(pattern) && pattern.some(p => str.startsWith(p))) return true;
+    return micromatch.isMatch(str, pattern);
   };
 
   if (_.isPlainObject(config)) {
@@ -45,7 +45,7 @@ async function proxy({ proxyRule, ctx }) {
   const { target, pathRewrite, changeOrigin } = proxyRule;
   const path = rewritePath(ctx.originalUrl, pathRewrite);
   const urlObj = new libUrl.URL(path, target);
-  const headers = ctx.headers;
+  const { headers } = ctx;
   const req = ctx.request;
 
   headers.host = changeOrigin ? urlObj.hostname : headers.host;
@@ -69,8 +69,8 @@ module.exports = {
       const proxyConfig = config.get('proxy');
       if (proxyConfig) {
         if (_.isArray(proxyConfig)) {
-          proxyConfig.forEach((proxy) => {
-            logger.notify(`Proxy created: ${JSON.stringify(proxy.context)}  ->  ${proxy.target}`);
+          proxyConfig.forEach((conf) => {
+            logger.notify(`Proxy created: ${JSON.stringify(conf.context)}  ->  ${conf.target}`);
           });
         }
         if (_.isPlainObject(proxyConfig)) {
@@ -105,7 +105,7 @@ module.exports = {
       ctx.status = rsp.statusCode;
       ctx.body = rsp.body;
 
-      await next();
+      return next();
     },
   },
 };

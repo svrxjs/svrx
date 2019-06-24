@@ -34,6 +34,7 @@
   "dependencies": {
     "ajv-errors": "^1.0.1",
     "chalk": "^2.4.2",
+    "chokidar": "^3.0.1",
     "co-request": "^1.0.0",
     "cosmiconfig": "^5.2.1",
     "find-free-port": "^2.0.0",

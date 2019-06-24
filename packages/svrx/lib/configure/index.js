@@ -1,8 +1,3 @@
-/**
- *  todo 如何处理rcfile plugin更新
- *  需要存在计算参数urls.local
- */
-
 const _ = require('lodash');
 const path = require('path');
 const CONFIG_LIST = require('../config-list');
@@ -48,7 +43,7 @@ class Configure {
     // pick plugins and plugin options from rcOption & cliOption
     const builtinPlugins = BUILTIN_PLUGIN.map(p => ({ name: p }));
     const cliPlugins = this._pickPluginsFromCli(cliOption);
-    const rcPlugins = this._pickPluginsFromRc(rcOption);
+    const rcPlugins = Configure._pickPluginsFromRc(rcOption);
     const userPlugins = this._mergePlugins(cliPlugins, rcPlugins);
     const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
 
@@ -111,7 +106,7 @@ class Configure {
     // pick plugins and plugin options from rcOption & cliOption
     const builtinPlugins = BUILTIN_PLUGIN.map(p => ({ name: p }));
     const cliPlugins = this._pickPluginsFromCli(this[CLI_OPTION]);
-    const rcPlugins = this._pickPluginsFromRc(rcOptions);
+    const rcPlugins = Configure._pickPluginsFromRc(rcOptions);
     const userPlugins = this._mergePlugins(cliPlugins, rcPlugins);
     const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
     // rc file change, reload all plugins
@@ -125,7 +120,7 @@ class Configure {
   _parseCliOption(raw = {}) {
     const noDash = this._removeDashProp(raw);
     const noAlias = this._removeAlias(noDash);
-    const arrayed = this._formatArray(noAlias);
+    const arrayed = Configure._formatArray(noAlias);
     return arrayed;
   }
 
@@ -154,10 +149,10 @@ class Configure {
     const options = _.cloneDeep(raw);
     const allPathAndAlias = [];
 
-    const traverse = (obj, path = '') => {
+    const traverse = (obj, objpath = '') => {
       if (obj.type === 'object') {
         _.keys(obj.properties).forEach((key) => {
-          traverse(obj.properties[key], path === '' ? key : `${path}.${key}`);
+          traverse(obj.properties[key], objpath === '' ? key : `${objpath}.${key}`);
         });
         return;
       }
@@ -165,7 +160,7 @@ class Configure {
       if (obj.alias) {
         allPathAndAlias.push({
           alias: obj.alias,
-          path,
+          path: objpath,
         });
       }
     };
@@ -188,18 +183,18 @@ class Configure {
      * @returns {*}
      * @private
      */
-  _formatArray(raw = {}) {
+  static _formatArray(raw = {}) {
     const result = _.cloneDeep(raw);
-    const traverse = (obj, path = '') => {
+    const traverse = (obj, objpath = '') => {
       if (_.isPlainObject(obj)) {
         _.keys(obj).forEach((key) => {
-          traverse(obj[key], path === '' ? key : `${path}.${key}`);
+          traverse(obj[key], objpath === '' ? key : `${objpath}.${key}`);
         });
         return;
       }
       const value = obj;
       if (_.isString(value) && value.indexOf(',') >= 0) {
-        _.set(result, path, value.split(','));
+        _.set(result, objpath, value.split(','));
       }
     };
     traverse(raw);
@@ -240,7 +235,7 @@ class Configure {
     return plugins;
   }
 
-  _pickPluginsFromRc(raw = {}) {
+  static _pickPluginsFromRc(raw = {}) {
     if (!raw.plugins || !_.isArray(raw.plugins)) return [];
     const plugins = [];
     _.forEach(raw.plugins, (plugin) => {
@@ -271,7 +266,7 @@ class Configure {
         pluginMap.set(p.name, p);
       } else {
         // local plugins
-        const name = this._getLocalPluginName(p);
+        const name = Configure._getLocalPluginName(p);
         if (name) {
           pluginMap.set(name, { ...p, name });
         }
@@ -287,7 +282,7 @@ class Configure {
         }
       } else {
         // local plugins
-        const name = this._getLocalPluginName(p);
+        const name = Configure._getLocalPluginName(p);
         if (name) {
           pluginMap.set(name, { ...p, name });
         }
@@ -303,7 +298,7 @@ class Configure {
      * @returns {string}
      * @private
      */
-  _getLocalPluginName(plugin) {
+  static _getLocalPluginName(plugin) {
     if (plugin.path) {
       const tmp = path.basename(plugin.path);
       if (tmp.indexOf(PLUGIN_PREFIX) === 0) {

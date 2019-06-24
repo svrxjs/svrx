@@ -4,7 +4,10 @@ module.exports = {
   hooks: {
     async onRoute(ctx, next, { config }) {
       const corsConfig = config.get('cors');
-      if (corsConfig === false) return next();
+      if (corsConfig === false) {
+        await next();
+        return;
+      }
 
       const corsMiddleware = cors(corsConfig === true ? {} : corsConfig);
       corsMiddleware(ctx, next);

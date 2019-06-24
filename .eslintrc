@@ -19,6 +19,13 @@
     "ecmaVersion": 2018
   },
   "rules": {
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "no-underscore-dangle": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ]
   }
 }

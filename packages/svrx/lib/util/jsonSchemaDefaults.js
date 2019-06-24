@@ -11,9 +11,7 @@ module.exports = (() => {
      * @param {*} item
      * @return {Boolean}
      */
-  const isObject = function (item) {
-    return typeof item === 'object' && item !== null && item.toString() === {}.toString();
-  };
+  const isObject = item => typeof item === 'object' && item !== null && item.toString() === {}.toString();
 
   /**
      * deep JSON object clone
@@ -21,7 +19,7 @@ module.exports = (() => {
      * @param {Object} source
      * @return {Object}
      */
-  const cloneJSON = function (source) {
+  const cloneJSON = (source) => {
     const replacer = (key, value) => {
       if (typeof value === 'function') {
         return value;
@@ -38,18 +36,16 @@ module.exports = (() => {
      * @param {Object} source
      * @return {Object}
      */
-  var merge = function (target, source) {
+  const merge = (target, source) => {
     target = cloneJSON(target);
 
-    for (const key in source) {
-      if (source.hasOwnProperty(key)) {
-        if (isObject(target[key]) && isObject(source[key])) {
-          target[key] = merge(target[key], source[key]);
-        } else {
-          target[key] = source[key];
-        }
+    Object.keys(source).forEach((key) => {
+      if (isObject(target[key]) && isObject(source[key])) {
+        target[key] = merge(target[key], source[key]);
+      } else {
+        target[key] = source[key];
       }
-    }
+    });
     return target;
   };
 
@@ -61,17 +57,17 @@ module.exports = (() => {
      * @param {Object} definitions
      * @return {Object}
      */
-  const getLocalRef = function (path, definitions) {
+  const getLocalRef = (path, definitions) => {
     path = path.replace(/^#\/definitions\//, '').split('/');
 
-    var find = function (path, root) {
-      const key = path.shift();
+    const find = (p, root) => {
+      const key = p.shift();
       if (!root[key]) {
         return {};
-      } if (!path.length) {
+      } if (!p.length) {
         return root[key];
       }
-      return find(path, root[key]);
+      return find(p, root[key]);
     };
 
     const result = find(path, definitions);
@@ -90,17 +86,18 @@ module.exports = (() => {
      * @param {Object} definitions
      * @return {Object}
      */
-  const mergeAllOf = function (allOfList, definitions) {
-    const length = allOfList.length;
-    let index = -1;
+  const mergeAllOf = (allOfList, definitions) => {
+    const { length } = allOfList;
+    let index = 0;
     let result = {};
 
-    while (++index < length) {
+    while (index < length) {
       let item = allOfList[index];
 
       item = typeof item.$ref !== 'undefined' ? getLocalRef(item.$ref, definitions) : item;
 
       result = merge(result, item);
+      index += 1;
     }
 
     return result;
@@ -121,7 +118,8 @@ module.exports = (() => {
      * @param {Object} definitions
      * @return {Object}
      */
-  var defaults = function (schema, definitions) {
+  /* eslint-disable consistent-return */
+  const defaults = (schema, definitions) => {
     if (typeof schema.default !== 'undefined') {
       return schema.default;
     } if (typeof schema.allOf !== 'undefined') {
@@ -135,15 +133,13 @@ module.exports = (() => {
         return {};
       }
 
-      for (const key in schema.properties) {
-        if (schema.properties.hasOwnProperty(key)) {
-          schema.properties[key] = defaults(schema.properties[key], definitions);
+      Object.keys(schema.properties).forEach((key) => {
+        schema.properties[key] = defaults(schema.properties[key], definitions);
 
-          if (typeof schema.properties[key] === 'undefined') {
-            delete schema.properties[key];
-          }
+        if (typeof schema.properties[key] === 'undefined') {
+          delete schema.properties[key];
         }
-      }
+      });
 
       return schema.properties;
     } if (schema.type === 'array') {
@@ -157,7 +153,7 @@ module.exports = (() => {
       if (schema.items.constructor === Array) {
         const values = schema.items.map(item => defaults(item, definitions));
         // remove undefined items at the end (unless required by minItems)
-        for (let i = values.length - 1; i >= 0; i--) {
+        for (let i = values.length - 1; i >= 0; i -= 1) {
           if (typeof values[i] !== 'undefined') {
             break;
           }
@@ -173,13 +169,14 @@ module.exports = (() => {
         return [];
       }
       const vals = [];
-      for (let j = 0; j < Math.max(1, ct); j++) {
+      for (let j = 0; j < Math.max(1, ct); j += 1) {
         vals.push(cloneJSON(value));
       }
       return vals;
     }
   };
-  return function (schema, definitions) {
+
+  return (schema, definitions) => {
     if (typeof definitions === 'undefined') {
       definitions = schema.definitions || {};
     } else if (isObject(schema.definitions)) {

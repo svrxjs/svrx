@@ -1,12 +1,6 @@
 const events = require('../../shared/events');
 const io = require('../../io/client.js');
 
-const svrx = {
-  _getScopedInstance: getScopedInstance,
-  events: events({}),
-  io,
-};
-
 function getConfig(name) {
   return ['get', 'set', 'splice', 'unset', ''].reduce((api, right) => {
     api[right] = function () {
@@ -23,5 +17,11 @@ function getScopedInstance(name) {
     config: name ? getConfig(name) : getConfig(),
   };
 }
+
+const svrx = {
+  _getScopedInstance: getScopedInstance,
+  events: events({}),
+  io,
+};
 
 module.exports = svrx;
