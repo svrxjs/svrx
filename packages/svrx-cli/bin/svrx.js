@@ -34,13 +34,14 @@ const prepareSvrx = async (options) => {
   const spinner = logger.progress('Loading svrx...');
   try {
     await manager.loadConfigFile(); // load user config file
-    const svrx = await manager.loadSvrx(options);
+    const svrx = await Manager.loadSvrx(options);
     if (spinner) spinner();
 
     return svrx;
   } catch (e) {
     if (spinner) spinner();
     printErrorAndExit(e);
+    return null;
   }
 };
 
@@ -71,8 +72,8 @@ program
   .action(async () => {
     const spinner = logger.progress('Looking for svrx versions...');
     try {
-      const versions = manager.getLocalVersions();
-      const tags = await manager.getRemoteTags();
+      const versions = Manager.getLocalVersions();
+      const tags = await Manager.getRemoteTags();
       if (spinner) spinner();
 
       if (versions && versions.length > 0) {
@@ -97,8 +98,8 @@ program
   .action(async () => {
     const spinner = logger.progress('Looking for svrx versions...');
     try {
-      const versions = await manager.getRemoteVersions();
-      const tags = await manager.getRemoteTags();
+      const versions = await Manager.getRemoteVersions();
+      const tags = await Manager.getRemoteTags();
       if (spinner) spinner();
 
       console.log('Available Svrx Versions:\n');
@@ -123,7 +124,7 @@ program
 
     const spinner = logger.progress(`Installing svrx@${version}...`);
     try {
-      await manager.install(version);
+      await Manager.install(version);
       if (spinner) spinner();
       logger.notify(`Successfully installed svrx@${version}`);
     } catch (e) {

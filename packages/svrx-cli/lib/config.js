@@ -16,7 +16,8 @@ class Config {
     return new Promise((resolve, reject) => {
       const configRoot = process.env.SVRX_DIR;
       if (!configRoot && !userHome) {
-        return reject(new Error('HOME or SVRX_DIR needs to be defined'));
+        reject(new Error('HOME or SVRX_DIR needs to be defined'));
+        return;
       }
 
       // where svrx-cli config exists
@@ -25,7 +26,10 @@ class Config {
       this.VERSIONS_ROOT = path.resolve(this.CONFIG_ROOT, 'versions');
 
       fs.mkdir(this.VERSIONS_ROOT, { recursive: true }, (err) => {
-        if (err) return reject(err);
+        if (err) {
+          reject(err);
+          return;
+        }
         resolve();
       });
     });

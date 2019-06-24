@@ -24,7 +24,7 @@ module.exports = {
   exists: version => fs.existsSync(getSvrxPath(version)),
 
   load: (version, optionsFromCli = {}) => new Promise((resolve) => {
-    const Svrx = require(getSvrxPath(version));
+    const Svrx = require(getSvrxPath(version)); // eslint-disable-line
     resolve(new Svrx({}, optionsFromCli));
   }),
 };

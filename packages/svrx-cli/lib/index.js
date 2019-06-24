@@ -26,7 +26,7 @@ class Manager {
     this.loaded = true;
   }
 
-  async loadSvrx(optionsFromCli = {}) {
+  static async loadSvrx(optionsFromCli = {}) {
     const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
     const rcVersion = config.getConfig().svrx;
     // use the latest version in local if no version supplied
@@ -38,19 +38,19 @@ class Manager {
     return local.load(version, optionsFromCli);
   }
 
-  getLocalVersions() {
+  static getLocalVersions() {
     return local.getVersions();
   }
 
-  async getRemoteVersions() {
+  static async getRemoteVersions() {
     return registry.getVersions();
   }
 
-  async getRemoteTags() {
+  static async getRemoteTags() {
     return registry.getTags();
   }
 
-  async install(version) {
+  static async install(version) {
     return registry.install(version);
   }
 }

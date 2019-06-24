@@ -1,7 +1,7 @@
-
-
-const svrxCli = require('..');
-
-describe('svrx-cli', () => {
-  it('needs tests');
-});
+//
+//
+// const svrxCli = require('..');
+//
+// describe('svrx-cli', () => {
+//   it('needs tests');
+// });
