@@ -7,12 +7,6 @@ module.exports = {
     description: 'where to start svrx',
     defaultHint: 'default to the current working directory',
     group: GROUPS.CORE,
-    ui: false,
-  },
-  dir: {
-    type: 'string',
-    default: process.cwd(),
-    group: GROUPS.CORE,
     cli: false,
     ui: false,
   },
@@ -28,10 +22,11 @@ module.exports = {
     alias: 'p',
     type: 'number',
     default: 8000,
-    description: 'the unique identifier for a product',
+    description: 'Specify a port number to listen for requests on',
     group: GROUPS.CORE,
   },
   https: {
+    description: 'enable https',
     type: 'boolean',
     group: GROUPS.CORE,
   },
@@ -79,6 +74,7 @@ module.exports = {
 
   // built plugin configs
   serve: {
+    description: 'start',
     group: GROUPS.COMMON,
     default: true,
     anyOf: [
