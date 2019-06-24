@@ -31,15 +31,14 @@ const printErrorAndExit = (error) => {
   process.exit(1);
 };
 const prepareSvrx = async (options) => {
-  const spinner = logger.progress('Loading svrx...');
   try {
+    logger.debug('Loading svrx...');
     await manager.loadConfigFile(); // load user config file
     const svrx = await Manager.loadSvrx(options);
-    if (spinner) spinner();
+    logger.debug('Successfully loaded svrx');
 
     return svrx;
   } catch (e) {
-    if (spinner) spinner();
     printErrorAndExit(e);
     return null;
   }
@@ -70,11 +69,9 @@ program
   .command('ls')
   .description(COMMANDS.ls.description)
   .action(async () => {
-    const spinner = logger.progress('Looking for svrx versions...');
     try {
       const versions = Manager.getLocalVersions();
       const tags = await Manager.getRemoteTags();
-      if (spinner) spinner();
 
       if (versions && versions.length > 0) {
         console.log('Svrx Versions Installed:\n');
@@ -87,7 +84,6 @@ program
         console.log('You can install the latest version using: "svrx install".');
       }
     } catch (e) {
-      if (spinner) spinner();
       printErrorAndExit(e);
     }
   });
@@ -96,11 +92,9 @@ program
   .command('ls-remote')
   .description(COMMANDS['ls-remote'].description)
   .action(async () => {
-    const spinner = logger.progress('Looking for svrx versions...');
     try {
       const versions = await Manager.getRemoteVersions();
       const tags = await Manager.getRemoteTags();
-      if (spinner) spinner();
 
       console.log('Available Svrx Versions:\n');
       console.log(versions.join(', '));
@@ -109,7 +103,6 @@ program
         console.log(`${tag}: ${tags[tag]}`);
       });
     } catch (e) {
-      if (spinner) spinner();
       printErrorAndExit(e);
     }
   });
@@ -122,13 +115,10 @@ program
       version = 'latest';
     }
 
-    const spinner = logger.progress(`Installing svrx@${version}...`);
     try {
       await Manager.install(version);
-      if (spinner) spinner();
-      logger.notify(`Successfully installed svrx@${version}`);
+      logger.debug(`Successfully installed svrx@${version}`);
     } catch (e) {
-      if (spinner) spinner();
       printErrorAndExit(e);
     }
   });

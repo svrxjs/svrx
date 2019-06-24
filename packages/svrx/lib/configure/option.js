@@ -45,9 +45,8 @@ class Option extends IModel {
 
       if (!valid) {
         const ajvErrors = ajv.errors;
-        logger.error('Config Error:');
         _.forEach(ajvErrors, (err) => {
-          logger.error(`${err.dataPath.replace('/', '.')} ${err.message}`);
+          logger.error(`Config Error: ${err.dataPath.replace('/', '.')} ${err.message}`);
         });
         process.exit(1);
       }

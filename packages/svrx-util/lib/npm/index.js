@@ -3,6 +3,7 @@ const nUtil = require('util');
 const npmi = require('npmi');
 const _ = require('lodash');
 const npm = require('npm');
+const logger = require('../logger');
 const npCall = require('../npCall');
 const DevNull = require('./devnull');
 
@@ -30,8 +31,10 @@ const install = (option) => {
     _.extend(npmLoad, SILENT_SUGAR_NOT_NECESSARILY_WORKS);
   }
 
+  const spinner = logger.progress('Installing package...');
   return new Promise((resolve, reject) => {
     npmi(option, (err, result) => {
+      if (spinner) spinner();
       if (err) return reject(err);
       if (!result) return resolve(result);
       const len = result.length;
