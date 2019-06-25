@@ -4,6 +4,31 @@ platform built for efficient front-end development
 
 ## Options
 
+### root
+
+`string`
+
+where to start svrx. Default to the current working directory.
+
+### svrx
+
+`string`
+
+The version of svrx you want to use.
+Default to the latest version installed locally, if not installed, it will the use the latest published version.
+
+### port
+
+`number`
+
+Specify a port number to listen for requests on, default to 8000.
+
+### https
+
+`boolean`
+
+Enable/disable https service. Default to `false`.
+
 ### livereload
 
 `boolean`, `object`
