@@ -74,7 +74,7 @@ module.exports = {
 
   // built plugin configs
   serve: {
-    description: 'start',
+    description: 'dev server configs',
     group: GROUPS.COMMON,
     default: true,
     anyOf: [
@@ -86,17 +86,14 @@ module.exports = {
         properties: {
           base: {
             type: 'string',
-            description: 'where to serve content from',
-            defaultHint: 'default to the current working directory(root)',
-          },
-          headers: {
-            type: 'object',
-            description: 'add headers to all responses',
+            description: 'where to serve static content from',
           },
           serveIndex: {
             type: 'boolean',
+            description: 'Enable serveIndex middleware',
           },
           historyApiFallback: {
+            description: 'Enable historyApiFallback middleware',
             anyOf: [{ type: 'boolean' }, { type: 'object' }],
             errorMessage: 'should be boolean or object',
           },
@@ -107,6 +104,7 @@ module.exports = {
   },
 
   proxy: {
+    description: 'proxy requests configs',
     group: GROUPS.COMMON,
     anyOf: [
       {
@@ -134,6 +132,7 @@ module.exports = {
         type: 'object',
         properties: {
           exclude: {
+            description: 'specify patterns to exclude from file watchlist',
             anyOf: [
               { type: 'string' },
               { type: 'array', items: { type: 'string' } },

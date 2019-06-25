@@ -53,13 +53,13 @@ module.exports = {
 
       const serveConfig = config.get('serve');
       const root = config.get('serve.base') || config.get('root');
-      const headers = config.get('serve.headers') || {};
+      // const headers = config.get('serve.headers') || {};
 
       if (serveConfig === false) return;
 
-      Object.keys(headers).forEach((key) => {
-        ctx.set(key, headers[key]);
-      });
+      // Object.keys(headers).forEach((key) => {
+      //   ctx.set(key, headers[key]);
+      // });
 
       try {
         await send(ctx, ctx.path, {
