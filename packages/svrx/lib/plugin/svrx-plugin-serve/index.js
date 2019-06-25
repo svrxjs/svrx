@@ -12,9 +12,9 @@ module.exports = {
   hooks: {
     async onCreate({ middleware, config }) {
       // serve index
-      const serveIndexOptions = config.get('serve.serveIndex');
+      const directoryOptions = config.get('serve.directory');
       // undefined = true
-      if (serveIndexOptions !== false) {
+      if (directoryOptions !== false) {
         const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }), { bubble: true });
 
         middleware.add('$serve-index', {
@@ -53,13 +53,8 @@ module.exports = {
 
       const serveConfig = config.get('serve');
       const root = config.get('serve.base') || config.get('root');
-      // const headers = config.get('serve.headers') || {};
 
       if (serveConfig === false) return;
-
-      // Object.keys(headers).forEach((key) => {
-      //   ctx.set(key, headers[key]);
-      // });
 
       try {
         await send(ctx, ctx.path, {

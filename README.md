@@ -56,11 +56,11 @@ The set of dev server options.
 Tell the server where to serve static content from. By default, we'll looking for contents at the current working path. 
 This option is necessary only when you want to serve static files. 
 
-#### serve.serveIndex 
+#### serve.directory 
 
 `boolean`
 
-Enable/disable `serveIndex middleware`. `serveIndex` is enabled by default.
+Enable/disable `serveIndex middleware`. `directory` is enabled by default.
 
 `serveIndex middleware` displays a view of directory if your content base not contains a `index.html`.
 

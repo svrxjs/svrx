@@ -88,7 +88,7 @@ module.exports = {
             type: 'string',
             description: 'where to serve static content from',
           },
-          serveIndex: {
+          directory: {
             type: 'boolean',
             description: 'Enable serveIndex middleware',
           },
