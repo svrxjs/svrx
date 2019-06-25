@@ -37,6 +37,9 @@ function limitCache(option) {
     values() {
       return keys.map(key => cache[key]);
     },
+    keys(){
+      return keys.slice();
+    },
     size() {
       return keys.length;
     },

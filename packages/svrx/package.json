@@ -40,7 +40,6 @@
     "find-free-port": "^2.0.0",
     "immer": "^2.1.2",
     "koa": "^2.7.0",
-    "koa-compose": "^4.1.0",
     "koa-history-api-fallback": "^1.0.0",
     "koa-send": "^5.0.0",
     "koa2-cors": "^2.0.6",

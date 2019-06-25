@@ -120,7 +120,7 @@ class Logger {
   }
 }
 
-Logger.levelIndex = 0;
+Logger.levelIndex = LABEL_CONFIG.warn.index;
 Logger.state = STATE.UNLOCKED;
 Logger.stream = process.stdout;
 

@@ -1,7 +1,7 @@
 const Configure = require('../configure');
 const { PRIORITY } = require('../constant');
+const compose = require('../util/compose');
 const cache = require('../shared/cache');
-const compose = require('koa-compose');
 
 const MIDDLEWARE_CACHE = Symbol('middleware');
 const COMPOSE_KEY = Symbol('compose_key');
@@ -56,12 +56,26 @@ class MiddlewareManager {
     };
   }
 
+  _getSortedKeys(){
+    const cache = this[MIDDLEWARE_CACHE];
+    const keys = cache.keys();
+    keys.sort((a, b) => (cache.get(b).priority || PRIORITY.DEFAULT) - (cache.get(a).priority || PRIORITY.DEFAULT))
+    return keys;
+  }
+
+  _getSortedMiddlewares(){
+    const cache = this[MIDDLEWARE_CACHE];
+    const keys = this._getSortedKeys();
+    return {
+      keys,
+      middlewares:keys.map(key=>cache.get(key))
+    }
+  }
+
   _composeMiddlewares() {
-    const middlewares = this[MIDDLEWARE_CACHE].values();
+    const {middlewares, keys} = this._getSortedMiddlewares()
 
-    middlewares.sort((a, b) => (b.priority || PRIORITY.DEFAULT) - (a.priority || PRIORITY.DEFAULT));
-
-    this[COMPOSE_KEY] = compose(middlewares.map(m => m.onCreate()));
+    this[COMPOSE_KEY] = compose(middlewares.map(m => m.onCreate()), keys);
   }
 }
 

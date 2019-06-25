@@ -28,6 +28,12 @@ class Svrx {
       cli: cliOptions,
       rc: rcOptions,
     }));
+
+    
+    if(config.get('logger.level')){
+      logger.setLevel(config.get('logger.level'))
+    }
+
     logger.debug('Config is loaded');
 
     const app = (this.app = new Koa());

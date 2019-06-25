@@ -173,4 +173,17 @@ module.exports = {
     ],
     errorMessage: 'should be boolean or string',
   },
+  logger: {
+    description: 'global logger setting',
+    group: GROUPS.COMMON,
+    type: 'object',
+    properties: {
+      level: {
+        type: 'string',
+        default: 'warn',
+        description: `set log level, predefined values: 'silent','notify','error','warn', 'debug'`,
+      }
+    },
+    errorMessage: 'should be an object',
+  },
 };
