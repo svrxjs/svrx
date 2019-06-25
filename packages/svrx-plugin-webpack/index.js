@@ -6,8 +6,7 @@ const { c2k } = require("svrx-util");
 const libPath = require("path");
 const querystring = require("querystring");
 
-
-const CLIENT_ENTRY = 'webpack-hot-middleware/client';
+const CLIENT_ENTRY = "webpack-hot-middleware/client";
 
 module.exports = {
   configSchema: {
@@ -112,9 +111,13 @@ module.exports = {
         )
       ];
       if (config.get("hot")) {
-        composeMiddlewares.push(c2k(webpackHotMiddleware(compiler, {
-          path: config.get('path')
-        })));
+        composeMiddlewares.push(
+          c2k(
+            webpackHotMiddleware(compiler, {
+              path: config.get("path")
+            })
+          )
+        );
       }
 
       composeMiddlewares = compose(composeMiddlewares);
@@ -154,7 +157,7 @@ function prepareConfig(webpackConfig, logger, webpack, config) {
     webpackConfig.mode = "development";
   }
   if (webpackConfig.mode !== "development") {
-    logger.warn(`webpack isn\'t running in [develoment] mode`);
+    logger.warn("webpack isn't running in [develoment] mode");
   }
 
   const plugins = webpackConfig.plugins || (webpackConfig.plugins = []);
@@ -187,7 +190,7 @@ function prepareConfig(webpackConfig, logger, webpack, config) {
 
 function prepareEntry(entry, webpackConfig, config) {
   if (!config.get("hot")) {
-    return;
+    return entry;
   }
 
   const path = config.get("path");
@@ -196,7 +199,7 @@ function prepareEntry(entry, webpackConfig, config) {
     clientConfig.path = path;
   }
   const qs = querystring.encode(clientConfig);
-  const hotEntry = `${CLIENT_ENTRY}${qs ? "?" + qs : ""}`;
+  const hotEntry = `${CLIENT_ENTRY}${qs ? `?${qs}` : ""}`;
   return handleSingleEntery(entry, hotEntry);
 }
 
@@ -207,19 +210,20 @@ function handleSingleEntery(entry, hotEntry) {
     return [entry, hotEntry];
   }
   if (Array.isArray(entry)) {
-    const hasHotEntry = entry.some((ety)=>{
-      if(typeof ety === 'string' && ety.indexOf(CLIENT_ENTRY)!==-1){
-        return true
+    const hasHotEntry = entry.some(ety => {
+      if (typeof ety === "string" && ety.indexOf(CLIENT_ENTRY) !== -1) {
+        return true;
       }
-    })
-    if(!hasHotEntry) entry.push(hotEntry);
-    return entry
+    });
+    if (!hasHotEntry) entry.push(hotEntry);
+    return entry;
   }
   if (typeof entry === "object") {
-    for (let i in entry)
+    for (const i in entry) {
       if (entry.hasOwnProperty(i)) {
         entry[i] = handleSingleEntery(entry[i], hotEntry);
       }
+    }
     return entry;
   }
 }
