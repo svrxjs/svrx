@@ -33,6 +33,7 @@ module.exports = {
   hooks: {
     async onCreate({ middleware, config, logger, events }) {
       // @TODO: use local webpack first
+
       let webpack;
       let localWebpackConfig;
       const root = config.get("$.root");
@@ -198,8 +199,9 @@ function prepareEntry(entry, webpackConfig, config) {
   if (path) {
     clientConfig.path = path;
   }
+  const realClientEntry = getRealClientEntry(config);
   const qs = querystring.encode(clientConfig);
-  const hotEntry = `${CLIENT_ENTRY}${qs ? `?${qs}` : ""}`;
+  const hotEntry = `${realClientEntry}${qs ? `?${qs}` : ""}`;
   return handleSingleEntery(entry, hotEntry);
 }
 
@@ -236,4 +238,15 @@ function closeWatcher(watcher) {
 
 function normalizeResource(root, path) {
   return libPath.resolve(root, path);
+}
+
+function getRealClientEntry(config) {
+  try {
+    return nodeResolve
+      .sync(CLIENT_ENTRY, { basedir: config.getInfo().path })
+      .replace(/\.js$/, "");
+  } catch (e) {
+    // fallback to relative entry
+    return CLIENT_ENTRY;
+  }
 }
