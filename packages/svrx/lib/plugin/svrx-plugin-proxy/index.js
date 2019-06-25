@@ -1,4 +1,5 @@
 const request = require('co-request');
+const getRawBody = require('raw-body');
 const libUrl = require('url');
 const _ = require('lodash');
 const micromatch = require('micromatch');
@@ -46,14 +47,24 @@ async function proxy({ proxyRule, ctx }) {
   const path = rewritePath(ctx.originalUrl, pathRewrite);
   const urlObj = new libUrl.URL(path, target);
   const { headers } = ctx;
-  const req = ctx.request;
+  const getBody = async () => {
+    try {
+      return /POST|PUT/.test(ctx.method)
+        ? await getRawBody(ctx.req)
+        : ctx.request.body;
+    } catch (e) {
+      logger.error(`Proxy Error: ${e.message}`);
+      return '';
+    }
+  };
+  const body = await getBody();
 
   headers.host = changeOrigin ? urlObj.hostname : headers.host;
 
   const options = {
     method: ctx.method,
     url: urlObj.toString(),
-    body: req.body || '',
+    body: body || '',
     encoding: null,
     followRedirect: false,
     headers,

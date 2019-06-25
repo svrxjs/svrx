@@ -48,6 +48,7 @@
     "micromatch": "^4.0.2",
     "npm": "^6.9.0",
     "npmi": "^2.0.1",
+    "raw-body": "^2.4.0",
     "resolve": "^1.10.0",
     "semver": "^6.0.0",
     "serve-index": "^1.9.1",
