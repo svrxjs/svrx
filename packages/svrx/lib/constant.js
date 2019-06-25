@@ -11,8 +11,9 @@ module.exports = {
   PLUGIN_PREFIX: 'svrx-plugin-',
 
   PRIORITY: {
-    SERVE: 9,
+    SERVE: 8,
     DEFAULT: 10,
+    HISTORY_API_FALLBACK: 20,
     PROXY: 21,
     TRANSFORM: 100,
     INJECTOR: 101,

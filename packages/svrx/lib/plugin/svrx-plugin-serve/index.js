@@ -18,7 +18,7 @@ module.exports = {
         const serveIndexMiddleware = c2k(serveIndex(config.get('root'), { icons: true }), { bubble: true });
 
         middleware.add('$serve-index', {
-          priority: PRIORITY.SERVE,
+          priority: PRIORITY.SERVE - 1,
           onCreate: () => async (ctx, next) => {
             if (!ACCEPT_METHOD.test(ctx.method) || ctx.status !== 404 || ctx.body != null) {
               return next();
@@ -35,7 +35,7 @@ module.exports = {
           historyApiFallbackOptions === true ? {} : historyApiFallbackOptions,
         );
         middleware.add('$serve-history-api-fallback', {
-          priority: PRIORITY.SERVE,
+          priority: PRIORITY.HISTORY_API_FALLBACK,
           onCreate: () => async (ctx, next) => {
             if (ctx.status !== 404) {
               return next();

@@ -59,7 +59,7 @@ class MiddlewareManager {
   _composeMiddlewares() {
     const middlewares = this[MIDDLEWARE_CACHE].values();
 
-    middlewares.sort((a, b) => (b.priority || 10) - (a.priority || 10));
+    middlewares.sort((a, b) => (b.priority || PRIORITY.DEFAULT) - (a.priority || PRIORITY.DEFAULT));
 
     this[COMPOSE_KEY] = compose(middlewares.map(m => m.onCreate()));
   }
