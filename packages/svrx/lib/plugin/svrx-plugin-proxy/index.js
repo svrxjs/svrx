@@ -43,7 +43,9 @@ const rewritePath = (path, rules) => {
 };
 
 async function proxy({ proxyRule, ctx }) {
-  const { target, pathRewrite, changeOrigin } = proxyRule;
+  const {
+    target, pathRewrite, changeOrigin, secure = true,
+  } = proxyRule;
   const path = rewritePath(ctx.originalUrl, pathRewrite);
   const urlObj = new libUrl.URL(path, target);
   const { headers } = ctx;
@@ -68,6 +70,7 @@ async function proxy({ proxyRule, ctx }) {
     encoding: null,
     followRedirect: false,
     headers,
+    strictSSL: secure,
   };
 
   return request(options);
