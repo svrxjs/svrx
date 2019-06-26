@@ -76,14 +76,14 @@ class Logger {
       throw Error(`logger.${label}() isn't exsits`);
     }
 
-    const index = LABEL_CONFIG[label].index;
+    const { index } = LABEL_CONFIG[label];
 
     const text = LABEL_CONFIG[label].text || label;
 
-    if (index < Logger.levelIndex) return;
+    if (index < Logger.levelIndex) return '';
 
-    const category = this.category;
-    const color = LABEL_CONFIG[label].color;
+    const { category } = this;
+    const { color } = LABEL_CONFIG[label];
     const foreColor = color === 'White' ? 'gray' : 'white';
     const bgColor = `bg${color}`;
     const padText = `[${text}${category === 'global' ? '' : `:${category}`}]`;
@@ -135,10 +135,10 @@ function getPluginLogger(name) {
   return new Logger(categoryName);
 }
 
-const logger = (module.exports = new Logger());
+const logger = new Logger();
 
 logger.setLevel = Logger.setLevel;
-
 logger.Logger = Logger;
-
 logger.getPluginLogger = getPluginLogger;
+
+module.exports = logger;

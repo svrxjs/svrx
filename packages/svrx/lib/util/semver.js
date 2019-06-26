@@ -6,14 +6,10 @@ function satisfies(engineVersion, version) {
 }
 
 function getClosestPackage(pkgs) {
-  if (!pkgs || !pkgs.length) return;
+  if (!pkgs || !pkgs.length) return null;
   pkgs.sort((p1, p2) => (semver.lt(p1.version, p2.version) ? 1 : -1));
 
-  for (const pkg of pkgs) {
-    if (satisfies(pkg.pattern || '*')) {
-      return pkg;
-    }
-  }
+  return pkgs.find(pkg => satisfies(pkg.pattern || '*'));
 }
 
 exports.satisfies = satisfies;

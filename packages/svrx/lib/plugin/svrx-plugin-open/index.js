@@ -1,5 +1,16 @@
 const { exec } = require('child_process');
 
+function openBrowser(target, callback) {
+  const map = {
+    darwin: 'open',
+    win32: 'start ',
+  };
+
+  const opener = map[process.platform] || 'xdg-open';
+
+  return exec(`${opener} ${target}`, callback);
+}
+
 module.exports = {
   hooks: {
     async onCreate({ events, config, logger }) {
@@ -23,20 +34,11 @@ module.exports = {
         );
 
         openBrowser(openUrl, (err) => {
-          if (err) return logger.error(err);
+          if (err) {
+            logger.error(err);
+          }
         });
       });
     },
   },
 };
-
-function openBrowser(target, callback) {
-  const map = {
-    darwin: 'open',
-    win32: 'start ',
-  };
-
-  const opener = map[process.platform] || 'xdg-open';
-
-  return exec(`${opener} ${target}`, callback);
-}

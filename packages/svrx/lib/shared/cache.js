@@ -4,7 +4,7 @@ function limitCache(option) {
 
   const keys = [];
   const limit = option.limit || 100;
-  const onError = option.onError;
+  const { onError } = option;
   const cache = {};
 
   return {
@@ -28,7 +28,7 @@ function limitCache(option) {
     },
     del(key) {
       delete cache[key];
-      for (let len = keys.length; len--;) {
+      for (let len = keys.length; len -= 1;) {
         if (keys[len] === key) {
           keys.splice(len, 1);
         }
@@ -37,7 +37,7 @@ function limitCache(option) {
     values() {
       return keys.map(key => cache[key]);
     },
-    keys(){
+    keys() {
       return keys.slice();
     },
     size() {

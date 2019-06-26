@@ -21,6 +21,7 @@ module.exports = {
 
   ASSET_FIELDS: ['script', 'style'],
   // REMOVE POSTFIX like `-beta` in  0.0.1-beta.
+  /* eslint-disable global-require, import/no-dynamic-require */
   VERSION: require(libPath.join(__dirname, '../package.json')).version.replace(/-.*$/, ''),
   BUILTIN_PLUGIN: ['livereload', 'proxy', 'serve', 'cors', 'open'],
   CUSTOM_SCHEMA_TYPES: ['compute', 'function'],

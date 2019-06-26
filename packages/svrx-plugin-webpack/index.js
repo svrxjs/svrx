@@ -16,25 +16,27 @@ module.exports = {
     file: {
       type: 'string',
       description:
-        'webpack\'s config file, default using webpack.config.js in root'
+        'webpack\'s config file, default using webpack.config.js in root',
     },
     hot: {
       type: 'boolean',
       default: true,
-      description: 'Enable webpack\'s Hot Module Replacement feature'
+      description: 'Enable webpack\'s Hot Module Replacement feature',
     },
     client: {
       type: 'object',
-      description: 'Enable webpack\'s Hot Module Replacement feature'
+      description: 'Enable webpack\'s Hot Module Replacement feature',
     },
     path: {
       type: 'string',
       description:
-        'The path which the middleware will serve the event stream on'
-    }
+        'The path which the middleware will serve the event stream on',
+    },
   },
   hooks: {
-    async onCreate({ middleware, config, logger, events }) {
+    async onCreate({
+      middleware, config, logger, events,
+    }) {
       // @TODO: use local webpack first
 
       let webpack;
@@ -43,31 +45,31 @@ module.exports = {
 
       const configFile = libPath.resolve(
         root,
-        config.get('file') || 'webpack.config.js'
+        config.get('file') || 'webpack.config.js',
       );
 
       try {
         webpack = await new Promise((resolve, reject) => {
           nodeResolve('webpack', { basedir: root }, (err, res, pkg) => {
             if (err) return reject(err);
-            if(!semver.satisfies(pkg.version, WEBPACK_VERSION)){
-              let err  = new Error('local webpack.version ['+pkg.version+'] is not satisfies plugin-webpack: ' + WEBPACK_VERSION);
+            if (!semver.satisfies(pkg.version, WEBPACK_VERSION)) {
+              const err = new Error(`local webpack.version [${pkg.version}] is not satisfies plugin-webpack: ${WEBPACK_VERSION}`);
               err.code = NOT_VALID_VERSION;
-              reject(err)
+              reject(err);
             }
             resolve(require(res));
           });
         });
       } catch (e) {
-        if(e.code === NOT_VALID_VERSION){
-          logger.error(e.message)
+        if (e.code === NOT_VALID_VERSION) {
+          logger.error(e.message);
           return e;
         }
         webpack = require('webpack');
         logger.warn(
           `load localwebpack from (${root}) failed, use webpack@${
             webpack.version
-          } instead`
+          } instead`,
         );
       }
 
@@ -83,7 +85,7 @@ module.exports = {
       }
 
       const compiler = webpack(
-        prepareConfig(localWebpackConfig, logger, webpack, config)
+        prepareConfig(localWebpackConfig, logger, webpack, config),
       );
 
       // process local webpack config
@@ -91,7 +93,7 @@ module.exports = {
       const oldCompilerWatch = compiler.watch.bind(compiler);
       const dataToBeRecycle = {
         watchers: [],
-        modules: []
+        modules: [],
       };
 
       compiler.watch = (opt, handler) => {
@@ -102,7 +104,7 @@ module.exports = {
             .toJson()
             .modules.map(m => m.id)
             .filter(
-              id => typeof id === 'string' && id.indexOf('node_modules') === -1
+              id => typeof id === 'string' && id.indexOf('node_modules') === -1,
             )
             .map(normalizeResource.bind(null, compiler.context));
 
@@ -118,28 +120,28 @@ module.exports = {
       let composeMiddlewares = [
         c2k(
           webpackDevMiddleware(compiler, {
-            logLevel: 'warn'
+            logLevel: 'warn',
           }),
-          { bubble: true }
-        )
+          { bubble: true },
+        ),
       ];
       if (config.get('hot')) {
         composeMiddlewares.push(
           c2k(
             webpackHotMiddleware(compiler, {
-              path: config.get('path')
-            })
-          )
+              path: config.get('path'),
+            }),
+          ),
         );
       }
 
       composeMiddlewares = compose(composeMiddlewares);
 
       middleware.add('webpack-hot-reload', {
-        onCreate: () => async (ctx, next) => composeMiddlewares(ctx, next)
+        onCreate: () => async (ctx, next) => composeMiddlewares(ctx, next),
       });
 
-      events.on('file:change', evt => {
+      events.on('file:change', (evt) => {
         const path = evt.payload.path;
         // means it is a webpack resource
         if (config.get('hot') && dataToBeRecycle.modules.indexOf(path) !== -1) {
@@ -147,7 +149,7 @@ module.exports = {
         }
       });
 
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         compiler.hooks.done.tap('SvrxWebpackDevMiddleware', () => {
           resolve();
         });
@@ -159,8 +161,8 @@ module.exports = {
         dataToBeRecycle = {};
         return p;
       };
-    }
-  }
+    },
+  },
 };
 
 // prepare webpack config
@@ -196,7 +198,7 @@ function prepareConfig(webpackConfig, logger, webpack, config) {
   webpackConfig.entry = prepareEntry(
     webpackConfig.entry,
     webpackConfig,
-    config
+    config,
   );
   return webpackConfig;
 }
@@ -224,7 +226,7 @@ function handleSingleEntery(entry, hotEntry) {
     return [entry, hotEntry];
   }
   if (Array.isArray(entry)) {
-    const hasHotEntry = entry.some(ety => {
+    const hasHotEntry = entry.some((ety) => {
       if (typeof ety === 'string' && ety.indexOf(CLIENT_ENTRY) !== -1) {
         return true;
       }
@@ -243,7 +245,7 @@ function handleSingleEntery(entry, hotEntry) {
 }
 
 function closeWatcher(watcher) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     watcher.close(resolve);
   });
 }
@@ -264,7 +266,6 @@ function getRealClientEntry(config) {
 }
 
 
-
-function getWebpackDependencyVersion(){
+function getWebpackDependencyVersion() {
   return require('./package.json').dependencies.webpack;
 }

@@ -8,7 +8,7 @@ const os = require('os');
 const CONST = require('../constant');
 
 const o2str = {}.toString;
-const slice = [].slice;
+const { slice } = [];
 
 async function noopMiddleware(ctx, next) {
   await next();
@@ -108,13 +108,14 @@ function getCert() {
 function getExternalIp() {
   const ifaces = os.networkInterfaces();
   const ips = [];
-  for (const dev in ifaces) {
+
+  Object.keys(ifaces).forEach((dev) => {
     ifaces[dev].forEach((details) => {
       if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
         ips.push(details.address);
       }
     });
-  }
+  });
   return ips;
 }
 

@@ -139,7 +139,7 @@ program
     // help info of command:serve
     console.log(`* ${'serve|s'.padEnd(20)}Start a develop server`);
     const svrx = await prepareSvrx();
-    const optionList = svrx.getConfigList();
+    const optionList = svrx.Svrx.getConfigList();
     commands.printServeHelp(optionList);
     process.exit(0);
   });

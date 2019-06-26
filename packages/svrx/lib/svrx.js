@@ -21,31 +21,35 @@ const NOOP = () => {};
 
 class Svrx {
   constructor(inlineOptions = {}, cliOptions = {}) {
+    this.Svrx = Svrx;
     this._rcFilePath = null;
     const rcOptions = this._rcFileRead();
-    const config = (this.config = new Configure({
+    this.config = new Configure({
       inline: inlineOptions,
       cli: cliOptions,
       rc: rcOptions,
-    }));
+    });
+    const { config } = this;
 
-    
-    if(config.get('logger.level')){
-      logger.setLevel(config.get('logger.level'))
+    if (config.get('logger.level')) {
+      logger.setLevel(config.get('logger.level'));
     }
-
     logger.debug('Config is loaded');
 
-    const app = (this.app = new Koa());
-    const server = (this._server = config.get('https')
+    this.app = new Koa();
+    const { app } = this;
+    this._server = config.get('https')
       ? https.createServer(getCert(), app.callback())
-      : http.createServer(app.callback()));
+      : http.createServer(app.callback());
+    const server = this._server;
 
     // todo move into pluginSystem
-    const middleware = (this.middleware = new Middleware(config));
-    const events = (this.events = getEvents());
-    const injector = (this.injector = new Injector({ config, middleware }));
-    const io = (this.io = new IO({ config, server, middleware }));
+    this.middleware = new Middleware(config);
+    const { middleware } = this;
+    this.events = getEvents();
+    this.injector = new Injector({ config, middleware });
+    this.io = new IO({ config, server, middleware });
+    const { events, injector, io } = this;
 
     this.system = new PluginSystem({
       middleware,
@@ -84,7 +88,7 @@ class Svrx {
     this._server.close(callback);
   }
 
-  getConfigList() {
+  static getConfigList() {
     return CONFIGS;
   }
 
@@ -143,8 +147,7 @@ class Svrx {
   }
 
   _afterStart(port) {
-    const config = this.config;
-    const events = this.events;
+    const { config, events } = this;
 
     config.set('port', port);
 

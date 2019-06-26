@@ -8,7 +8,7 @@ module.exports = {
         return next();
       }
 
-      const corsMiddleware = cors( corsConfig === true ? {} : corsConfig );
+      const corsMiddleware = cors(corsConfig === true ? {} : corsConfig);
       return corsMiddleware(ctx, next);
     },
   },

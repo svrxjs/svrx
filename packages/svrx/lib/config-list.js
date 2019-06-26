@@ -181,8 +181,8 @@ module.exports = {
       level: {
         type: 'string',
         default: 'warn',
-        description: `set log level, predefined values: 'silent','notify','error','warn', 'debug'`,
-      }
+        description: 'set log level, predefined values: \'silent\',\'notify\',\'error\',\'warn\', \'debug\'',
+      },
     },
     errorMessage: 'should be an object',
   },

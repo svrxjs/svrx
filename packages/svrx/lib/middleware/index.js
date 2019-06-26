@@ -56,24 +56,24 @@ class MiddlewareManager {
     };
   }
 
-  _getSortedKeys(){
+  _getSortedKeys() {
     const cache = this[MIDDLEWARE_CACHE];
     const keys = cache.keys();
-    keys.sort((a, b) => (cache.get(b).priority || PRIORITY.DEFAULT) - (cache.get(a).priority || PRIORITY.DEFAULT))
+    keys.sort((a, b) => (cache.get(b).priority || PRIORITY.DEFAULT) - (cache.get(a).priority || PRIORITY.DEFAULT));
     return keys;
   }
 
-  _getSortedMiddlewares(){
+  _getSortedMiddlewares() {
     const cache = this[MIDDLEWARE_CACHE];
     const keys = this._getSortedKeys();
     return {
       keys,
-      middlewares:keys.map(key=>cache.get(key))
-    }
+      middlewares: keys.map(key => cache.get(key)),
+    };
   }
 
   _composeMiddlewares() {
-    const {middlewares, keys} = this._getSortedMiddlewares()
+    const { middlewares, keys } = this._getSortedMiddlewares();
 
     this[COMPOSE_KEY] = compose(middlewares.map(m => m.onCreate()), keys);
   }

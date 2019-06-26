@@ -9,7 +9,8 @@ const MUTATIONS = ['produce', 'set', 'splice', 'del'];
 
 class ImmutableModel {
   constructor(target) {
-    this[PREV_KEY] = this[TARGET_KEY] = Object.assign({}, target || {});
+    this[TARGET_KEY] = Object.assign({}, target || {});
+    this[PREV_KEY] = this[TARGET_KEY];
     this[WATCH_KEY] = [];
     MUTATIONS.forEach((name) => {
       const mutation = this[name];
@@ -59,7 +60,7 @@ class ImmutableModel {
 
   unwatch(watcher) {
     const watchers = this[WATCH_KEY];
-    for (let idx = watchers.length; idx--;) {
+    for (let idx = watchers.length; idx -= 1;) {
       if (watchers[idx] === watcher) {
         watchers.splice(idx, 1);
       }

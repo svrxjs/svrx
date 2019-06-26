@@ -60,15 +60,17 @@ const im = {
      * avoid undefined of undefined 错误
      */
   get(target, pathes) {
-    if (typeof pathes === 'number') pathes = [pathes];
-    else if (typeof pathes === 'string') pathes = pathes.split('.');
-    target
-            && pathes
-            && pathes.some((p) => {
-              target = target[p];
-              if (target == null) return true;
-              return false;
-            });
+    if (typeof pathes === 'number') {
+      pathes = [pathes];
+    } else if (typeof pathes === 'string') {
+      pathes = pathes.split('.');
+    }
+    if (target && pathes) {
+      pathes.some((p) => {
+        target = target[p];
+        return target == null;
+      });
+    }
     return target;
   },
 

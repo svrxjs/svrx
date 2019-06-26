@@ -34,7 +34,7 @@ class PluginSystem {
 
   initService() {
     if (!this.io) return;
-    const config = this.config;
+    const { config } = this;
     // regist initialize service
     this.io.registService('$.config', async (payload) => {
       const targetConfig = payload.scope ? config.getPlugin(payload.scope) : config;
@@ -49,7 +49,7 @@ class PluginSystem {
 
   // @TODO: 重构重复代码过多
   async loadOne(pluginConfig) {
-    const config = this.config;
+    const { config } = this;
     const pluginMap = this[PLUGIN_MAP];
     const name = pluginConfig.getInfo('name');
     const path = BUILTIN_PLUGIN.includes(name)
@@ -63,12 +63,13 @@ class PluginSystem {
 
     // load inplace plugin
     if (inplace) {
-      return (pluginMap[name] = {
+      pluginMap[name] = {
         name,
         module: pluginConfig.getInfo(),
         path: config.get('root'),
         pluginConfig,
-      });
+      };
+      return pluginMap[name];
     }
 
     // load local plugin by name
@@ -80,11 +81,15 @@ class PluginSystem {
           basedir: config.get('root'),
         },
         (err, res, pkg) => {
-          if (err) return resolve(null); // suppress error
+          if (err) { // suppress error
+            resolve(null);
+            return;
+          }
           const svrxPattern = (pkg.engines && pkg.engines.svrx) || '*';
           if (semver.satisfies(svrxPattern)) {
             resolve({
               path: libPath.join(res.split(normalizedName)[0], normalizedName),
+              /* eslint-disable global-require, import/no-dynamic-require */
               module: require(res),
               pkg,
             });
@@ -93,13 +98,14 @@ class PluginSystem {
       );
     });
     if (resolveRet) {
-      return (pluginMap[name] = {
+      pluginMap[name] = {
         name,
         path: resolveRet.path,
         module: resolveRet.module,
         version: resolveRet.pkg.version,
         pluginConfig,
-      });
+      };
+      return pluginMap[name];
     }
 
     // load local plugin by path
@@ -107,17 +113,19 @@ class PluginSystem {
       // no install , just require
       let pkg;
       try {
+        /* eslint-disable global-require, import/no-dynamic-require */
         pkg = require(libPath.join(path, 'package.json'));
       } catch (e) {
         pkg = {};
       }
-      return (pluginMap[name] = {
+      pluginMap[name] = {
         name,
         path,
         module: require(path),
         version: pkg.version,
         pluginConfig,
-      });
+      };
+      return pluginMap[name];
     }
 
     // install and load plugin
@@ -168,13 +176,14 @@ class PluginSystem {
       pkg = {};
     }
     logger.notify(`${chalk.gray(name)}${pkg.version ? `@${pkg.version}` : ''} installed completely!`);
-    return (pluginMap[name] = {
+    pluginMap[name] = {
       name,
       path: path || installRet.path,
       module: require(path || installRet.path),
       version: pkg.version,
       pluginConfig,
-    });
+    };
+    return pluginMap[name];
   }
 
   getInstalledPluginNames() {
@@ -193,50 +202,49 @@ class PluginSystem {
     const {
       hooks = {}, assets, services, configSchema,
     } = module;
-    const { onRoute, onCreate, onOptionChange } = hooks;
+    const { onRoute, onCreate /* onOptionChange */ } = hooks;
 
     const isBuiltin = BUILTIN_PLUGIN.includes(name);
     const config = isBuiltin ? this.config : pluginConfig;
     // todo all variables below should be a new instance init with 'config'
-    const middleware = this.middleware;
-    const injector = this.injector;
-    const io = this.io;
-    const events = this.events;
+    const {
+      middleware, injector, io, events,
+    } = this;
     const pluginLogger = logger.getPluginLogger(name);
 
     // @TODO Plugin onCreate Logic
     // onActive? onDeactive
 
-    // option change
-    // todo unwatch?
-    if (onOptionChange) {
-      // watch builtin option change
-      // not-builtin plugins should also watch builtin option change
-      this.config.watch((event) => {
-        // check builtin options change:
-        //    affect('$.root') or affect(['$', 'root'])
-        const watchEvent = {
-          ...event,
-          affect: (pathes) => {
-            if (_.isString(pathes)) {
-              pathes = pathes.split('.');
-            }
-            if (_.isArray(pathes) && pathes.length > 0 && pathes[0] === '$') {
-              return event.affect(pathes.slice(1));
-            }
-            return false;
-          },
-        };
-        onOptionChange.call(plugin, watchEvent);
-      });
-
-      // watch plugin option change
-      if (!isBuiltin) {
-        config.watch((event) => {
-          onOptionChange.call(plugin, event);
-        });
-      }
-    }
+    // todo option change
+    // need unwatch
+    // if (onOptionChange) {
+    //   // watch builtin option change
+    //   // not-builtin plugins should also watch builtin option change
+    //   this.config.watch((event) => {
+    //     // check builtin options change:
+    //     //    affect('$.root') or affect(['$', 'root'])
+    //     const watchEvent = {
+    //       ...event,
+    //       affect: (pathes) => {
+    //         if (_.isString(pathes)) {
+    //           pathes = pathes.split('.');
+    //         }
+    //         if (_.isArray(pathes) && pathes.length > 0 && pathes[0] === '$') {
+    //           return event.affect(pathes.slice(1));
+    //         }
+    //         return false;
+    //       },
+    //     };
+    //     onOptionChange.call(plugin, watchEvent);
+    //   });
+    //
+    //   // watch plugin option change
+    //   if (!isBuiltin) {
+    //     config.watch((event) => {
+    //       onOptionChange.call(plugin, event);
+    //     });
+    //   }
+    // }
 
     // set plugin configs
     if (!isBuiltin && configSchema) {
@@ -245,18 +253,16 @@ class PluginSystem {
 
     // regist service
     if (services) {
-      for (const i in services) {
-        if (services.hasOwnProperty(i)) {
-          io.registService(i, services[i]);
-        }
-      }
+      Object.keys(services).forEach((i) => {
+        io.registService(i, services[i]);
+      });
     }
 
     // inject custom script and style
     // @TODO: more script type support
     if (assets) {
       // central testing
-      const test = assets.test;
+      const { test } = assets;
 
       ASSET_FIELDS.forEach((field) => {
         if (assets[field] && !Array.isArray(assets[field])) {
@@ -282,7 +288,7 @@ class PluginSystem {
             }
             if (field === 'script') {
               def.filter = (content) => {
-                if (!content) return;
+                if (!content) return '';
                 return `void function(svrx){${content} }(window.__svrx__._getScopedInstance('${name}'));`;
               };
             }
@@ -317,6 +323,7 @@ class PluginSystem {
         logger: pluginLogger,
       });
     }
+    return Promise.resolve();
   }
 }
 

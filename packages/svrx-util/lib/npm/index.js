@@ -25,7 +25,7 @@ const search = normalizeNpmCommand('search');
 
 const install = (option) => {
   const root = option.path;
-  const npmLoad = option.npmLoad;
+  const { npmLoad } = option;
 
   if (npmLoad) {
     _.extend(npmLoad, SILENT_SUGAR_NOT_NECESSARILY_WORKS);
@@ -44,7 +44,7 @@ const install = (option) => {
       if (!libPath.isAbsolute(path)) {
         path = libPath.join(root, path);
       }
-      resolve({ version, name, path });
+      return resolve({ version, name, path });
     });
   });
 };
