@@ -208,8 +208,9 @@ class Configure {
      *   {pluginName: true} -> { plugins: [{ name: pluginName }] }
      *   {pluginName: false} -> { plugins: [{ name: pluginName, _enable: false
      * }] }
-     *   {pluginName: {pluginInfos}} -> { plugins: [{ name: pluginName,
-     * ...pluginInfos }] }
+     *   {pluginName: {pluginOptions}} -> { plugins: [
+   *        { name: pluginName, options: {...pluginInfos} }
+   *     ] }
      * @param raw
      * @returns {Array}
      * @private
@@ -227,7 +228,9 @@ class Configure {
         newValue._enable = false;
       }
       if (_.isPlainObject(value)) {
-        _.assign(newValue, value);
+        _.assign(newValue, {
+          options: value,
+        });
       }
       plugins.push(newValue);
     });
