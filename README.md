@@ -1,157 +1,19 @@
-# svrx | server-x
+> A pluggable frontend server, it just works
 
-platform built for efficient front-end development
+# svrx
 
-## Options
+svrx(server-x) is a platform built for efficient front-end development.
 
-### root
+## Documentation
 
-`string`
+You can read documentation [here](https://github.com/x-orpheus/svrx/wiki/Docuements).
 
-where to start svrx. Default to the current working directory.
+你可以在[这里](https://github.com/x-orpheus/svrx/wiki/%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3)阅读使用文档。
 
-### svrx
+## Contributing
 
-`string`
+Please see the [contributing guidelines]().
 
-The version of svrx you want to use.
-Default to the latest version installed locally, if not installed, it will the use the latest published version.
+## Providing a new plugin
 
-### port
-
-`number`
-
-Specify a port number to listen for requests on, default to 8000.
-
-### https
-
-`boolean`
-
-Enable/disable https service. Default to `false`.
-
-### livereload
-
-`boolean`, `object`
-
-Enable/disable auto page live reload.
-Livereload is enabled by default.
-
-#### livereload.exclude
-
-`string`, `string[]`
-
-Specify patterns to exclude from file watchlist. 
-If a file matches any of the excluded patterns, the file change won’t trigger page reload.
-
-### serve
-
-`boolean`, `object`
-
-The set of dev server options. 
-
-#### serve.base
-
-`string`
-
-Tell the server where to serve static content from. By default, we'll looking for contents at the current working path. 
-This option is necessary only when you want to serve static files. 
-
-#### serve.directory 
-
-`boolean`
-
-Enable/disable `serveIndex middleware`. `directory` is enabled by default.
-
-`serveIndex middleware` displays a view of directory if your content base not contains a `index.html`.
-
-#### serve.historyApiFallback
-
-`boolean`, `object`
-
-Enable/disable `historyApiFallback middleware`. It is set to `false` by default.
-
-This option is necessary when your app is using [HTML5 History API](https://developer.mozilla.org/en-US/docs/Web/API/History), 
-`historyApiFallback middleware` will serve a `index.html` page instead of 404 responses. 
-
-### proxy
-
-`boolean`, `object`, `object[]`
-
-Proxing urls when you want to send some requests to different backend servers on the same domain.
-
-```js
-module.exports = {
-    proxy: {
-        '/api': {
-            target: 'http://you.backend.server.com'  
-        }
-    },
-}
-```
-
-Now a request to `/api/path` will be proxied to `http://you.backend.server.com/api/path`.
-
-And you can also rewrite the path, eg:
-
-```js
-module.exports = {
-    proxy: {
-        '/api': {
-            target: 'http://you.backend.server.com',
-            pathRewrite: {'^/api' : ''} 
-        }
-    },
-}
-```
-
-Then your request to `/api/path` will be proxied to `http://you.backend.server.com/path`.
-
-A backend server running on HTTPS with an invalid certificate will not be accepted by default.
-If you want to, modify your config like this:
-
-```js
-module.exports = {
-    proxy: {
-        '/api': {
-            target: 'https://you.https.server.com',
-            secure: false 
-        }
-    },
-}
-```
-
-If you want to proxy multiple pathes to a same target, try:
-
-```js
-module.exports = {
-    proxy: [
-        {
-            context: ['/api', '/wapi', '/pub'],
-            target: 'http://you.backend.server.com',
-        }  
-    ],
-}
-```
-
-If you want to change the origin of host header to the target hostname, just set `changeOrigin` to `true`:
-
-```js
-module.exports = {
-    proxy: {
-        '/api': {
-            target: 'https://you.https.server.com',
-            changeOrigin: true 
-        }
-    },
-}
-```
-
-### cors
-
-`boolean`, `object`
-
-Enable/disable cross-origin resource sharing([CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)).
-Cors is enabled by default. 
-
-svrx makes use of [koa2-cors](https://github.com/zadzbw/koa2-cors) package.
-Check out its [option documentation](https://github.com/zadzbw/koa2-cors#options) for more advanced usages.
+For contributors planning to write a new plugin, please see the [plugin development guide]().
