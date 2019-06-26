@@ -19,7 +19,6 @@ module.exports = {
     ui: false,
   },
   port: {
-    alias: 'p',
     type: 'number',
     default: 8000,
     description: 'Specify a port number to listen for requests on',

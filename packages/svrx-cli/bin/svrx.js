@@ -6,7 +6,6 @@ const { logger } = require('svrx-util');
 const updateNotifier = require('update-notifier');
 const pkg = require('../package.json');
 const Manager = require('../lib');
-const commands = require('../lib/commands');
 
 const COMMANDS = {
   help: {
@@ -137,10 +136,10 @@ program
     });
 
     // help info of command:serve
-    console.log(`* ${'serve|s'.padEnd(20)}Start a develop server`);
+    console.log(`* ${'serve|s'.padEnd(20)}${COMMANDS.serve.description}`);
+
     const svrx = await prepareSvrx();
-    const optionList = svrx.Svrx.getConfigList();
-    commands.printServeHelp(optionList);
+    svrx.Svrx.printHelp();
     process.exit(0);
   });
 
