@@ -29,6 +29,13 @@ module.exports = {
     type: 'boolean',
     group: GROUPS.CORE,
   },
+  historyApiFallback: {
+    group: GROUPS.CORE,
+    description: 'Enable historyApiFallback middleware',
+    anyOf: [{ type: 'boolean' }, { type: 'object' }],
+    default: false,
+    errorMessage: 'should be boolean or object',
+  },
   urls: {
     type: 'object',
     properties: {
@@ -90,11 +97,6 @@ module.exports = {
           directory: {
             type: 'boolean',
             description: 'Enable serveIndex middleware',
-          },
-          historyApiFallback: {
-            description: 'Enable historyApiFallback middleware',
-            anyOf: [{ type: 'boolean' }, { type: 'object' }],
-            errorMessage: 'should be boolean or object',
           },
         },
       },

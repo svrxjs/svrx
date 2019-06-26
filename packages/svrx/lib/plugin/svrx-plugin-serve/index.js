@@ -29,7 +29,8 @@ module.exports = {
       }
 
       // historyApiFallback
-      const historyApiFallbackOptions = config.get('serve.historyApiFallback');
+      // todo move out of serve
+      const historyApiFallbackOptions = config.get('historyApiFallback');
       if (historyApiFallbackOptions) {
         const historyApiFallbackMiddleware = historyApiFallback(
           historyApiFallbackOptions === true ? {} : historyApiFallbackOptions,
