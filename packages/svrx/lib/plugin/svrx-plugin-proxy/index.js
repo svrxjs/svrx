@@ -84,12 +84,12 @@ module.exports = {
       if (proxyConfig) {
         if (_.isArray(proxyConfig)) {
           proxyConfig.forEach((conf) => {
-            logger.notify(`Proxy created: ${JSON.stringify(conf.context)}  ->  ${conf.target}`);
+            logger.debug(`Proxy created: ${JSON.stringify(conf.context)}  ->  ${conf.target}`);
           });
         }
         if (_.isPlainObject(proxyConfig)) {
           _.keys(proxyConfig).forEach((key) => {
-            logger.notify(`Proxy created: ${key}  ->  ${proxyConfig[key].target}`);
+            logger.debug(`Proxy created: ${key}  ->  ${proxyConfig[key].target}`);
           });
         }
       }
