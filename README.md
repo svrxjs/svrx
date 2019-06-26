@@ -155,22 +155,3 @@ Cors is enabled by default.
 
 svrx makes use of [koa2-cors](https://github.com/zadzbw/koa2-cors) package.
 Check out its [option documentation](https://github.com/zadzbw/koa2-cors#options) for more advanced usages.
-
-```js
-module.exports = {
-    // cors: false, disable cors
-    cors: {
-        origin(ctx) {
-            if (ctx.url === '/test') {
-                return false;
-            }
-            return '*';
-        },
-        exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
-        maxAge: 5,
-        credentials: true,
-        allowMethods: ['GET', 'POST', 'DELETE'],
-        allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    },
-}
-```
