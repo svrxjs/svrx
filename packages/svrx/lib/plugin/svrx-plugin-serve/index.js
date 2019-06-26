@@ -50,16 +50,16 @@ module.exports = {
     async onRoute(ctx, next, { config }) {
       await next();
 
-      if (!ACCEPT_METHOD.test(ctx.method) || ctx.status !== 404 || ctx.body != null) return;
-
       const serveConfig = config.get('serve');
       const root = config.get('serve.base') || config.get('root');
+      const indexFileName = config.get('serve.index') || 'index.html';
 
       if (serveConfig === false) return;
 
       try {
         await send(ctx, ctx.path, {
           root,
+          index: indexFileName,
           gzip: false,
         });
       } catch (err) {

@@ -94,6 +94,11 @@ module.exports = {
             type: 'string',
             description: 'where to serve static content from',
           },
+          index: {
+            type: 'string',
+            description: 'Name of the index file to serve automatically when visiting the root location',
+            defaultHint: 'default to "index.html"',
+          },
           directory: {
             type: 'boolean',
             description: 'Enable serveIndex middleware',
