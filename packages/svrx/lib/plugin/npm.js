@@ -28,6 +28,7 @@ function normalizeNpmCommand(command) {
 const view = normalizeNpmCommand('view');
 const search = normalizeNpmCommand('search');
 
+/* @deprecated use svrx-ui/npm.install instead */
 function install(option) {
   const root = option.path;
   const npmLoad = option.npmLoad;

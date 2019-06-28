@@ -38,7 +38,7 @@ const install = (option) => {
       if (err) return reject(err);
       if (!result) return resolve(result);
       const len = result.length;
-      const [name, version] = result[len - 1][0].split('@');
+      const [, name, version] = /(\S+)@(\S+)/.exec(result[len - 1][0]);
       let path = result[len - 1][1];
       // @FIX npmi error
       if (!libPath.isAbsolute(path)) {

@@ -1,13 +1,12 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
 const chalk = require('chalk');
-const _ = require('lodash');
-// const Plugin = require('./plugin')
+const { npm } = require('svrx-util');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
-const { install, getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
+const { getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
 
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
@@ -163,11 +162,7 @@ class PluginSystem {
       installOptions.localInstall = true;
     }
 
-    const release = logger.progress(`installing ${installOptions.name}`, 'notify');
-
-    const installRet = await install(installOptions);
-
-    if (release) release();
+    const installRet = await npm.install(installOptions);
 
     let pkg;
     try {
