@@ -75,7 +75,7 @@ program
       if (versions && versions.length > 0) {
         console.log('Svrx Versions Installed:\n');
         console.log(versions.join(', '), '\n');
-        if (tags.latest !== versions[versions.length - 1]) {
+        if (tags.latest.indexOf('-') === -1 && tags.latest !== versions[versions.length - 1]) {
           console.log('There is a new version of svrx, run "svrx install" to install the latest one.');
         }
       } else {
@@ -111,7 +111,7 @@ program
   .description(COMMANDS.install.description)
   .action(async (version) => {
     if (typeof version !== 'string') {
-      version = 'latest';
+      version = undefined;
     }
 
     try {

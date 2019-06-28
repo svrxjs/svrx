@@ -10,7 +10,7 @@ const getVersions = async () => {
   return _.chain(result)
     .values()
     .first()
-    .value().versions;
+    .value().versions.filter(v => v.indexOf('-') === -1);
 };
 
 const getTags = async () => {
@@ -27,11 +27,12 @@ const getTags = async () => {
  * @returns {Promise<*>}
  */
 const install = async (version) => {
+  const installVersion = version || (await getVersions()[0]);
   const tmpObj = tmp.dirSync();
   const tmpPath = tmpObj.name;
   const options = {
     name: 'svrx',
-    version,
+    version: installVersion,
     path: tmpPath,
     npmLoad: {
       loaded: false,

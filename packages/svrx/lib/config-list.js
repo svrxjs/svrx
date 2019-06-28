@@ -18,6 +18,11 @@ module.exports = {
     group: GROUPS.CORE,
     ui: false,
   },
+  registry: {
+    type: 'string',
+    description: 'the registry of npm',
+    group: GROUPS.CORE,
+  },
   port: {
     type: 'number',
     default: 8000,

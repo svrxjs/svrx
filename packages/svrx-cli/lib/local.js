@@ -16,6 +16,8 @@ module.exports = {
   getLatestVersion: () => {
     const versions = getVersions();
     versions.sort((v1, v2) => semver.lt(v1, v2));
+    const noBetaVersions = versions.filter(v => v.indexOf('-') === -1);
+    if (noBetaVersions.length > 0) return noBetaVersions[0];
     return versions.length > 0 ? versions[0] : null;
   },
 
