@@ -44,7 +44,18 @@ function nodeCall(fnReturnPromise, ...args) {
 }
 
 function normalizePluginName(name) {
-  return name.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + name : name;
+  const combineName = n => (n.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + n : n);
+  const isScoped = name.indexOf('/') >= 0;
+
+  if (isScoped) {
+    const matches = /^@(\w+)\/(.*)$/.exec(name);
+    if (matches.length === 3) {
+      const scope = matches[1];
+      const realName = matches[2];
+      return `@${scope}/${combineName(realName)}`;
+    }
+  }
+  return combineName(name);
 }
 
 function isWritableStream(test) {
