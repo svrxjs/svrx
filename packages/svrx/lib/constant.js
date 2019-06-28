@@ -15,6 +15,7 @@ module.exports = {
     DEFAULT: 10,
     HISTORY_API_FALLBACK: 20,
     PROXY: 21,
+    MOCK: 30,
     TRANSFORM: 100,
     INJECTOR: 101,
   },

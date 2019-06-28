@@ -73,13 +73,25 @@ async function proxy({ proxyRule, ctx }) {
     strictSSL: secure,
   };
 
-  return request(options);
+  const rsp = await request(options);
+  Object.keys(rsp.headers)
+    .filter(item => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
+    .forEach(item => ctx.set(item, rsp.headers[item]));
+
+  const isGzipHtml = isRespGzip(rsp.headers) && isHtmlType(rsp.headers);
+  if (isGzipHtml) {
+    rsp.body = await gunzip(rsp.body);
+    ctx.set('content-encoding', 'identity');
+  }
+
+  ctx.status = rsp.statusCode;
+  ctx.body = rsp.body;
 }
 
 module.exports = {
   priority: PRIORITY.PROXY,
   hooks: {
-    async onCreate({ config }) {
+    async onCreate({ middleware, config }) {
       const proxyConfig = config.get('proxy');
       if (proxyConfig) {
         if (_.isArray(proxyConfig)) {
@@ -93,33 +105,38 @@ module.exports = {
           });
         }
       }
+
+      // add proxy api to ctx
+      middleware.add('$proxy.api', {
+        priority: PRIORITY.MOCK + 1,
+        onCreate: () => async (ctx, next) => {
+          ctx.proxy = async (context, proxyRule) => {
+            await proxy({
+              ctx: context,
+              proxyRule,
+            });
+          };
+          return next();
+        },
+      });
     },
 
     async onRoute(ctx, next, { config }) {
       const proxyConfig = config.get('proxy');
 
-      if (!proxyConfig) return next();
+      if (!proxyConfig) {
+        await next();
+        return;
+      }
 
       const proxyRule = match(ctx.url, proxyConfig);
 
-      if (!proxyRule) return next();
-
-      const rsp = await proxy({ proxyRule, ctx });
-
-      Object.keys(rsp.headers)
-        .filter(item => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
-        .forEach(item => ctx.set(item, rsp.headers[item]));
-
-      const isGzipHtml = isRespGzip(rsp.headers) && isHtmlType(rsp.headers);
-      if (isGzipHtml) {
-        rsp.body = await gunzip(rsp.body);
-        ctx.set('content-encoding', 'identity');
+      if (!proxyRule) {
+        await next();
+        return;
       }
 
-      ctx.status = rsp.statusCode;
-      ctx.body = rsp.body;
-
-      return next();
+      await proxy({ proxyRule, ctx });
     },
   },
 };
