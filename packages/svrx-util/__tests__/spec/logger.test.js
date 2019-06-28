@@ -11,7 +11,6 @@ describe('logger', () => {
       Logger.stream = new Writable({});
       Logger.stream._write = (chunk, encode, cb) => {
         cached += chunk.toString();
-        console.log('====write', cached);
         cb();
       };
 
