@@ -28,8 +28,7 @@
     "webpack:build": "webpack --config ./scripts/webpack.injector.js",
     "dev": "npm run webpack:dev",
     "build": "npm run webpack:build",
-    "coverage": " nyc report --reporter=text-lcov | coveralls",
-    "prepublish": "npm run webpack:build"
+    "coverage": " nyc report --reporter=text-lcov | coveralls"
   },
   "dependencies": {
     "ajv-errors": "^1.0.1",
