@@ -16,19 +16,25 @@
     },
     "cacheDir": ".changelog"
   },
-  "commoand": {
+  "command": {
     "version": {
-      "allowBranch": "master"
+      "message": "chore(release): publish",
+      "allowBranch": [
+        "master",
+        "hello-svrx"
+      ]
     },
     "publish": {
-      "message": "chore(release): publish",
       "ignoreChanges": [
         "ignored-file",
         "*.md",
         "*.txt",
         "__tests__/**"
       ],
-      "allowBranch": "master"
+      "allowBranch": [
+        "master",
+        "hello-svrx"
+      ]
     }
   }
 }
