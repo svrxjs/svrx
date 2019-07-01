@@ -67,6 +67,7 @@ describe('Plugin System', () => {
       }).then((ret) => {
         expect(ret.name).to.equal('svrx-plugin-test');
         expect(ret.version).to.equal('0.0.1');
+        /* eslint-disable global-require, import/no-dynamic-require */
         const testModule = require(libPath.join(TEST_PLUGIN_PATH));
         expect(testModule.name).to.equal('test');
         done();
@@ -74,9 +75,9 @@ describe('Plugin System', () => {
     }).timeout(10000);
     it('npm view version', (done) => {
       npm.view(['svrx-plugin-demo@*', 'engines']).then((ret) => {
-        for (const i in ret) {
+        Object.keys(ret).forEach((i) => {
           expect(ret[i].engines.svrx).to.not.equal(undefined);
-        }
+        });
         done();
       });
     }).timeout(10000);
@@ -87,8 +88,8 @@ describe('Plugin System', () => {
         .then((ret) => {
           expect(ret).to.equal('1.0.2');
           changeVersion('0.0.3');
-          return npm.getSatisfiedVersion('demo').then((ret) => {
-            expect(ret).to.equal('1.0.3');
+          return npm.getSatisfiedVersion('demo').then((ret1) => {
+            expect(ret1).to.equal('1.0.3');
             done();
             // Restore VERSION
             revert();
@@ -119,7 +120,7 @@ describe('Plugin System', () => {
         config,
       });
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-      system.load(plugins).then((res) => {
+      system.load(plugins).then(() => {
         expect(system.get('test').name).to.equal('test');
         expect(system.get('test').module.priority).to.equal(100);
         done();
@@ -137,7 +138,7 @@ describe('Plugin System', () => {
         config,
       });
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-      system.load(plugins).then((res) => {
+      system.load(plugins).then(() => {
         expect(system.get('demo').name).to.equal('demo');
         done();
       });
@@ -161,7 +162,7 @@ describe('Plugin System', () => {
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system
         .loadOne(plugins[0])
-        .then((res) => {
+        .then(() => {
           expect(system.get('depend').name).to.equal('depend');
           done();
         })
@@ -183,7 +184,7 @@ describe('Plugin System', () => {
         config,
       });
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-      system.load(plugins).then((res) => {
+      system.load(plugins).then(() => {
         expect(system.get('test').path).to.equal(TEST_PLUGIN_PATH);
         done();
       });
@@ -206,13 +207,13 @@ describe('Plugin System', () => {
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system
         .load(plugins)
-        .then((res) => {
+        .then(() => {
           const plugModule = system.get('demo');
           expect(plugModule.name).to.equal('demo');
           return plugModule;
         })
         .then((plugModule) => {
-          system.load(plugins).then((res) => {
+          system.load(plugins).then(() => {
             expect(plugModule).to.equal(system.get('demo'));
             done();
           });
@@ -227,9 +228,7 @@ describe('Plugin System', () => {
             {
               name: 'inplace',
               priority: 10,
-              hooks: {
-                async onRoute(props, ctx, next) {},
-              },
+              hooks: { },
             },
           ],
         },
@@ -238,7 +237,7 @@ describe('Plugin System', () => {
         config,
       });
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-      system.load(plugins).then((res) => {
+      system.load(plugins).then(() => {
         const plugModule = system.get('inplace');
         expect(plugModule.name).to.equal('inplace');
         expect(plugModule.path).to.eql(MODULE_PATH);
@@ -266,7 +265,7 @@ describe('Plugin System', () => {
         const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
         system
           .load(plugins)
-          .then((res) => {
+          .then(() => {
             const plugModule = system.get('demo');
             expect(plugModule.version).to.equal('1.0.2');
 
@@ -294,7 +293,7 @@ describe('Plugin System', () => {
         const revert = changeVersion('0.0.3');
         system
           .loadOne(plugins[0])
-          .then((res) => {
+          .then(() => {
             done('Expect Throw Error, but not');
           })
           .catch((err) => {
@@ -337,7 +336,7 @@ describe('Plugin System', () => {
           .expect(/_getScopedInstance\('hello-world'\)/)
           .end((err) => {
             if (err) return done(err);
-            request(svrx.callback())
+            return request(svrx.callback())
               .get('/svrx/svrx-client.css')
               .expect(/body\{\}/)
               .expect((res) => {
@@ -368,9 +367,9 @@ describe('Plugin System', () => {
           .expect(200)
           .end((err) => {
             if (err) return done(err);
-            request(svrx.callback())
+            return request(svrx.callback())
               .get('/svrx/svrx-client.js')
-              .expect(/console.log\(\'svrx-plugin-test\'\)/)
+              .expect(/console.log\('svrx-plugin-test'\)/)
               .expect(200)
               .end(done);
           });
@@ -498,7 +497,7 @@ describe('Plugin System', () => {
         request(svrx.callback())
           .get('/demo.html')
           .expect('Content-Type', /html/)
-          .expect(/src=\"\/svrx\/svrx-client.js\"/, done);
+          .expect(/src="\/svrx\/svrx-client.js"/, done);
       });
     });
   });

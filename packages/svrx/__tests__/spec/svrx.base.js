@@ -1,13 +1,8 @@
-
-
-const path = require('path');
-
 const ffp = require('find-free-port');
 const request = require('supertest');
 const expect = require('expect.js');
 const Koa = require('koa');
 
-const Configure = require('../../lib/configure');
 const Middleware = require('../../lib/middleware');
 const Svrx = require('../../lib/svrx');
 
@@ -18,13 +13,11 @@ function createServer(option) {
 }
 
 
-const getPort = function (number) {
-  return new Promise((resolve, reject) => {
-    ffp(3000, 8000, '127.0.0.1', number || 1, (err, ...ports) => {
-      resolve(ports);
-    });
+const getPort = number => new Promise((resolve) => {
+  ffp(3000, 8000, '127.0.0.1', number || 1, (err, ...ports) => {
+    resolve(ports);
   });
-};
+});
 
 describe('Basic', () => {
   it('#Callback', (done) => {
@@ -60,8 +53,8 @@ describe('Basic', () => {
 
 
   it('#port conflict', (done) => {
-    getPort().then((p) => {
-      p = p[0];
+    getPort().then((ps) => {
+      const [p] = ps;
       const svrx = createServer({ port: p, open: false });
 
       svrx.start((port) => {
@@ -71,9 +64,8 @@ describe('Basic', () => {
           open: false,
         });
 
-        const config = svrx2.config;
-        svrx2.start((port) => {
-          expect(port).to.not.equal(p);
+        svrx2.start((port2) => {
+          expect(port2).to.not.equal(p);
           svrx.close(() => svrx2.close(done));
         });
       });
@@ -87,7 +79,7 @@ describe('Middleware', () => {
 
     m.add('one', {
       priority: 2,
-      onCreate(config) {
+      onCreate() {
         return async (ctx, next) => {
           ctx.body = 'one';
           await next();
@@ -97,7 +89,7 @@ describe('Middleware', () => {
 
     m.add('two', {
       priority: 1,
-      onCreate(config) {
+      onCreate() {
         return async (ctx, next) => {
           ctx.body += ' two';
           await next();
@@ -113,84 +105,5 @@ describe('Middleware', () => {
       .expect('one two', done);
   });
 
-  describe('Builtin', () => {
-    function joinTest(config1, config2, callback) {
-      getPort(2).then((ports) => {
-        const targetServer = createServer(
-          Object.assign(
-            {
-              port: ports[0],
-              open: false,
-            },
-            config1,
-          ),
-        );
-        targetServer.start(() => {
-          const server = createServer(
-            Object.assign(
-              {
-                port: ports[1],
-                proxy: {
-                  target: `127.0.0.1:${ports[0]}`,
-                },
-              },
-              config2,
-            ),
-          );
-
-          callback(request(server.callback()), targetServer.close.bind(targetServer));
-        });
-      });
-    }
-
-    // it('proxy: basic', (done) => {
-    //     joinTest(
-    //         {
-    //             middlewares: {
-    //                 hello: () => async (ctx, next) => {
-    //                     ctx.body = 'hello';
-    //                 }
-    //             }
-    //         },
-    //         {
-    //             middlewares: {
-    //                 test: () => async (ctx, next) => {
-    //                     ctx.body += ' world';
-    //                 }
-    //             }
-    //         },
-    //         (req, close) => {
-    //             return req.get('/').expect('hello world', () => close(done));
-    //         }
-    //     );
-    // });
-
-    // it('proxy: injector', (done) => {
-    //     joinTest(
-    //         {
-    //             middlewares: {
-    //                 hello: () => async (ctx, next) => {
-    //                     ctx.body = '<body></body>';
-    //                     ctx.response.type = 'html';
-    //                 }
-    //             }
-    //         },
-    //         {
-    //             middlewares: {
-    //                 modify: (config) => async (ctx, next) => {
-    //                     await next();
-    //                     if (/html/.test(ctx.response.get('content-type'))) {
-    //                         ctx.body = transform(ctx.body, '</body>', `<script src='xx.js'></body>`);
-    //                     }
-    //                 }
-    //             }
-    //         },
-    //         (req, close) => {
-    //             req.get('/')
-    //                 .expect('Content-Type', /js/)
-    //                 .expect(`<body><script src='xx.js'></body>`, () => close(done));
-    //         }
-    //     );
-    // });
-  });
+  describe('Builtin', () => { });
 });

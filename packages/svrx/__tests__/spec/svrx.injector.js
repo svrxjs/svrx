@@ -13,7 +13,7 @@ function bufferToStream(buffer) {
 describe('Injector', () => {
   describe('Basic', () => {
     const svrx = new Svrx({});
-    const injector = svrx.injector;
+    const { injector } = svrx;
     const MARK_TESTING = '__svrx_testing__';
 
     injector.add('style', { content: 'body{padding:10px}' });
@@ -31,9 +31,9 @@ describe('Injector', () => {
       request(svrx.callback())
         .get(svrx.config.get('urls.script'))
         .set('accept-encoding', 'identity')
-        .expect(/window\.test\=true/, (err, res) => {
+        .expect(/window\.test=true/, (err) => {
           if (err) return done(err);
-          request(svrx.callback())
+          return request(svrx.callback())
             .get(svrx.config.get('urls.style'))
             .set('accept-encoding', 'identity')
             .expect(/body\{padding:10px\}/)
@@ -53,7 +53,7 @@ describe('Injector', () => {
         .get(svrx.config.get('urls.script'))
         .set('accept-encoding', 'gzip')
         .expect('content-encoding', 'gzip')
-        .expect(/window\.test\=true/, done);
+        .expect(/window\.test=true/, done);
     });
     it('Integration: Injection Testing', (done) => {
       request(svrx.callback())
@@ -65,7 +65,7 @@ describe('Injector', () => {
         })
         .end((err) => {
           if (err) return done(err);
-          request(svrx.callback())
+          return request(svrx.callback())
             .get(svrx.config.get('urls.style'))
             .set('accept-encoding', 'identity')
             .set('Referer', 'test.md')
@@ -82,7 +82,7 @@ describe('Injector', () => {
         middlewares: [
           {
             priority: 12,
-            onCreate: () => async (ctx, next) => {
+            onCreate: () => async (ctx) => {
               ctx.set('Content-Type', 'text/html');
               ctx.body = '<head></head><body></body>';
             },
@@ -103,9 +103,9 @@ describe('Injector', () => {
         middlewares: [
           {
             priority: 12,
-            onCreate: () => async (ctx, next) => {
+            onCreate: () => async (ctx) => {
               ctx.set('Content-Type', 'text/html');
-              ctx.body = bufferToStream(new Buffer('<head></head><body></body>'));
+              ctx.body = bufferToStream(Buffer.from('<head></head><body></body>'));
             },
           },
         ],
@@ -120,29 +120,27 @@ describe('Injector', () => {
   });
 });
 
-describe('IO', () => {
-  const svrx = new Svrx({
-    port: 8001,
-    plugins: [
-      {
-        name: 'io-test',
-        assets: {
-          script: [
-            {
-              content: `
-void function(svrx){
-    const io = svrx.io;
-    const event = svrx.events
-    
-}(window.__svrx__)
-                        `,
-            },
-          ],
-        },
-        hooks: {
-          onRoute: async (ctx, next) => {},
-        },
-      },
-    ],
-  });
-});
+// describe('IO', () => {
+//   new Svrx({
+//     port: 8001,
+//     plugins: [
+//       {
+//         name: 'io-test',
+//         assets: {
+//           script: [
+//             {
+//               content: `
+// void function(svrx){
+//     const io = svrx.io;
+//     const event = svrx.events
+
+// }(window.__svrx__)
+//                         `,
+//             },
+//           ],
+//         },
+//         hooks: { },
+//       },
+//     ],
+//   });
+// });

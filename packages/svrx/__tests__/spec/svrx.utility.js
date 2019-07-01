@@ -3,6 +3,7 @@ const util = require('util');
 const events = require('../../lib/shared/events');
 const semver = require('../../lib/util/semver');
 const consts = require('../../lib/constant');
+const Imodel = require('../../lib/model');
 const im = require('../../lib/util/im');
 
 
@@ -129,10 +130,10 @@ describe('Svrx Utility', () => {
       const bus = events({});
       const marks = [];
       bus.on({
-        a: (evt) => {
+        a: () => {
           marks.push('a');
         },
-        b: (evt) => {
+        b: () => {
           marks.push('b');
         },
       });
@@ -200,8 +201,8 @@ describe('Svrx Utility', () => {
       }).to.throwError();
 
       let count = 0;
-      const fn = (evt) => {
-        count++;
+      const fn = () => {
+        count += 1;
       };
       bus.on('a', fn);
       bus.emit('a')
@@ -220,13 +221,13 @@ describe('Svrx Utility', () => {
       let count = 0;
 
       bus.on('a', () => {
-        count++;
+        count += 1;
       });
       bus.on('a', () => {
-        count++;
+        count += 1;
       });
       bus.on('a', () => {
-        count++;
+        count += 1;
       });
       bus.off('a');
       bus.emit('a').then(() => {
@@ -289,8 +290,6 @@ describe('Svrx Utility', () => {
   });
 
   describe('Imodel', () => {
-    const Imodel = require('../../lib/model');
-
     it('model.get()', () => {
       const model = new Imodel({
         a: {
@@ -397,8 +396,8 @@ describe('Svrx Utility', () => {
       });
 
       let called = 0;
-      model.watch('a', (evt) => {
-        called++;
+      model.watch('a', () => {
+        called += 1;
       });
 
       model.splice('a.b.e', 0, 1);
