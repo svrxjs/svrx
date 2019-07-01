@@ -44,8 +44,8 @@ class Configure {
     const builtinPlugins = BUILTIN_PLUGIN.map(p => ({ name: p }));
     const cliPlugins = this._pickPluginsFromCli(cliOption);
     const rcPlugins = Configure._pickPluginsFromRc(rcOption);
-    const userPlugins = this._mergePlugins(cliPlugins, rcPlugins);
-    const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
+    const userPlugins = Configure._mergePlugins(cliPlugins, rcPlugins);
+    const plugins = Configure._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
 
     _.forEach(plugins, (plugin) => {
       const pIns = new Plugin(plugin, this[BUILTIN_OPTION], this[BUILTIN_DEFAULTS]);
@@ -107,8 +107,8 @@ class Configure {
     const builtinPlugins = BUILTIN_PLUGIN.map(p => ({ name: p }));
     const cliPlugins = this._pickPluginsFromCli(this[CLI_OPTION]);
     const rcPlugins = Configure._pickPluginsFromRc(rcOptions);
-    const userPlugins = this._mergePlugins(cliPlugins, rcPlugins);
-    const plugins = this._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
+    const userPlugins = Configure._mergePlugins(cliPlugins, rcPlugins);
+    const plugins = Configure._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
     // rc file change, reload all plugins
     this[PLUGINS] = [];
     _.forEach(plugins, (plugin) => {
@@ -261,8 +261,7 @@ class Configure {
      * @returns {*}
      * @private
      */
-  // eslint-disable-next-line class-methods-use-this
-  _mergePlugins(srcPlugins = [], addonPlugins = []) {
+  static _mergePlugins(srcPlugins = [], addonPlugins = []) {
     const pluginMap = new Map();
 
     _.forEach(addonPlugins, (p) => {
