@@ -1,6 +1,7 @@
-// migrated from
-// https://github.com/leeluolee/mcss/blob/master/lib/helper/type.js integrated
-// sorted type broadcast and unsorted version
+// migrated from https://github.com/leeluolee/mcss/blob/master/lib/helper/event.js
+
+// integrated sorted type broadcast and unsorted version
+/* eslint no-continue: "off", no-await-in-loop: "off" */
 
 function getEvtObj(type, payload) {
   let _stopped = false;
@@ -37,8 +38,14 @@ const API = {
         return this;
       }
 
-      watchers.push(watcher);
-      watchers.sort((a, b) => b.priority - a.priority);
+      for (let j = watchers.length - 1; j >= 0; j -= 1) {
+        const call = watchers[j];
+        if (call.priority >= priority) {
+          watchers.splice(j + 1, 0, watcher);
+          return this;
+        }
+      }
+      watchers.unshift(watcher);
     }
     return this;
   },
@@ -66,15 +73,18 @@ const API = {
   },
   async emit(type, payload, sorted) {
     const handles = this._handles;
-    const watchers = handles[type];
     let passedEvtObj;
-    let
-      pending;
+    let pending;
     if (!sorted) {
       pending = [];
     }
 
-    if (!handles || !watchers) return this;
+    if (!handles) return this;
+
+    const watchers = handles[type];
+
+    if (!watchers) return this;
+
     for (let i = 0, len = watchers.length; i < len; i += 1) {
       const watcher = watchers[i];
       const fn = watcher && watcher.fn;

@@ -12,7 +12,7 @@ const socket = ioClient.connect(origin);
 
 io._socket = socket;
 
-io.call = (function () {
+io.call = (function getCall() {
   const MAX_LIMIT_SERVICES = 500;
 
   const CALLBACK_CACHE = cache({
@@ -63,7 +63,6 @@ io.call = (function () {
 io.emit = (type, payload) => {
   socket.emit('$message', { type, payload });
 };
-
 io.on = (type, callback) => {
   eventObject.on(type, callback);
 };

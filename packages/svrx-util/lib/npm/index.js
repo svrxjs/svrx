@@ -14,10 +14,9 @@ const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
   progress: false,
 };
 const load = _.memoize(nUtil.promisify(npm.load).bind(npm, SILENT_SUGAR_NOT_NECESSARILY_WORKS));
-const normalizeNpmCommand = command => async function (...args) {
+const normalizeNpmCommand = command => async function callNpm(...args) {
   await load();
-  const ret = await npCall(npm.commands[command], args);
-  return ret;
+  return npCall(npm.commands[command], args);
 };
 
 const view = normalizeNpmCommand('view');

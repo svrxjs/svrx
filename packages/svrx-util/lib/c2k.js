@@ -20,38 +20,40 @@ function handler(ctx, connectMiddleware, options) {
 
   return new Promise((resolve, reject) => {
     function makeInjectedResponse(koaCtx, whenEnded) {
-      const res = koaCtx.res;
+      const { res } = koaCtx;
 
       res.on('close', whenEnded).on('finish', whenEnded);
 
       // koa2.0 initial assign statusCode to 404, default reset it to 200
       let dummyRes;
+      let statusCodeSetted = false;
+      function default404to200() {
+        if (!statusCodeSetted && res.statusCode === 404) {
+          res.statusCode = 200;
+        }
+      }
       if (!dummyRes) {
-        let statusCodeSetted = false;
-        const default404to200 = function () {
-          if (!statusCodeSetted && res.statusCode === 404) {
-            res.statusCode = 200;
-          }
-        };
         let buffer = Buffer.from([]);
         dummyRes = {
           __proto__: res,
-          end(cnt) {
+          end(...args) {
+            const cnt = args[0];
             if (options.bubble) {
               ctx.respond = true;
               ctx.body = cnt ? Buffer.concat([buffer, Buffer.from(cnt)]) : buffer;
               resolve(false); // can't trigger finish or end
             } else {
-              res.end(...arguments);
+              res.end(...args);
             }
             default404to200();
           },
-          write(cnt) {
+          write(...args) {
+            const cnt = args[0];
             if (options.bubble) {
               ctx.respond = true;
               buffer = Buffer.concat([buffer, Buffer.from(cnt)]);
             } else {
-              res.write(...arguments);
+              res.write(...args);
             }
             default404to200();
           },
@@ -62,13 +64,13 @@ function handler(ctx, connectMiddleware, options) {
           get statusCode() {
             return res.statusCode;
           },
-          writeHead() {
+          writeHead(...args) {
             statusCodeSetted = true;
-            return res.writeHead(...arguments);
+            return res.writeHead(...args);
           },
-          setHeader() {
+          setHeader(...args) {
             statusCodeSetted = true;
-            return res.setHeader(...arguments);
+            return res.setHeader(...args);
           },
         };
       }
@@ -125,6 +127,7 @@ function koaConnect(connectMiddleware, options) {
       ctx.respond = true;
       throw err;
     }
+    return next();
   };
 }
 

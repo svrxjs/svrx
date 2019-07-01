@@ -130,7 +130,7 @@ function getExternalIp() {
   return ips;
 }
 
-const formatDate = (function () {
+const formatDate = (function getFormatDate() {
   function fix(str) {
     str = `${str || ''}`;
     return str.length <= 1 ? `0${str}` : str;
@@ -157,7 +157,7 @@ const formatDate = (function () {
   };
 
   const trunk = new RegExp(Object.keys(maps).join('|'), 'g');
-  return function (value, format) {
+  return (value, format) => {
     format = format || 'yyyy-MM-dd HH:mm';
     value = new Date(value);
 

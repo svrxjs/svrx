@@ -7,6 +7,17 @@ const im = require('./util/im');
 
 const MUTATIONS = ['produce', 'set', 'splice', 'del'];
 
+class WatchEvent {
+  constructor(prev, current, root) {
+    this.affect = (pathes) => {
+      if (root) {
+        return !im.equal(im.get(prev, root), im.get(current, root), pathes);
+      }
+      return !im.equal(prev, current, pathes);
+    };
+  }
+}
+
 class ImmutableModel {
   constructor(target) {
     this[TARGET_KEY] = Object.assign({}, target || {});
@@ -60,7 +71,7 @@ class ImmutableModel {
 
   unwatch(watcher) {
     const watchers = this[WATCH_KEY];
-    for (let idx = watchers.length; idx -= 1;) {
+    for (let idx = watchers.length - 1; idx >= 0; idx -= 1) {
       if (watchers[idx] === watcher) {
         watchers.splice(idx, 1);
       }
@@ -70,6 +81,7 @@ class ImmutableModel {
   _record() {
     if (this._mark) return false;
     this._mark = this[TARGET_KEY];
+    return true;
   }
 
   _release() {
@@ -89,18 +101,9 @@ class ImmutableModel {
         }
       }
     });
+    return this;
   }
 }
 
-class WatchEvent {
-  constructor(prev, current, root) {
-    this.affect = (pathes) => {
-      if (root) {
-        return !im.equal(im.get(prev, root), im.get(current, root), pathes);
-      }
-      return !im.equal(prev, current, pathes);
-    };
-  }
-}
 
 module.exports = ImmutableModel;

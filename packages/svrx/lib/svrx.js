@@ -1,3 +1,6 @@
+/* eslint no-console: "off" */
+
+
 const chalk = require('chalk');
 const http = require('http');
 const https = require('https');

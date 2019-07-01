@@ -1,31 +1,135 @@
+/* eslint global-require: 'off' */
+
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
+const querystring = require('querystring');
+const pluginWebpack = require('webpack');
 const nodeResolve = require('resolve');
 const compose = require('koa-compose');
 const semver = require('semver');
 const { c2k } = require('svrx-util');
 const libPath = require('path');
-const querystring = require('querystring');
 
 const CLIENT_ENTRY = 'webpack-hot-middleware/client';
 const NOT_VALID_VERSION = Symbol('NOT_VALID_VERSION');
-const WEBPACK_VERSION = getWebpackDependencyVersion();
+
+function getRealClientEntry(config) {
+  try {
+    return nodeResolve
+      .sync(CLIENT_ENTRY, { basedir: config.getInfo().path })
+      .replace(/\.js$/, '');
+  } catch (e) {
+    // fallback to relative entry
+    return CLIENT_ENTRY;
+  }
+}
+
+function handleSingleEntery(entry, hotEntry) {
+  if (!entry) return entry;
+
+  if (typeof entry === 'string') {
+    return [entry, hotEntry];
+  }
+  if (Array.isArray(entry)) {
+    const hasHotEntry = entry.some((ety) => {
+      if (typeof ety === 'string' && ety.indexOf(CLIENT_ENTRY) !== -1) {
+        return true;
+      }
+      return false;
+    });
+    if (!hasHotEntry) entry.push(hotEntry);
+    return entry;
+  }
+  if (typeof entry === 'object') {
+    Object.keys(entry).forEach((i) => {
+      entry[i] = handleSingleEntery(entry[i], hotEntry);
+    });
+    return entry;
+  }
+  return null;
+}
+
+function prepareEntry(entry, webpackConfig, config) {
+  if (!config.get('hot')) {
+    return entry;
+  }
+
+  const path = config.get('path');
+  const clientConfig = config.get('client') || {};
+  if (path) {
+    clientConfig.path = path;
+  }
+  const realClientEntry = getRealClientEntry(config);
+  const qs = querystring.encode(clientConfig);
+  const hotEntry = `${realClientEntry}${qs ? `?${qs}` : ''}`;
+  return handleSingleEntery(entry, hotEntry);
+}
+
+function closeWatcher(watcher) {
+  return new Promise((resolve) => {
+    watcher.close(resolve);
+  });
+}
+
+function normalizeResource(root, path) {
+  return libPath.resolve(root, path);
+}
+
+function getWebpackDependencyVersion() {
+  return require('./package.json').dependencies.webpack;
+}
+
+function prepareConfig(webpackConfig, logger, webpack, config) {
+  if (!webpackConfig.mode) {
+    webpackConfig.mode = 'development';
+  }
+  if (webpackConfig.mode !== 'development') {
+    logger.warn('webpack isnt running in [develoment] mode');
+  }
+
+  const plugins = webpackConfig.plugins || (webpackConfig.plugins = []);
+  const { hasHMR, hasNM } = plugins.reduce((flags, p) => {
+    if (p instanceof webpack.HotModuleReplacementPlugin) {
+      config.set('hot', true);
+      flags.hasHMR = true;
+    }
+    if (p instanceof webpack.NamedModulesPlugin) {
+      flags.hasNM = true;
+    }
+    return flags;
+  }, {});
+
+  if (config.get('hot')) {
+    if (!hasHMR) {
+      plugins.push(new webpack.HotModuleReplacementPlugin());
+    }
+    if (!hasNM) {
+      plugins.push(new webpack.NamedModulesPlugin());
+    }
+  }
+  webpackConfig.entry = prepareEntry(
+    webpackConfig.entry,
+    webpackConfig,
+    config,
+  );
+  return webpackConfig;
+}
 
 module.exports = {
   configSchema: {
     file: {
       type: 'string',
       description:
-        'webpack\'s config file, default using webpack.config.js in root',
+        'webpack config file, default using webpack.config.js in root',
     },
     hot: {
       type: 'boolean',
       default: true,
-      description: 'Enable webpack\'s Hot Module Replacement feature',
+      description: 'Enable webpack Hot Module Replacement feature',
     },
     client: {
       type: 'object',
-      description: 'Enable webpack\'s Hot Module Replacement feature',
+      description: 'Enable webpack Hot Module Replacement feature',
     },
     path: {
       type: 'string',
@@ -39,6 +143,7 @@ module.exports = {
     }) {
       // @TODO: use local webpack first
 
+      const WEBPACK_VERSION = getWebpackDependencyVersion();
       let webpack;
       let localWebpackConfig;
       const root = config.get('$.root');
@@ -53,11 +158,15 @@ module.exports = {
           nodeResolve('webpack', { basedir: root }, (err, res, pkg) => {
             if (err) return reject(err);
             if (!semver.satisfies(pkg.version, WEBPACK_VERSION)) {
-              const err = new Error(`local webpack.version [${pkg.version}] is not satisfies plugin-webpack: ${WEBPACK_VERSION}`);
-              err.code = NOT_VALID_VERSION;
-              reject(err);
+              const errObj = new Error(
+                `local webpack.version [${
+                  pkg.version
+                }] is not satisfies plugin-webpack: ${WEBPACK_VERSION}`,
+              );
+              errObj.code = NOT_VALID_VERSION;
+              reject(errObj);
             }
-            resolve(require(res));
+            return resolve(require(res));
           });
         });
       } catch (e) {
@@ -65,7 +174,7 @@ module.exports = {
           logger.error(e.message);
           return e;
         }
-        webpack = require('webpack');
+        webpack = pluginWebpack;
         logger.warn(
           `load localwebpack from (${root}) failed, use webpack@${
             webpack.version
@@ -91,7 +200,7 @@ module.exports = {
       // process local webpack config
 
       const oldCompilerWatch = compiler.watch.bind(compiler);
-      const dataToBeRecycle = {
+      let dataToBeRecycle = {
         watchers: [],
         modules: [],
       };
@@ -142,7 +251,7 @@ module.exports = {
       });
 
       events.on('file:change', (evt) => {
-        const path = evt.payload.path;
+        const { payload: { path } } = evt;
         // means it is a webpack resource
         if (config.get('hot') && dataToBeRecycle.modules.indexOf(path) !== -1) {
           evt.stop();
@@ -157,7 +266,7 @@ module.exports = {
 
       // destory logic
       return async () => {
-        const p = Promise.all(watchers.map(closeWatcher));
+        const p = Promise.all(dataToBeRecycle.watchers.map(closeWatcher));
         dataToBeRecycle = {};
         return p;
       };
@@ -166,106 +275,3 @@ module.exports = {
 };
 
 // prepare webpack config
-
-function prepareConfig(webpackConfig, logger, webpack, config) {
-  if (!webpackConfig.mode) {
-    webpackConfig.mode = 'development';
-  }
-  if (webpackConfig.mode !== 'development') {
-    logger.warn('webpack isn\'t running in [develoment] mode');
-  }
-
-  const plugins = webpackConfig.plugins || (webpackConfig.plugins = []);
-  const { hasHMR, hasNM } = plugins.reduce((flags, p) => {
-    if (p instanceof webpack.HotModuleReplacementPlugin) {
-      config.set('hot', true);
-      flags.hasHMR = true;
-    }
-    if (p instanceof webpack.NamedModulesPlugin) {
-      flags.hasNM = true;
-    }
-    return flags;
-  }, {});
-
-  if (config.get('hot')) {
-    if (!hasHMR) {
-      plugins.push(new webpack.HotModuleReplacementPlugin());
-    }
-    if (!hasNM) {
-      plugins.push(new webpack.NamedModulesPlugin());
-    }
-  }
-  webpackConfig.entry = prepareEntry(
-    webpackConfig.entry,
-    webpackConfig,
-    config,
-  );
-  return webpackConfig;
-}
-
-function prepareEntry(entry, webpackConfig, config) {
-  if (!config.get('hot')) {
-    return entry;
-  }
-
-  const path = config.get('path');
-  const clientConfig = config.get('client') || {};
-  if (path) {
-    clientConfig.path = path;
-  }
-  const realClientEntry = getRealClientEntry(config);
-  const qs = querystring.encode(clientConfig);
-  const hotEntry = `${realClientEntry}${qs ? `?${qs}` : ''}`;
-  return handleSingleEntery(entry, hotEntry);
-}
-
-function handleSingleEntery(entry, hotEntry) {
-  if (!entry) return entry;
-
-  if (typeof entry === 'string') {
-    return [entry, hotEntry];
-  }
-  if (Array.isArray(entry)) {
-    const hasHotEntry = entry.some((ety) => {
-      if (typeof ety === 'string' && ety.indexOf(CLIENT_ENTRY) !== -1) {
-        return true;
-      }
-    });
-    if (!hasHotEntry) entry.push(hotEntry);
-    return entry;
-  }
-  if (typeof entry === 'object') {
-    for (const i in entry) {
-      if (entry.hasOwnProperty(i)) {
-        entry[i] = handleSingleEntery(entry[i], hotEntry);
-      }
-    }
-    return entry;
-  }
-}
-
-function closeWatcher(watcher) {
-  return new Promise((resolve) => {
-    watcher.close(resolve);
-  });
-}
-
-function normalizeResource(root, path) {
-  return libPath.resolve(root, path);
-}
-
-function getRealClientEntry(config) {
-  try {
-    return nodeResolve
-      .sync(CLIENT_ENTRY, { basedir: config.getInfo().path })
-      .replace(/\.js$/, '');
-  } catch (e) {
-    // fallback to relative entry
-    return CLIENT_ENTRY;
-  }
-}
-
-
-function getWebpackDependencyVersion() {
-  return require('./package.json').dependencies.webpack;
-}

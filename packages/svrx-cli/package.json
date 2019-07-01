@@ -33,5 +33,8 @@
     "update-notifier": "^3.0.0",
     "user-home": "^2.0.0",
     "yargs-parser": "^13.1.0"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1"
   }
 }

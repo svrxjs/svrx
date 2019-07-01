@@ -46,7 +46,7 @@ class Logger {
     const stdout = Logger.stream;
     Logger.oldWrite = stdout._write;
 
-    stdout._write = function (...args) {
+    stdout._write = function write(...args) {
       args[0] = '';
       return Logger.oldWrite.apply(this, args);
     };
@@ -61,12 +61,10 @@ class Logger {
     Logger.state = STATE.UNLOCKED;
   }
 
-  get chalk() {
-    return chalk;
-  }
 
   constructor(category = 'global') {
     this.category = category;
+    this.chalk = chalk;
   }
 
   _getWriteMsg(msg, label) {
@@ -109,14 +107,14 @@ class Logger {
 
     Logger.lock();
 
-    return function () {
+    return function release() {
       Logger.release();
       spinner.stop();
     };
   }
 
   log(...args) {
-    return this.notify.apply(this, args);
+    return this.notify(...args);
   }
 }
 
@@ -125,7 +123,7 @@ Logger.state = STATE.UNLOCKED;
 Logger.stream = process.stdout;
 
 LEVELS.forEach((level) => {
-  Logger.prototype[level] = function (msg) {
+  Logger.prototype[level] = function write(msg) {
     this.write(msg, level);
   };
 });
