@@ -2,3 +2,4 @@ node_modules
 packages/**/assets/**/*.js
 packages/**/dist/**/*.js
 packages/**/__tests__/**/*.js
+packages/svrx-toolkit/**/*.js

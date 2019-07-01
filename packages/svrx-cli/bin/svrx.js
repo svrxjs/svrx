@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+/* eslint-disable no-console */
 const program = require('commander');
 const parse = require('yargs-parser');
 const { logger } = require('svrx-util');
