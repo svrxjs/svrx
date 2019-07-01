@@ -4,7 +4,8 @@ const events = require('../shared/events');
 const cache = require('../shared/cache');
 const uid = require('../shared/uid');
 
-const io = (module.exports = events({}));
+const io = (module.exports = {});
+const eventObject = events();
 const origin = window.location.origin;
 const socket = ioClient.connect(origin);
 
@@ -58,7 +59,18 @@ io.call = (function () {
   };
 }());
 
+io.emit = (type, payload)=>{
+  socket.emit('$message', {type, payload})
+}
+io.on = (type, callback)=>{
+  eventObject.on(type, callback);
+}
+
+io.off = (type, callback)=>{
+  eventObject.off(type, callback);
+}
+
 // one endpoint to distribute message
 socket.on('$message', ({ type, payload }) => {
-  io.emit(type, payload);
+  eventObject.emit(type, payload);
 });

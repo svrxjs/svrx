@@ -12,7 +12,7 @@ class IO {
     const io = (this._io = require('socket.io')(server));
     io.on('connection', (socket) => {
       socket.on('$message', ({ type, payload }) => {
-        this.events.emit(type, payload);
+        this.events.emit.call(this, type, payload);
       });
       socket.on('$call', (evt) => {
         this.call(evt.serviceName, evt.payload)
