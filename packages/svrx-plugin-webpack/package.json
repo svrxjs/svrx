@@ -1,6 +1,6 @@
 {
   "name": "svrx-plugin-webpack",
-  "version": "0.0.2",
+  "version": "0.0.3-beta.0",
   "description": "> TODO: description",
   "keywords": [
     "svrx",
@@ -30,7 +30,7 @@
     "koa-compose": "^4.1.0",
     "resolve": "^1.11.0",
     "semver": "^6.1.2",
-    "svrx-util": "^0.0.2",
+    "svrx-util": "^0.0.3-beta.0",
     "webpack": "^4.0.0",
     "webpack-dev-middleware": "^3.7.0",
     "webpack-hot-middleware": "^2.25.0"

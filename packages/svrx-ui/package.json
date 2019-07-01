@@ -1,7 +1,7 @@
 {
   "name": "svrx-ui",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3-beta.0",
   "description": "> TODO: description",
   "license": "MIT",
   "main": "lib/svrx-ui.js",
@@ -17,7 +17,5 @@
     "expect.js": "^0.3.1",
     "mocha": "^6.1.2",
     "nyc": "^13.3.0"
-  },
-  "dependencies": {
   }
 }

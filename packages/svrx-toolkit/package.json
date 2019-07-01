@@ -1,7 +1,7 @@
 {
   "name": "svrx-toolkit",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2-beta.0",
   "description": "Toolkit for svrx",
   "keywords": [
     "svrx",
