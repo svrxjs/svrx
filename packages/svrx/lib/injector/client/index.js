@@ -1,11 +1,12 @@
 const events = require('../../shared/events');
 const io = require('../../io/client.js');
 
-function getConfig(name) {
+function getConfig(...args) {
+  const [name] = args;
   return ['get', 'set', 'splice', 'unset', ''].reduce((api, right) => {
-    api[right] = function () {
-      const args = [].slice.call(arguments);
-      return io.call('$.config', { scope: name, command: right, params: args });
+    api[right] = () => {
+      const params = [].slice.call(args);
+      return io.call('$.config', { scope: name, command: right, params });
     };
     return api;
   }, {});

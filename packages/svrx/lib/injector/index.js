@@ -52,7 +52,7 @@ module.exports = class Injector {
   // serve  /puer/puer-client.css
   // @TODO 304 Logic
   async onClient(ctx, next) {
-    const config = this.config;
+    const { config } = this;
 
     let match;
     ['style', 'script'].some((name) => {
@@ -60,6 +60,7 @@ module.exports = class Injector {
         match = name;
         return true;
       }
+      return false;
     });
     if (match) {
       const isGzip = isAcceptGzip(ctx.headers);
@@ -80,7 +81,7 @@ module.exports = class Injector {
     const appendContent = assets
       .filter(m => !m.test || m.test(ctx.get('Referer')))
       .map((m) => {
-        let content = m.content;
+        let { content } = m;
         if (typeof content === 'function') {
           content = content(m.config || this.config);
         }
@@ -111,7 +112,7 @@ module.exports = class Injector {
 
   // @TODO FIX </body> split case
   transform(body) {
-    const config = this.config;
+    const { config } = this;
     const replaceScript = ['</body>', `<script async src="${config.get('urls.script')}"></script></body>`];
     const replaceStyle = [
       '</head>',

@@ -1,7 +1,7 @@
 const Configure = require('../configure');
 const { PRIORITY } = require('../constant');
 const compose = require('../util/compose');
-const cache = require('../shared/cache');
+const limitCache = require('../shared/cache');
 
 const MIDDLEWARE_CACHE = Symbol('middleware');
 const COMPOSE_KEY = Symbol('compose_key');
@@ -10,7 +10,7 @@ const MAX_LIMIT_MIDDLEWARES = 200;
 class MiddlewareManager {
   constructor(config) {
     this.config = config || new Configure();
-    this[MIDDLEWARE_CACHE] = cache({
+    this[MIDDLEWARE_CACHE] = limitCache({
       limit: MAX_LIMIT_MIDDLEWARES,
       onError() {
         throw Error('max middleware size limit exceeded');
@@ -18,9 +18,9 @@ class MiddlewareManager {
     });
     const basicMiddlewares = this.config.get('middlewares');
     if (basicMiddlewares) {
-      for (const i in basicMiddlewares) {
-        this.add(i, basicMiddlewares[i]);
-      }
+      Object.keys(basicMiddlewares).forEach((key) => {
+        this.add(key, basicMiddlewares[key]);
+      });
     }
 
     this.add('$ctx', {
@@ -59,7 +59,11 @@ class MiddlewareManager {
   _getSortedKeys() {
     const cache = this[MIDDLEWARE_CACHE];
     const keys = cache.keys();
-    keys.sort((a, b) => (cache.get(b).priority || PRIORITY.DEFAULT) - (cache.get(a).priority || PRIORITY.DEFAULT));
+    keys.sort((a, b) => {
+      const bPriority = cache.get(b).priority || PRIORITY.DEFAULT;
+      const aPriority = cache.get(a).priority || PRIORITY.DEFAULT;
+      return bPriority - aPriority;
+    });
     return keys;
   }
 

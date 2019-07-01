@@ -261,6 +261,7 @@ class Configure {
      * @returns {*}
      * @private
      */
+  // eslint-disable-next-line class-methods-use-this
   _mergePlugins(srcPlugins = [], addonPlugins = []) {
     const pluginMap = new Map();
 

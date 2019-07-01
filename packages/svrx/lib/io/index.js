@@ -1,4 +1,5 @@
 // @TODO Shared IO Logic between server and client
+const io = require('socket.io');
 const events = require('../shared/events');
 const cache = require('../shared/cache');
 const logger = require('../util/logger');
@@ -7,10 +8,10 @@ const SERVICE_CACHE = Symbol('service');
 const MAX_LIMIT_SERVICES = 500;
 
 class IO {
-  constructor({ server, config }) {
+  constructor({ server }) {
     this.events = events();
-    const io = (this._io = require('socket.io')(server));
-    io.on('connection', (socket) => {
+    this._io = io(server);
+    this._io.on('connection', (socket) => {
       socket.on('$message', ({ type, payload }) => {
         this.events.emit.call(this, type, payload);
       });
