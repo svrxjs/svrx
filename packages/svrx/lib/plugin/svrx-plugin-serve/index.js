@@ -7,10 +7,34 @@ const { PRIORITY } = require('../../constant');
 
 const ACCEPT_METHOD = /^(?:GET|HEAD)$/i;
 
+const pathToRegexp = require('path-to-regexp');
+
 module.exports = {
   priority: PRIORITY.SERVE,
+  actions: {
+    serve: (payload) => {
+      if (typeof payload === 'string') payload = { target: payload };
+
+      return async (ctx, next) => {
+        const target = pathToRegexp.compile(payload.target)(ctx.params);
+
+        console.log(target, ctx.path);
+
+        try {
+          await send(ctx, ctx.path, {
+            root: target,
+            gzip: false,
+          });
+        } catch (err) {
+          if (err.status !== 404) {
+            throw err;
+          }
+        }
+      };
+    },
+  },
   hooks: {
-    async onCreate({ middleware, config }) {
+    async onCreate({ middleware, config, api }) {
       // serve index
       const directoryOptions = config.get('serve.directory');
       // undefined = true

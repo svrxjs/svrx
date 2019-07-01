@@ -22,8 +22,9 @@ class PluginSystem {
      * @param {Array} pluginlist
      */
   constructor({
-    events, config, middleware, injector, io,
+    events, config, middleware, injector, io, registAction,
   }) {
+    this.registAction = registAction;
     this.middleware = middleware;
     this.injector = injector;
     this.events = events;
@@ -203,7 +204,7 @@ class PluginSystem {
       module, name, path, pluginConfig,
     } = plugin;
     const {
-      hooks = {}, assets, services, configSchema,
+      hooks = {}, assets, services, configSchema, actions,
     } = module;
     const { onRoute, onCreate /* onOptionChange */ } = hooks;
 
@@ -248,6 +249,13 @@ class PluginSystem {
     //     });
     //   }
     // }
+
+
+    if (actions) {
+      for (const i in actions) {
+        this.registAction(i, actions[i]);
+      }
+    }
 
     // set plugin configs
     if (!isBuiltin && configSchema) {

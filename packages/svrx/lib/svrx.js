@@ -9,7 +9,9 @@ const Koa = require('koa');
 const cosmiconfig = require('cosmiconfig');
 const chokidar = require('chokidar');
 const { getCert, getExternalIp } = require('./util/helper');
+const libPath = require('path');
 
+const { Loader, registAction } = require('./router');
 const PluginSystem = require('./plugin/system');
 const Middleware = require('./middleware');
 const Configure = require('./configure');
@@ -54,7 +56,15 @@ class Svrx {
     this.io = new IO({ config, server, middleware });
     const { events, injector, io } = this;
 
+    // init router loader
+    const route = config.get('route');
+
+    // @TODO
+    const routerLoader = this.routerLoader = new Loader();
+
+
     this.system = new PluginSystem({
+      registAction,
       middleware,
       injector,
       config,
@@ -111,7 +121,18 @@ class Svrx {
 
   async setup() {
     const plugins = this.config.getPlugins();
-    return this.system.load(plugins).then(() => this.system.build());
+    const routerLoader = this.routerLoader;
+    const route = this.config.get('route');
+    const middleware = this.middleware;
+    return this.system.load(plugins).then(() => this.system.build()).then(() => {
+      if (typeof route === 'string') {
+        routerLoader.load(libPath.resolve(this.config.get('root'), route));
+        middleware.add('$router', {
+          priority: 10,
+          onCreate: config => routerLoader.middleware(),
+        });
+      }
+    });
   }
 
   _rcFileRead() {

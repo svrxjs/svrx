@@ -7,22 +7,31 @@ function limitCache(option) {
   const { onError } = option;
   const cache = {};
 
-  return {
-    set(key, value) {
-      if (keys.length > limit) {
-        if (onError) {
-          return onError();
+  function set(key, value) {
+    if (typeof key === 'object') {
+      for (const i in key) {
+        if (key.hasOwnProperty(i)) {
+          set(i, key[i]);
         }
-        throw Error('max cache size limit exceeded');
       }
-      //
-      if (cache[key] === undefined) {
-        keys.push(key);
+      return;
+    }
+    if (keys.length > limit) {
+      if (onError) {
+        return onError();
       }
+      throw Error('max cache size limit exceeded');
+    }
+    //
+    if (cache[key] === undefined) {
+      keys.push(key);
+    }
 
-      cache[key] = value;
-      return value;
-    },
+    cache[key] = value;
+    return value;
+  }
+  return {
+    set,
     get(key) {
       return cache[key];
     },
