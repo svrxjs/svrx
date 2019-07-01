@@ -11,6 +11,7 @@
     "clean": "run-s clean:*",
     "clean:dependency": "lerna clean -y && rimraf -rf node_modules",
     "lerna:version": "lerna version prerelease --preid beta",
+    "lerna:publish": "lerna publish from-git --yes",
     "postinstall": "lerna bootstrap",
     "prepublish": "lerna run build"
   },
@@ -36,6 +37,7 @@
   },
   "husky": {
     "hooks": {
+      "pre-commit": "npm run lint",
       "pre-push": "npm test",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
