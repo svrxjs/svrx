@@ -1,12 +1,19 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
 const chalk = require('chalk');
-const { npm } = require('svrx-util');
+// const { npm } = require('svrx-util');
+const npm = require('./npm');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
 const { getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
+
+function requireEnsure(path) {
+  delete require.cache[path];
+  /* eslint-disable global-require, import/no-dynamic-require */
+  return require(path);
+}
 
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
@@ -165,8 +172,9 @@ class PluginSystem {
     const installRet = await npm.install(installOptions);
 
     let pkg;
+    const requirePath = libPath.join(path || installRet.path, 'package.json');
     try {
-      pkg = require(libPath.join(path || installRet.path, 'package.json'));
+      pkg = requireEnsure(requirePath);
     } catch (e) {
       pkg = {};
     }
@@ -174,7 +182,7 @@ class PluginSystem {
     pluginMap[name] = {
       name,
       path: path || installRet.path,
-      module: require(path || installRet.path),
+      module: requireEnsure(path || installRet.path),
       version: pkg.version,
       pluginConfig,
     };

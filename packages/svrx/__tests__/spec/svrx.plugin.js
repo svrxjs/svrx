@@ -90,9 +90,9 @@ describe('Plugin System', () => {
           changeVersion('0.0.3');
           return npm.getSatisfiedVersion('demo').then((ret1) => {
             expect(ret1).to.equal('1.0.3');
+            revert();
             done();
             // Restore VERSION
-            revert();
           });
         })
         .catch(done);
@@ -228,7 +228,9 @@ describe('Plugin System', () => {
             {
               name: 'inplace',
               priority: 10,
-              hooks: { },
+              hooks: {
+                async onRoute(ctx) { ctx.body = 'hello'; },
+              },
             },
           ],
         },
