@@ -1,4 +1,3 @@
-// @TODO;
 const npm = require('npm');
 const npmi = require('npmi');
 const _ = require('lodash');
@@ -6,9 +5,8 @@ const nUtil = require('util');
 const libPath = require('path');
 const semver = require('../util/semver');
 const DevNull = require('./devnull');
-
 const { npCall, normalizePluginName } = require('../util/helper');
-// @TODO
+
 const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
   loglevel: 'silent',
   silent: true,
@@ -19,7 +17,7 @@ const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
 const load = _.memoize(nUtil.promisify(npm.load).bind(npm, SILENT_SUGAR_NOT_NECESSARILY_WORKS));
 
 function normalizeNpmCommand(command) {
-  return async function (...args) {
+  return async (...args) => {
     await load();
     return npCall(npm.commands[command], args);
   };
@@ -31,7 +29,7 @@ const search = normalizeNpmCommand('search');
 /* @deprecated use svrx-ui/npm.install instead */
 function install(option) {
   const root = option.path;
-  const npmLoad = option.npmLoad;
+  const { npmLoad } = option;
 
   if (npmLoad) {
     _.extend(npmLoad, SILENT_SUGAR_NOT_NECESSARILY_WORKS);
@@ -49,17 +47,9 @@ function install(option) {
       if (!libPath.isAbsolute(path)) {
         path = libPath.join(root, path);
       }
-      resolve({ version, name, path });
+      return resolve({ version, name, path });
     });
   });
-}
-
-// getSatisfiedPackage('svrx-plugin-qrcode')
-async function getSatisfiedVersion(name, semverVersion) {
-  const packages = await getMatchedPkg(name, semverVersion);
-  if (!packages.length) return false;
-  const matchedPackage = semver.getClosestPackage(packages);
-  return matchedPackage ? matchedPackage.version : false;
 }
 
 async function getMatchedPkg(name, semverVersion) {
@@ -73,6 +63,14 @@ async function getMatchedPkg(name, semverVersion) {
     return packages;
   }
   return [];
+}
+
+// getSatisfiedPackage('svrx-plugin-qrcode')
+async function getSatisfiedVersion(name, semverVersion) {
+  const packages = await getMatchedPkg(name, semverVersion);
+  if (!packages.length) return false;
+  const matchedPackage = semver.getClosestPackage(packages);
+  return matchedPackage ? matchedPackage.version : false;
 }
 
 async function listMatchedPackageVersion(name) {

@@ -28,11 +28,8 @@ function limitCache(option) {
     },
     del(key) {
       delete cache[key];
-      for (let len = keys.length; len -= 1;) {
-        if (keys[len] === key) {
-          keys.splice(len, 1);
-        }
-      }
+      const index = keys.findIndex(k => k === key);
+      keys.splice(index, 1);
     },
     values() {
       return keys.map(key => cache[key]);
