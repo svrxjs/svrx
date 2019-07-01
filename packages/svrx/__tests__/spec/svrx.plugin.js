@@ -245,63 +245,61 @@ describe('Plugin System', () => {
       });
     });
 
-    describe('Engine', () => {
-      it('loadVersion', (done) => {
-        const revert = changeVersion('0.0.2');
-        const config = new Configure({
-          rc: {
-            root: MODULE_PATH,
-            plugins: [
-              {
-                name: 'demo',
-                version: '1.0.2',
-              },
-            ],
-          },
-        });
-        const system = new System({
-          config,
-        });
-        const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-        system
-          .load(plugins)
-          .then(() => {
-            const plugModule = system.get('demo');
-            expect(plugModule.version).to.equal('1.0.2');
+    it('loadVersion', (done) => {
+      const revert = changeVersion('0.0.2');
+      const config = new Configure({
+        rc: {
+          root: MODULE_PATH,
+          plugins: [
+            {
+              name: 'demo',
+              version: '1.0.2',
+            },
+          ],
+        },
+      });
+      const system = new System({
+        config,
+      });
+      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      system
+        .load(plugins)
+        .then(() => {
+          const plugModule = system.get('demo');
+          expect(plugModule.version).to.equal('1.0.2');
 
-            revert();
-            done();
-          })
-          .catch(done);
+          revert();
+          done();
+        })
+        .catch(done);
+    });
+    it('load unmatched Version ', (done) => {
+      const config = new Configure({
+        rc: {
+          root: MODULE_PATH,
+          plugins: [
+            {
+              name: 'demo',
+              version: '1.0.10',
+            },
+          ],
+        },
       });
-      it('load unmatched Version ', (done) => {
-        const config = new Configure({
-          rc: {
-            root: MODULE_PATH,
-            plugins: [
-              {
-                name: 'demo',
-                version: '1.0.10',
-              },
-            ],
-          },
-        });
-        const system = new System({
-          config,
-        });
-        const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-        const revert = changeVersion('0.0.3');
-        system
-          .loadOne(plugins[0])
-          .then(() => {
-            done('Expect Throw Error, but not');
-          })
-          .catch((err) => {
-            expect(err).to.match(/unmatched plugin version/);
-            revert();
-            done();
-          });
+      const system = new System({
+        config,
       });
+      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const revert = changeVersion('0.0.3');
+      system
+        .loadOne(plugins[0])
+        .then(() => {
+          done('Expect Throw Error, but not');
+        })
+        .catch((err) => {
+          expect(err).to.match(/unmatched plugin version/);
+          revert();
+          done();
+        });
     });
   });
 
