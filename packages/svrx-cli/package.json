@@ -1,6 +1,6 @@
 {
   "name": "svrx-cli",
-  "version": "0.0.3-beta.1",
+  "version": "0.0.3-beta.2",
   "description": "CLI for svrx",
   "keywords": [
     "svrx",
@@ -28,7 +28,7 @@
     "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
     "semver": "^6.0.0",
-    "svrx-util": "^0.0.3-beta.1",
+    "svrx-util": "^0.0.3-beta.2",
     "tmp": "^0.1.0",
     "update-notifier": "^3.0.0",
     "user-home": "^2.0.0",
