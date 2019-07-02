@@ -6,6 +6,9 @@
     "svrx",
     "svrx-plugin"
   ],
+  "engines": {
+    "svrx": "^0.0.3-beta.0"
+  },
   "homepage": "https://github.com/x-orpheus/svrx#readme",
   "license": "MIT",
   "main": "index.js",
