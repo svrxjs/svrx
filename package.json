@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "changelog": "lerna-changelog",
+    "build": "lerna run build",
     "lint": "run-p lint:*",
     "lint:js": "eslint \"**/*.js\"",
     "fix": "run-p fix:*",
@@ -14,7 +15,7 @@
     "lerna:publish": "lerna publish from-git --yes",
     "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --no-audit && git add packages/*/package-lock.json",
     "postinstall": "lerna bootstrap",
-    "prepublish": "lerna run build"
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@commitlint/cli": "^7.5.2",
