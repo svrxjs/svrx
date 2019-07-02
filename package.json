@@ -12,6 +12,7 @@
     "clean:dependency": "lerna clean -y && rimraf -rf node_modules",
     "lerna:version": "lerna version prerelease --preid beta",
     "lerna:publish": "lerna publish from-git --yes",
+    "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --no-audit && git add packages/*/package-lock.json",
     "postinstall": "lerna bootstrap",
     "prepublish": "lerna run build"
   },
