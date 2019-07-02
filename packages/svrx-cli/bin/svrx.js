@@ -126,6 +126,8 @@ program
   .command('help')
   .description(COMMANDS.help.description)
   .action(async () => {
+    const svrx = await prepareSvrx();
+
     console.log('Usage: svrx <command> [options]\n');
     console.log('Commands and options:\n');
 
@@ -138,7 +140,6 @@ program
     // help info of command:serve
     console.log(`* ${'serve|s'.padEnd(20)}${COMMANDS.serve.description}`);
 
-    const svrx = await prepareSvrx();
     svrx.Svrx.printHelp();
     process.exit(0);
   });
