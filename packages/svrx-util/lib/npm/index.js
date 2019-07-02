@@ -15,8 +15,11 @@ const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
 };
 const load = _.memoize(nUtil.promisify(npm.load).bind(npm, SILENT_SUGAR_NOT_NECESSARILY_WORKS));
 const normalizeNpmCommand = command => async function callNpm(...args) {
+  const spinner = logger.progress('');
   await load();
-  return npCall(npm.commands[command], args);
+  const result = await npCall(npm.commands[command], args);
+  if (spinner) spinner();
+  return result;
 };
 
 const view = normalizeNpmCommand('view');

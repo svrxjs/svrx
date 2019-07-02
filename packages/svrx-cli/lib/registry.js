@@ -44,11 +44,13 @@ const install = async (version) => {
   };
 
   const result = await npm.install(options);
-  const svrxRoot = result.path;
+  const svrxRoot = path.resolve(tmpPath, 'node_modules/svrx');
   const destFolder = path.resolve(config.VERSIONS_ROOT, result.version);
+  const destFolderDependency = path.resolve(config.VERSIONS_ROOT, result.version, 'node_modules');
 
   return new Promise((resolve) => {
     fs.copySync(svrxRoot, destFolder);
+    fs.copySync(path.resolve(tmpPath, 'node_modules'), destFolderDependency);
     resolve();
   });
 };
