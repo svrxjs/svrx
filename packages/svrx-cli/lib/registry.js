@@ -27,7 +27,10 @@ const getTags = async () => {
  * @returns {Promise<*>}
  */
 const install = async (version) => {
-  const installVersion = version || (await getVersions()[0]);
+  const versions = await getVersions();
+  versions.reverse();
+
+  const installVersion = version || versions[0];
   const tmpObj = tmp.dirSync();
   const tmpPath = tmpObj.name;
   const options = {

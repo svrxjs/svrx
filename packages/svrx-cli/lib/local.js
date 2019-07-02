@@ -10,7 +10,7 @@ const getVersions = () => {
   const isDirectory = name => lstatSync(join(config.VERSIONS_ROOT, name)).isDirectory();
   const getDirectories = source => readdirSync(source).filter(isDirectory);
 
-  return getDirectories(config.VERSIONS_ROOT);
+  return (fs.existsSync(config.VERSIONS_ROOT) && getDirectories(config.VERSIONS_ROOT)) || [];
 };
 module.exports = {
   getLatestVersion: () => {
@@ -23,7 +23,7 @@ module.exports = {
 
   getVersions,
 
-  exists: version => fs.existsSync(getSvrxPath(version)),
+  exists: version => version && fs.existsSync(getSvrxPath(version)),
 
   load: (version, optionsFromCli = {}) => new Promise((resolve) => {
     const Svrx = require(getSvrxPath(version)); // eslint-disable-line
