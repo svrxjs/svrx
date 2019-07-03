@@ -13,10 +13,17 @@ const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
   logstream: new DevNull(),
   progress: false,
 };
-const load = _.memoize(nUtil.promisify(npm.load).bind(npm, SILENT_SUGAR_NOT_NECESSARILY_WORKS));
-const normalizeNpmCommand = command => async function callNpm(...args) {
-  const spinner = logger.progress('');
-  await load();
+
+const load = _.memoize(async registry => nUtil.promisify(npm.load).bind(npm, {
+  ...SILENT_SUGAR_NOT_NECESSARILY_WORKS,
+  registry,
+})());
+
+const normalizeNpmCommand = command => async function callNpm(argsArr, options = {}) {
+  const spinner = logger.progress();
+  const args = [argsArr];
+  const { registry } = options;
+  await load(registry);
   const result = await npCall(npm.commands[command], args);
   if (spinner) spinner();
   return result;
@@ -25,17 +32,20 @@ const normalizeNpmCommand = command => async function callNpm(...args) {
 const view = normalizeNpmCommand('view');
 const search = normalizeNpmCommand('search');
 
-const install = (option) => {
-  const root = option.path;
-  const { npmLoad } = option;
+const install = (options) => {
+  const root = options.path;
+  const { npmLoad, registry } = options;
 
   if (npmLoad) {
     _.extend(npmLoad, SILENT_SUGAR_NOT_NECESSARILY_WORKS);
+    if (!npmLoad.registry) {
+      npmLoad.registry = registry;
+    }
   }
 
   const spinner = logger.progress('Installing package...');
   return new Promise((resolve, reject) => {
-    npmi(option, (err, result) => {
+    npmi(options, (err, result) => {
       if (spinner) spinner();
       if (err) return reject(err);
       if (!result) return resolve(result);
