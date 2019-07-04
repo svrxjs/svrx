@@ -1,3 +1,4 @@
+
 // avoid oom
 function limitCache(option) {
   option = option || {};
@@ -7,22 +8,30 @@ function limitCache(option) {
   const { onError } = option;
   const cache = {};
 
-  return {
-    set(key, value) {
-      if (keys.length > limit) {
-        if (onError) {
-          return onError();
-        }
-        throw Error('max cache size limit exceeded');
+  /* eslint-disable consistent-return */
+  function set(key, value) {
+    if (typeof key === 'object') {
+      Object.keys(key).forEach((i) => {
+        set(i, key[i]);
+      });
+      return;
+    }
+    if (keys.length > limit) {
+      if (onError) {
+        return onError();
       }
-      //
-      if (cache[key] === undefined) {
-        keys.push(key);
-      }
+      throw Error('max cache size limit exceeded');
+    }
+    //
+    if (cache[key] === undefined) {
+      keys.push(key);
+    }
 
-      cache[key] = value;
-      return value;
-    },
+    cache[key] = value;
+    return value;
+  }
+  return {
+    set,
     get(key) {
       return cache[key];
     },
