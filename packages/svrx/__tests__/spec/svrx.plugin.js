@@ -2,7 +2,6 @@ const request = require('supertest');
 const expect = require('expect.js');
 const rimraf = require('rimraf');
 const libPath = require('path');
-const libFs = require('fs');
 
 const System = require('../../lib/plugin/system');
 const Configure = require('../../lib/configure');
@@ -45,42 +44,6 @@ describe('Plugin System', () => {
     afterEach((done) => {
       cleanModule(done);
     });
-    it('basic usage', (done) => {
-      npm.install({
-        path: MODULE_PATH,
-        name: 'lodash.noop',
-        version: '3.0.0',
-      }).then((result) => {
-        expect(result.version).to.equal('3.0.0');
-        const expectModulePath = libPath.join(MODULE_PATH, '/node_modules/lodash.noop');
-        expect(result.path).to.equal(expectModulePath);
-        expect(libFs.statSync(expectModulePath).isDirectory()).to.equal(true);
-        done();
-      });
-    }).timeout(10000);
-
-    it('load module: local install', (done) => {
-      npm.install({
-        name: TEST_PLUGIN_PATH,
-        localInstall: true,
-        path: MODULE_PATH,
-      }).then((ret) => {
-        expect(ret.name).to.equal('svrx-plugin-test');
-        expect(ret.version).to.equal('0.0.1');
-        /* eslint-disable global-require, import/no-dynamic-require */
-        const testModule = require(libPath.join(TEST_PLUGIN_PATH));
-        expect(testModule.name).to.equal('test');
-        done();
-      });
-    }).timeout(10000);
-    it('npm view version', (done) => {
-      npm.view(['svrx-plugin-demo@*', 'engines']).then((ret) => {
-        Object.keys(ret).forEach((i) => {
-          expect(ret[i].engines.svrx).to.not.equal(undefined);
-        });
-        done();
-      });
-    }).timeout(10000);
 
     it('npm load satisfied version', (done) => {
       const revert = changeVersion('0.0.2');
