@@ -1,13 +1,13 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
 const chalk = require('chalk');
-// const { npm } = require('svrx-util');
-const npm = require('./npm');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
-const { getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
+const {
+  install, getSatisfiedVersion, listMatchedPackageVersion, setRegistry,
+} = require('./npm');
 
 function requireEnsure(path) {
   delete require.cache[path];
@@ -32,6 +32,10 @@ class PluginSystem {
     this[PLUGIN_MAP] = {};
     // regist builtin Service
     this.initService();
+
+    // set npm registry
+    const registry = config.get('registry');
+    setRegistry(registry);
   }
 
   get(name) {
@@ -145,19 +149,20 @@ class PluginSystem {
 
     if (path === undefined) {
       // remote
-      const done = logger.progress(`detecting satisfied plugin: ${chalk.gray(name)}`);
+      // const done = logger.progress(`detecting satisfied plugin: ${chalk.gray(name)}`);
       let targetVersion;
       try {
         targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
-        done();
+        // done();
       } catch (e) {
-        done();
+        // done();
       }
       if (!targetVersion) {
         // @TODO
+        const matchedPackageVersion = await listMatchedPackageVersion(name);
         throw Error(
           'unmatched plugin version, please use other version\n'
-                        + `${(await listMatchedPackageVersion(name)).join('\n')}`,
+                        + `${matchedPackageVersion.join('\n')}`,
         );
       } else {
         installOptions.name = normalizePluginName(name);
@@ -169,7 +174,7 @@ class PluginSystem {
       installOptions.localInstall = true;
     }
 
-    const installRet = await npm.install(installOptions);
+    const installRet = await install(installOptions);
 
     let pkg;
     const requirePath = libPath.join(path || installRet.path, 'package.json');

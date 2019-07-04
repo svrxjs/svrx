@@ -20,13 +20,21 @@ const load = _.memoize(async registry => nUtil.promisify(npm.load).bind(npm, {
 })());
 
 const normalizeNpmCommand = command => async function callNpm(argsArr, options = {}) {
-  const spinner = logger.progress();
-  const args = [argsArr];
-  const { registry } = options;
-  await load(registry);
-  const result = await npCall(npm.commands[command], args);
-  if (spinner) spinner();
-  return result;
+  const spinner = logger.progress('');
+  try {
+    const args = [argsArr];
+    const { registry } = options;
+    await load(registry);
+    const result = await npCall(npm.commands[command], args);
+    if (spinner) spinner();
+
+    return result;
+  } catch (e) {
+    if (spinner) spinner();
+    logger.error(e);
+    process.exit(1);
+    return null;
+  }
 };
 
 const view = normalizeNpmCommand('view');

@@ -1,34 +1,18 @@
-const npm = require('npm');
-const npmi = require('npmi');
-const _ = require('lodash');
-const nUtil = require('util');
-const libPath = require('path');
+const { npm } = require('svrx-util');
 const semver = require('../util/semver');
-const DevNull = require('./devnull');
-const { npCall, normalizePluginName } = require('../util/helper');
+const { normalizePluginName } = require('../util/helper');
 
-const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
-  loglevel: 'silent',
-  silent: true,
-  logstream: new DevNull(),
-  progress: false,
-};
+const storage = {};
 
-const load = _.memoize(nUtil.promisify(npm.load).bind(npm, SILENT_SUGAR_NOT_NECESSARILY_WORKS));
-
-function normalizeNpmCommand(command) {
-  return async function callNpm(...args) {
-    await load();
-    return npCall(npm.commands[command], args);
-  };
+function setRegistry(registry) {
+  storage.registry = registry;
 }
-
-const view = normalizeNpmCommand('view');
-const search = normalizeNpmCommand('search');
 
 async function getMatchedPkg(name, semverVersion) {
   name = normalizePluginName(name);
-  const versions = await view([`${name}@${semverVersion || '*'}`, 'engines']);
+  const versions = await npm.view([`${name}@${semverVersion || '*'}`, 'engines'], {
+    registry: storage.registry,
+  });
   if (versions) {
     const packages = Object.keys(versions).map(v => ({
       version: v,
@@ -45,44 +29,24 @@ async function listMatchedPackageVersion(name) {
   return packages.map(p => `${name}@${p.version} satisfies svrx@${p.pattern}`);
 }
 
-
-/* @deprecated use svrx-ui/npm.install instead */
-function install(option) {
-  const root = option.path;
-  const { npmLoad } = option;
-
-  if (npmLoad) {
-    _.extend(npmLoad, SILENT_SUGAR_NOT_NECESSARILY_WORKS);
-  }
-
-  return new Promise((resolve, reject) => npmi(option, (err, result) => {
-    if (err) return reject(err);
-
-    if (!result) return resolve(result);
-    const len = result.length;
-    const [name, version] = result[len - 1][0].split('@');
-    let path = result[len - 1][1];
-    // @FIX npmi error
-    if (!libPath.isAbsolute(path)) {
-      path = libPath.join(root, path);
-    }
-    return resolve({ version, name, path });
-  }));
-}
-
-// getSatisfiedPackage('svrx-plugin-qrcode')
 async function getSatisfiedVersion(name, semverVersion) {
   const packages = await getMatchedPkg(name, semverVersion);
+
   if (!packages.length) return false;
   const matchedPackage = semver.getClosestPackage(packages);
   return matchedPackage ? matchedPackage.version : false;
 }
 
+async function install(options) {
+  options.registry = storage.registry;
+  return npm.install(options);
+}
 
 module.exports = {
-  view,
-  search,
+  // view,
+  // search,
   install,
   getSatisfiedVersion,
   listMatchedPackageVersion,
+  setRegistry,
 };
