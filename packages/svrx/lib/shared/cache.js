@@ -1,3 +1,4 @@
+
 // avoid oom
 function limitCache(option) {
   option = option || {};
@@ -7,13 +8,12 @@ function limitCache(option) {
   const { onError } = option;
   const cache = {};
 
+  /* eslint-disable consistent-return */
   function set(key, value) {
     if (typeof key === 'object') {
-      for (const i in key) {
-        if (key.hasOwnProperty(i)) {
-          set(i, key[i]);
-        }
-      }
+      Object.keys(key).forEach((i) => {
+        set(i, key[i]);
+      });
       return;
     }
     if (keys.length > limit) {

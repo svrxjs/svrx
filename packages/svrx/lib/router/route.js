@@ -16,13 +16,13 @@ class Route {
 
   _injectAction() {
     const keys = actionCache.keys();
-    const actions = this.actions;
+    const { actions } = this;
     keys.forEach((key) => {
       const handler = actionCache.get(key);
       this[key] = (...args) => {
         actions.push({
           handler,
-          args: args || [],
+          args,
         });
         return this;
       };
@@ -30,7 +30,7 @@ class Route {
   }
 
   exec(url, method) {
-    const keys = this.keys;
+    const { keys } = this;
     if (method.toLowerCase() !== this.method && this.method !== 'all') {
       return null;
     }
@@ -43,14 +43,13 @@ class Route {
   }
 
   middleware() {
-    const actions = this.actions;
+    const { actions } = this;
     const steps = [];
-    for (let i = 0, len = actions.length; i < len; i++) {
+    for (let i = 0, len = actions.length; i < len; i += 1) {
       const action = actions[i];
-      if (!action.handler) {
-        continue;
+      if (typeof action.handler === 'function') {
+        steps.push(action.handler(...action.args));
       }
-      steps.push(action.handler(...action.args));
     }
     return compose(steps);
   }

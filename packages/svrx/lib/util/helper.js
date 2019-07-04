@@ -174,6 +174,11 @@ function getByteLength(content) {
   return 0;
 }
 
+const pattern = /\{(\w+)\}/g;
+function simpleRender(template, params) {
+  return template.replace(pattern, (capture, name) => params[name] || '');
+}
+
 exports.normalizePluginName = normalizePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
 exports.isWritableStream = isWritableStream;
@@ -182,6 +187,7 @@ exports.noopMiddleware = noopMiddleware;
 exports.getByteLength = getByteLength;
 exports.getCert = _.memoize(getCert);
 exports.isAcceptGzip = isAcceptGzip;
+exports.simpleRender = simpleRender;
 exports.isRespGzip = isRespGzip;
 exports.formatDate = formatDate;
 exports.isHtmlType = isHtmlType;

@@ -1,28 +1,24 @@
 
-const pathToRegexp = require('path-to-regexp');
+const { simpleRender } = require('../util/helper');
 const cache = require('../shared/cache');
 
-const MAX_LIMIT_ACTIONS = 1000;
-const actionCache = module.exports = cache({
+const MAX_LIMIT_ACTIONS = 200;
+const actionCache = cache({
   limit: MAX_LIMIT_ACTIONS,
-  onError() {
-    throw Error('max route action size limit exceeded');
-  },
 });
+
+module.exports = actionCache;
 
 
 actionCache.set({
-  send: (param, code) => (ctx, next) => {
+  handle: middleware => middleware,
+  send: (param, code) => (ctx) => {
     ctx.body = param;
     if (typeof code === 'number') {
       ctx.status = code;
     }
   },
-  redirect: (location, code) => (ctx, next) => {
-    ctx.status = code;
-    ctx.redirect(location);
-  },
-  json: param => (ctx, next) => {
+  json: param => (ctx) => {
     ctx.body = JSON.stringify(param, null, 2);
     ctx.type = 'json';
   },
@@ -30,11 +26,13 @@ actionCache.set({
     ctx.set(headers);
     return next();
   },
-  rewrite: (target) => {
-    const toPath = pathToRegexp.compile(target);
-    return (ctx, next) => {
-      ctx.url = toPath(ctx.params);
-      return next();
-    };
+  redirect: target => (ctx) => {
+    ctx.redirect(simpleRender(target, ctx.params));
+  },
+  rewrite: target => async (ctx, next) => {
+    const original = ctx.url;
+    ctx.path = simpleRender(target, ctx.params);
+    await next();
+    ctx.path = original;
   },
 });

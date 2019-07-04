@@ -14,7 +14,7 @@ function compose(middleware, keys, mapping) {
     if (typeof fn !== 'function') throw new TypeError('Middleware must be composed of functions!');
   });
 
-  return function composedMiddleware (context, next) {
+  return function composedMiddleware(context, next) {
     let index = -1;
     const enterTime = Date.now();
     const stack = [];

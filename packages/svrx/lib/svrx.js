@@ -1,17 +1,16 @@
 /* eslint no-console: "off" */
 
-
-const chalk = require('chalk');
-const http = require('http');
-const https = require('https');
-const ffp = require('find-free-port');
-const Koa = require('koa');
 const cosmiconfig = require('cosmiconfig');
+const ffp = require('find-free-port');
 const chokidar = require('chokidar');
-const { getCert, getExternalIp } = require('./util/helper');
 const libPath = require('path');
+const chalk = require('chalk');
+const https = require('https');
+const http = require('http');
+const Koa = require('koa');
 
-const { Loader, registAction } = require('./router');
+const { getCert, getExternalIp } = require('./util/helper');
+const { Loader, exportsToPlugin } = require('./router');
 const PluginSystem = require('./plugin/system');
 const Middleware = require('./middleware');
 const Configure = require('./configure');
@@ -56,15 +55,13 @@ class Svrx {
     this.io = new IO({ config, server, middleware });
     const { events, injector, io } = this;
 
-    // init router loader
-    const route = config.get('route');
-
     // @TODO
-    const routerLoader = this.routerLoader = new Loader();
-
+    this.loader = new Loader();
+    this.loader.on('error', evt => logger.error(evt.payload));
+    this.loader.on('update', evt => logger.notify(`[routing update] ${evt.payload}`));
 
     this.system = new PluginSystem({
-      registAction,
+      router: exportsToPlugin(this.loader),
       middleware,
       injector,
       config,
@@ -98,6 +95,7 @@ class Svrx {
   }
 
   close(callback) {
+    this.loader.destroy();
     this._server.close(callback);
   }
 
@@ -121,18 +119,21 @@ class Svrx {
 
   async setup() {
     const plugins = this.config.getPlugins();
-    const routerLoader = this.routerLoader;
+    const { loader, middleware } = this;
     const route = this.config.get('route');
-    const middleware = this.middleware;
-    return this.system.load(plugins).then(() => this.system.build()).then(() => {
-      if (typeof route === 'string') {
-        routerLoader.load(libPath.resolve(this.config.get('root'), route));
+    return this.system
+      .load(plugins)
+      .then(() => this.system.build())
+      .then(() => {
         middleware.add('$router', {
           priority: 10,
-          onCreate: config => routerLoader.middleware(),
+          onCreate: () => loader.middleware(),
         });
-      }
-    });
+        if (typeof route === 'string') {
+          return loader.load(libPath.resolve(this.config.get('root'), route));
+        }
+        return null;
+      });
   }
 
   _rcFileRead() {

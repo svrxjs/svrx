@@ -1,6 +1,6 @@
 
 async function getProxyServer() {
-
+  return this;
 }
 
 

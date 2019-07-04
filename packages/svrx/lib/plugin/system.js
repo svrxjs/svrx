@@ -1,8 +1,7 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
 const chalk = require('chalk');
-// const { npm } = require('svrx-util');
-const npm = require('./npm');
+const { npm } = require('svrx-util');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
@@ -19,12 +18,12 @@ const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
 class PluginSystem {
   /**
-     * @param {Array} pluginlist
-     */
+   * @param {Array} pluginlist
+   */
   constructor({
-    events, config, middleware, injector, io, registAction,
+    events, config, middleware, injector, io, router,
   }) {
-    this.registAction = registAction;
+    this.router = router;
     this.middleware = middleware;
     this.injector = injector;
     this.events = events;
@@ -44,14 +43,19 @@ class PluginSystem {
     const { config } = this;
     // regist initialize service
     this.io.registService('$.config', async (payload) => {
-      const targetConfig = payload.scope ? config.getPlugin(payload.scope) : config;
+      const targetConfig = payload.scope
+        ? config.getPlugin(payload.scope)
+        : config;
       if (!targetConfig) throw Error(`plugin ${payload.scope} doesn't exsits`);
       return targetConfig[payload.command](...payload.params);
     });
   }
 
   async load(plugins) {
-    return plugins.reduce((left, right) => left.then(() => this.loadOne(right)), Promise.resolve());
+    return plugins.reduce(
+      (left, right) => left.then(() => this.loadOne(right)),
+      Promise.resolve(),
+    );
   }
 
   // @TODO: 重构重复代码过多
@@ -88,7 +92,8 @@ class PluginSystem {
           basedir: config.get('root'),
         },
         (err, res, pkg) => {
-          if (err) { // suppress error
+          if (err) {
+            // suppress error
             resolve(null);
             return;
           }
@@ -146,10 +151,15 @@ class PluginSystem {
 
     if (path === undefined) {
       // remote
-      const done = logger.progress(`detecting satisfied plugin: ${chalk.gray(name)}`);
+      const done = logger.progress(
+        `detecting satisfied plugin: ${chalk.gray(name)}`,
+      );
       let targetVersion;
       try {
-        targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
+        targetVersion = await getSatisfiedVersion(
+          name,
+          pluginConfig.getInfo('version'),
+        );
         done();
       } catch (e) {
         done();
@@ -158,7 +168,7 @@ class PluginSystem {
         // @TODO
         throw Error(
           'unmatched plugin version, please use other version\n'
-                        + `${(await listMatchedPackageVersion(name)).join('\n')}`,
+            + `${(await listMatchedPackageVersion(name)).join('\n')}`,
         );
       } else {
         installOptions.name = normalizePluginName(name);
@@ -179,7 +189,11 @@ class PluginSystem {
     } catch (e) {
       pkg = {};
     }
-    logger.notify(`${chalk.gray(name)}${pkg.version ? `@${pkg.version}` : ''} installed completely!`);
+    logger.notify(
+      `${chalk.gray(name)}${
+        pkg.version ? `@${pkg.version}` : ''
+      } installed completely!`,
+    );
     pluginMap[name] = {
       name,
       path: path || installRet.path,
@@ -212,7 +226,7 @@ class PluginSystem {
     const config = isBuiltin ? this.config : pluginConfig;
     // todo all variables below should be a new instance init with 'config'
     const {
-      middleware, injector, io, events,
+      middleware, injector, io, events, router,
     } = this;
     const pluginLogger = logger.getPluginLogger(name);
 
@@ -250,11 +264,10 @@ class PluginSystem {
     //   }
     // }
 
-
     if (actions) {
-      for (const i in actions) {
-        this.registAction(i, actions[i]);
-      }
+      Object.keys(actions).forEach((i) => {
+        router.action(i, actions[i]);
+      });
     }
 
     // set plugin configs
@@ -330,6 +343,7 @@ class PluginSystem {
         injector,
         events,
         config,
+        router,
         io,
         logger: pluginLogger,
       });
