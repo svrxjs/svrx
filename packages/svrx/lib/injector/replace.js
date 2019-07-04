@@ -4,7 +4,6 @@
  */
 
 const { Transform } = require('stream');
-const { is } = require('../util/helper');
 
 /**
  * str.replace (stream version)
@@ -13,8 +12,6 @@ const { is } = require('../util/helper');
 
 module.exports = function replaceStream(pattern, replaced) {
   //   const isMaybeMatchedEnd = false
-
-  if (typeof replaced === 'string') replaced = is(replaced);
 
   return new Transform({
     transform(chunk, enc, callback) {

@@ -26,7 +26,6 @@ describe('Injector', () => {
       },
     });
 
-
     it('Integration: Basic', (done) => {
       request(svrx.callback())
         .get(svrx.config.get('urls.script'))
@@ -41,20 +40,17 @@ describe('Injector', () => {
         });
     });
 
-    it('Integration: style join', (done) => {
-      request(svrx.callback())
-        .get(svrx.config.get('urls.style'))
-        .set('accept-encoding', 'identity')
-        .expect(/body\{padding:10px\}\nbody\{color:black\}/, done);
-    });
+    it('Integration: style join', () => request(svrx.callback())
+      .get(svrx.config.get('urls.style'))
+      .set('accept-encoding', 'identity')
+      .expect(/body\{padding:10px\}\nbody\{color:black\}/));
 
-    it('Integration:  Gzip content-encoding', (done) => {
-      request(svrx.callback())
-        .get(svrx.config.get('urls.script'))
-        .set('accept-encoding', 'gzip')
-        .expect('content-encoding', 'gzip')
-        .expect(/window\.test=true/, done);
-    });
+    it('Integration:  Gzip content-encoding', () => request(svrx.callback())
+      .get(svrx.config.get('urls.script'))
+      .set('accept-encoding', 'gzip')
+      .expect('content-encoding', 'gzip')
+      .expect(/window\.test=true/));
+
     it('Integration: Injection Testing', (done) => {
       request(svrx.callback())
         .get(svrx.config.get('urls.style'))
@@ -76,29 +72,39 @@ describe('Injector', () => {
   });
 
   describe('Transform content', () => {
-    it('html should be injected script and style', (done) => {
-      const svrx = new Svrx({
-        port: 8001,
-        middlewares: [
-          {
-            priority: 12,
-            onCreate: () => async (ctx) => {
+    const svrx = new Svrx({
+      port: 8001,
+      middlewares: [
+        {
+          onCreate: () => async (ctx) => {
+            if (ctx.url === '/content') {
               ctx.set('Content-Type', 'text/html');
               ctx.body = '<head></head><body></body>';
-            },
+            }
           },
-        ],
-      });
+        },
+      ],
+    });
+    const { injector } = svrx;
 
+    it('replace should work', () => {
+      injector.replace('</head>', cap => `<script src="/__nei__/client.js"></script>${cap}`);
+
+      return request(svrx.callback())
+        .get('/content')
+        .set('accept-encoding', 'identity')
+        .expect(/<script src="\/__nei__\/client\.js"><\/script>/);
+    });
+    it('html should be injected script and style', (done) => {
       request(svrx.callback())
-        .get('/')
+        .get('/content')
         .expect(new RegExp(`src="${svrx.config.get('urls.script')}"`))
         .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
         .end(done);
     });
 
     it('transform with stream', (done) => {
-      const svrx = new Svrx({
+      const svrx1 = new Svrx({
         port: 8001,
         middlewares: [
           {
@@ -111,7 +117,7 @@ describe('Injector', () => {
         ],
       });
 
-      request(svrx.callback())
+      request(svrx1.callback())
         .get('/')
         .expect(new RegExp(`src="${svrx.config.get('urls.script')}"`))
         .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
@@ -119,28 +125,3 @@ describe('Injector', () => {
     });
   });
 });
-
-// describe('IO', () => {
-//   new Svrx({
-//     port: 8001,
-//     plugins: [
-//       {
-//         name: 'io-test',
-//         assets: {
-//           script: [
-//             {
-//               content: `
-// void function(svrx){
-//     const io = svrx.io;
-//     const event = svrx.events
-
-// }(window.__svrx__)
-//                         `,
-//             },
-//           ],
-//         },
-//         hooks: { },
-//       },
-//     ],
-//   });
-// });

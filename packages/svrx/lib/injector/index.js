@@ -1,13 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 const replaceStream = require('./replace');
-const { isReadableStream, isHtmlType, isAcceptGzip } = require('../util/helper');
+const {
+  typeOf, isReadableStream, isHtmlType, isAcceptGzip,
+} = require('../util/helper');
 const { PRIORITY } = require('../constant');
 const { gzip } = require('../util/gzip');
 const logger = require('../util/logger');
 
 // const
 const ASSETS = Symbol('assets');
+const REPLACEMENTS = Symbol('replacements');
 const CLIENT_PATH = path.join(__dirname, 'dist/client.js');
 const BASIC_SCRIPT = fs.readFileSync(CLIENT_PATH, 'utf8');
 const MINE_TYPES = {
@@ -26,6 +29,7 @@ module.exports = class Injector {
       style: [],
       script: [],
     };
+    this[REPLACEMENTS] = [];
 
     middleware.add('$injector', {
       priority: PRIORITY.INJECTOR,
@@ -43,7 +47,7 @@ module.exports = class Injector {
   async onTransform(ctx, next) {
     await next();
     if (isHtmlType(ctx.response.header) && !ctx._svrx.isInjected) {
-      ctx.body = this.transform(ctx.body);
+      ctx.body = this._transform(ctx.body);
       ctx._svrx.isInjected = true;
     }
   }
@@ -110,10 +114,27 @@ module.exports = class Injector {
     this[ASSETS][type].push(def);
   }
 
+  replace(pattern, fn) {
+    if (
+      ['string', 'regexp'].indexOf(typeOf(pattern)) === -1
+      || ['string', 'function'].indexOf(typeOf(fn)) === -1
+    ) {
+      throw Error('invalid replacement');
+    }
+
+    this[REPLACEMENTS].push({
+      pattern,
+      fn,
+    });
+  }
+
   // @TODO FIX </body> split case
-  transform(body) {
+  _transform(body) {
     const { config } = this;
-    const replaceScript = ['</body>', `<script async src="${config.get('urls.script')}"></script></body>`];
+    const replaceScript = [
+      '</body>',
+      `<script async src="${config.get('urls.script')}"></script></body>`,
+    ];
     const replaceStyle = [
       '</head>',
       `<link rel="stylesheet" type="text/css" href="${config.get('urls.style')}"/></head>`,
@@ -123,11 +144,25 @@ module.exports = class Injector {
       body = body.toString('utf8');
     }
     if (typeof body === 'string') {
-      return body.replace(...replaceScript).replace(...replaceStyle);
-    } if (isReadableStream(body)) {
-      return body.pipe(replaceStream(...replaceScript)).pipe(replaceStream(...replaceStyle));
+      return this._replace(body.replace(...replaceScript).replace(...replaceStyle), 'string');
+    }
+    if (isReadableStream(body)) {
+      return this._replace(
+        body.pipe(replaceStream(...replaceScript)).pipe(replaceStream(...replaceStyle)),
+        'stream',
+      );
     }
 
     return body;
+  }
+
+  _replace(body, type) {
+    if (type === 'string') {
+      return this[REPLACEMENTS].reduce((occur, item) => occur.replace(item.pattern, item.fn), body);
+    }
+    return this[REPLACEMENTS].reduce(
+      (occur, item) => occur.pipe(replaceStream(item.pattern, item.fn)),
+      body,
+    );
   }
 };
