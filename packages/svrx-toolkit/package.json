@@ -30,6 +30,7 @@
     "inquirer": "^6.3.1",
     "metalsmith": "^2.3.0",
     "minimist": "^1.2.0",
+    "node-fetch": "^2.6.0",
     "ora": "^3.4.0",
     "rimraf": "^2.6.3",
     "semver": "^6.0.0",

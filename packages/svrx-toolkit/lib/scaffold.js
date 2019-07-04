@@ -4,6 +4,7 @@ const download = require('download-git-repo');
 const home = require('user-home');
 const Metalsmith = require('metalsmith');
 const async = require('async');
+const fetch = require('node-fetch');
 const render = require('consolidate').handlebars.render;
 const rm = require('rimraf').sync;
 const exec = require('child_process').execSync;
@@ -11,8 +12,8 @@ const exists = require('fs').existsSync;
 const path = require('path');
 const logger = require('./logger');
 
-const TEMPLATE_REPOSITORY_NAME = 'test';
-const TEMPLATE_REPOSITORY_URL = `teshoudong/${TEMPLATE_REPOSITORY_NAME}`;
+const TEMPLATE_REPOSITORY_NAME = 'svrx-toolkit-template';
+const TEMPLATE_REPOSITORY_URL = `x-orpheus/${TEMPLATE_REPOSITORY_NAME}`;
 
 class Scaffold {
   constructor() {
@@ -30,13 +31,19 @@ class Scaffold {
       {
         name: 'name',
         type: 'input',
-        message: 'Project name (such as: svrx-xxx-plugin):',
-        validate: input => /svrx-\w*-plugin/.test(input),
+        message: 'Plugin name:',
       },
       {
-        name: 'description',
+        name: 'version',
         type: 'input',
-        message: 'Project description:',
+        message: 'Plugin version:',
+        default: '0.0.1',
+      },
+      {
+        name: 'svrxVersion',
+        type: 'input',
+        message: 'Svrx version:',
+        default: '0.0.3',
       },
       {
         name: 'author',
@@ -119,6 +126,10 @@ class Scaffold {
     name = name && JSON.stringify(name.toString().trim()).slice(1, -1);
     email = email && ` <${email.toString().trim()}>`;
     return (name || '') + (email || '');
+  }
+
+  getDefaultSvrxVersion() {
+    fetch('');
   }
 
   getTmpPath() {
