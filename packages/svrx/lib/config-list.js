@@ -34,6 +34,12 @@ module.exports = {
     type: 'boolean',
     group: GROUPS.CORE,
   },
+  route: {
+    description: 'the path of routing config file',
+    anyOf: [{ type: 'string' }, { type: 'array' }],
+    group: GROUPS.CORE,
+    errorMessage: 'should be string or array',
+  },
   historyApiFallback: {
     group: GROUPS.CORE,
     description: 'Enable historyApiFallback middleware',
