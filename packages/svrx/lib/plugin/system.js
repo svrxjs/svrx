@@ -149,14 +149,7 @@ class PluginSystem {
 
     if (path === undefined) {
       // remote
-      // const done = logger.progress(`detecting satisfied plugin: ${chalk.gray(name)}`);
-      let targetVersion;
-      try {
-        targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
-        // done();
-      } catch (e) {
-        // done();
-      }
+      const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
       if (!targetVersion) {
         // @TODO
         const matchedPackageVersion = await listMatchedPackageVersion(name);

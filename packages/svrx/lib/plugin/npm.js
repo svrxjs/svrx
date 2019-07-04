@@ -1,4 +1,5 @@
-const { npm } = require('svrx-util');
+const { npm, logger } = require('svrx-util');
+const chalk = require('chalk');
 const semver = require('../util/semver');
 const { normalizePluginName } = require('../util/helper');
 
@@ -10,7 +11,8 @@ function setRegistry(registry) {
 
 async function getMatchedPkg(name, semverVersion) {
   name = normalizePluginName(name);
-  const versions = await npm.view([`${name}@${semverVersion || '*'}`, 'engines'], {
+  const versions = await npm.view([`${name}@${semverVersion
+  || '*'}`, 'engines'], {
     registry: storage.registry,
   });
   if (versions) {
@@ -24,22 +26,52 @@ async function getMatchedPkg(name, semverVersion) {
 }
 
 async function listMatchedPackageVersion(name) {
-  name = normalizePluginName(name);
-  const packages = await getMatchedPkg(name);
-  return packages.map(p => `${name}@${p.version} satisfies svrx@${p.pattern}`);
+  const spinner = logger.progress('');
+
+  try {
+    name = normalizePluginName(name);
+    const packages = await getMatchedPkg(name);
+
+    if (spinner) spinner();
+    return packages.map(p => `${name}@${p.version} satisfies svrx@${p.pattern}`);
+  } catch (e) {
+    if (spinner) spinner();
+    return [];
+  }
 }
 
 async function getSatisfiedVersion(name, semverVersion) {
-  const packages = await getMatchedPkg(name, semverVersion);
+  const spinner = logger.progress(`Detecting satisfied plugin: ${chalk.gray(name)}`);
+  try {
+    const packages = await getMatchedPkg(name, semverVersion);
 
-  if (!packages.length) return false;
-  const matchedPackage = semver.getClosestPackage(packages);
-  return matchedPackage ? matchedPackage.version : false;
+    if (spinner) spinner();
+    if (!packages.length) return false;
+    const matchedPackage = semver.getClosestPackage(packages);
+
+    return matchedPackage ? matchedPackage.version : false;
+  } catch (e) {
+    if (spinner) spinner();
+    logger.error(e);
+    return false;
+  }
 }
 
 async function install(options) {
-  options.registry = storage.registry;
-  return npm.install(options);
+  const spinner = logger.progress(`Installing plugin: ${chalk.gray(options.name)}`);
+
+  try {
+    options.registry = storage.registry;
+    const result = await npm.install(options);
+    if (spinner) spinner();
+
+    return result;
+  } catch (e) {
+    if (spinner) spinner();
+    logger.error(e);
+    process.exit(1);
+    return null;
+  }
 }
 
 module.exports = {

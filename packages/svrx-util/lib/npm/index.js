@@ -3,7 +3,6 @@ const nUtil = require('util');
 const npmi = require('npmi');
 const _ = require('lodash');
 const npm = require('npm');
-const logger = require('../logger');
 const npCall = require('../npCall');
 const DevNull = require('./devnull');
 
@@ -20,21 +19,11 @@ const load = _.memoize(async registry => nUtil.promisify(npm.load).bind(npm, {
 })());
 
 const normalizeNpmCommand = command => async function callNpm(argsArr, options = {}) {
-  const spinner = logger.progress('');
-  try {
-    const args = [argsArr];
-    const { registry } = options;
-    await load(registry);
-    const result = await npCall(npm.commands[command], args);
-    if (spinner) spinner();
+  const args = [argsArr];
+  const { registry } = options;
+  await load(registry);
 
-    return result;
-  } catch (e) {
-    if (spinner) spinner();
-    logger.error(e);
-    process.exit(1);
-    return null;
-  }
+  return npCall(npm.commands[command], args);
 };
 
 const view = normalizeNpmCommand('view');
@@ -51,10 +40,8 @@ const install = (options) => {
     }
   }
 
-  const spinner = logger.progress('Installing package...');
   return new Promise((resolve, reject) => {
     npmi(options, (err, result) => {
-      if (spinner) spinner();
       if (err) return reject(err);
       if (!result) return resolve(result);
       const len = result.length;
