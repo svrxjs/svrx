@@ -1,6 +1,6 @@
 {
   "name": "svrx",
-  "version": "0.0.3-beta.0",
+  "version": "0.0.3-beta.2",
   "description": "svrx server live-reload mock ",
   "keywords": [
     "svrx",
@@ -12,8 +12,7 @@
   "license": "MIT",
   "main": "lib/svrx.js",
   "directories": {
-    "lib": "lib",
-    "test": "__tests__"
+    "lib": "lib"
   },
   "files": [
     "lib"
@@ -53,7 +52,7 @@
     "serve-index": "^1.9.1",
     "socket.io": "^2.2.0",
     "super-ajv": "^1.1.6",
-    "svrx-util": "^0.0.3-beta.0"
+    "svrx-util": "^0.0.3-beta.2"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",

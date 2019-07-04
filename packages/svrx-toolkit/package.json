@@ -1,7 +1,7 @@
 {
   "name": "svrx-toolkit",
   "private": true,
-  "version": "0.0.2-beta.0",
+  "version": "0.0.2-beta.2",
   "description": "Toolkit for svrx",
   "keywords": [
     "svrx",
@@ -30,6 +30,7 @@
     "inquirer": "^6.3.1",
     "metalsmith": "^2.3.0",
     "minimist": "^1.2.0",
+    "node-fetch": "^2.6.0",
     "ora": "^3.4.0",
     "rimraf": "^2.6.3",
     "semver": "^6.0.0",

@@ -1,13 +1,12 @@
 {
   "name": "svrx-util",
-  "version": "0.0.3-beta.0",
+  "version": "0.0.3-beta.2",
   "description": "util package of svrx",
   "homepage": "https://github.com/x-orpheus/svrx#readme",
   "license": "MIT",
   "main": "lib/svrx-util.js",
   "directories": {
-    "lib": "lib",
-    "test": "__tests__"
+    "lib": "lib"
   },
   "files": [
     "lib"
@@ -26,8 +25,9 @@
     "chalk": "^2.4.2",
     "lodash": "^4.17.11",
     "npm": "^6.9.0",
-    "npmi": "^4.0.0",
-    "ora": "^3.4.0"
+    "npmi": "^2.0.1",
+    "ora": "^3.4.0",
+    "rimraf": "^2.6.3"
   },
   "devDependencies": {
     "expect.js": "^0.3.1"

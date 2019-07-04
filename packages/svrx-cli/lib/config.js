@@ -1,7 +1,7 @@
 const cosmiconfig = require('cosmiconfig');
 const userHome = require('user-home');
 const path = require('path');
-const fs = require('fs');
+const mkdirp = require('mkdirp');
 
 class Config {
   constructor() {
@@ -25,7 +25,7 @@ class Config {
       // where versions of svrx core exist
       this.VERSIONS_ROOT = path.resolve(this.CONFIG_ROOT, 'versions');
 
-      fs.mkdir(this.VERSIONS_ROOT, { recursive: true }, (err) => {
+      mkdirp(this.VERSIONS_ROOT, (err) => {
         if (err) {
           reject(err);
           return;
