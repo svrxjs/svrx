@@ -43,8 +43,6 @@
     "koa2-cors": "^2.0.6",
     "lodash": "^4.17.11",
     "micromatch": "^4.0.2",
-    "npm": "^6.9.0",
-    "npmi": "^2.0.1",
     "path-to-regexp": "^3.0.0",
     "raw-body": "^2.4.0",
     "resolve": "^1.10.0",
