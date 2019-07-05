@@ -155,3 +155,9 @@ program.parse(process.argv);
 if (!program.args.length) {
   program.help();
 }
+
+function stop(code) {
+  process.exit(code);
+}
+process.on('SIGINT', stop.bind(null, 2));
+process.on('SIGTERM', stop.bind(null, 15));
