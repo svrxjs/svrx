@@ -1,0 +1,44 @@
+{
+  "name": "svrx-plugin-webpack",
+  "version": "0.0.3-beta.3",
+  "description": "> TODO: description",
+  "keywords": [
+    "svrx",
+    "svrx-plugin"
+  ],
+  "engines": {
+    "svrx": "^0.0.3"
+  },
+  "homepage": "https://github.com/x-orpheus/svrx#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x-orpheus/svrx.git"
+  },
+  "scripts": {
+    "test": "nyc --reporter=html --reporter=text mocha __tests__/"
+  },
+  "bugs": {
+    "url": "https://github.com/x-orpheus/svrx/issues"
+  },
+  "dependencies": {
+    "koa-compose": "^4.1.0",
+    "resolve": "^1.11.0",
+    "semver": "^6.1.2",
+    "svrx-util": "^0.0.3-beta.3",
+    "webpack": "^4.0.0",
+    "webpack-dev-middleware": "^3.7.0",
+    "webpack-hot-middleware": "^2.25.0"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1"
+  }
+}
