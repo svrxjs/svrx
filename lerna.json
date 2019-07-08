@@ -1,0 +1,40 @@
+{
+  "packages": [
+    "packages/*"
+  ],
+  "version": "independent",
+  "npmClient": "npm",
+  "changelog": {
+    "repo": "x-orpheus/svrx",
+    "labels": {
+      "PR: new feature": ":rocket: New Feature",
+      "PR: breaking change": ":boom: Breaking Change",
+      "PR: bug fix": ":bug: Bug Fix",
+      "PR: enhancement": ":nail_care: Enhancement",
+      "PR: documentation": ":memo: Documentation",
+      "PR: internal": ":house: Internal"
+    },
+    "cacheDir": ".changelog"
+  },
+  "command": {
+    "version": {
+      "message": "chore(release): publish",
+      "allowBranch": [
+        "master",
+        "hello-svrx"
+      ]
+    },
+    "publish": {
+      "ignoreChanges": [
+        "ignored-file",
+        "*.md",
+        "*.txt",
+        "__tests__/**"
+      ],
+      "allowBranch": [
+        "master",
+        "hello-svrx"
+      ]
+    }
+  }
+}
