@@ -18,11 +18,7 @@
   },
   "command": {
     "version": {
-      "message": "chore(release): publish",
-      "allowBranch": [
-        "master",
-        "hello-svrx"
-      ]
+      "message": "chore(release): publish"
     },
     "publish": {
       "ignoreChanges": [
@@ -30,10 +26,6 @@
         "*.md",
         "*.txt",
         "__tests__/**"
-      ],
-      "allowBranch": [
-        "master",
-        "hello-svrx"
       ]
     }
   }
