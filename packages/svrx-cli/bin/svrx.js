@@ -91,7 +91,7 @@ const commands = {
     },
   },
   serve: {
-    description: 'Start a develop server',
+    description: 'Start a develop server. This is the default command',
     exec: async () => {
       const svrx = await prepareSvrx();
       svrx.start();
@@ -112,7 +112,7 @@ const help = async (cmd) => {
   const svrx = await prepareSvrx();
   const single = cmd && commands[cmd];
 
-  console.log('Usage: svrx <command> [options]\n');
+  console.log('Usage: svrx [<command>] [options]\n');
 
   if (!single) {
     console.log('Options:\n');
@@ -139,7 +139,7 @@ const help = async (cmd) => {
     Object.keys(commands).forEach((c) => {
       console.log(
         ''.padEnd(PAD_START),
-        c.padEnd(PAD_END),
+        c === 'serve' ? 'serve [default]'.padEnd(PAD_END) : c.padEnd(PAD_END),
         commands[c].description,
       );
     });
