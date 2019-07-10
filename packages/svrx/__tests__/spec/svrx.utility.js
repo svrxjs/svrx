@@ -1,6 +1,7 @@
 const expect = require('expect.js');
 const util = require('util');
 const events = require('../../lib/shared/events');
+const limitCache = require('../../lib/shared/cache');
 const semver = require('../../lib/util/semver');
 const consts = require('../../lib/constant');
 const Imodel = require('../../lib/model');
@@ -300,6 +301,57 @@ describe('Svrx Utility', () => {
         expect(evt.name).to.eql('31');
         done();
       });
+    });
+  });
+
+  describe('cache', () => {
+    it('basic usage', () => {
+      const cache = limitCache(1);
+      cache.set('a', '1');
+      expect(cache.get('a')).to.equal('1');
+      expect(() => {
+        cache.set('b', '2');
+      }).to.throwError(/limit/);
+    });
+
+    it('keys values size', () => {
+      const cache = limitCache();
+
+      cache.set('a', '1');
+      cache.set('b', '2');
+
+      expect(cache.keys()).to.eql(['a', 'b']);
+      expect(cache.values()).to.eql(['1', '2']);
+      expect(cache.size()).to.eql(2);
+    });
+
+    it('custom onError', () => {
+      let mark = false;
+      const cache = limitCache({
+        limit: 1,
+        onError: () => {
+          mark = true;
+        },
+      });
+      cache.set('a', '1');
+      expect(cache.get('a')).to.equal('1');
+      cache.set('b', '2');
+      expect(mark).to.equal(true);
+    });
+
+    it('del', () => {
+      const cache = limitCache();
+
+      cache.set('a', '1');
+      cache.set('b', '2');
+
+      expect(cache.size()).to.equal(2);
+
+      cache.del('a');
+
+      expect(cache.size()).to.equal(1);
+      expect(cache.get('a')).to.equal(undefined);
+      expect(cache.get('b')).to.equal('2');
     });
   });
 

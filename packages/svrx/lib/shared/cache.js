@@ -1,6 +1,8 @@
 
 // avoid oom
 function limitCache(option) {
+  if (typeof option === 'number') option = { limit: option };
+
   option = option || {};
 
   const keys = [];
@@ -16,7 +18,7 @@ function limitCache(option) {
       });
       return;
     }
-    if (keys.length > limit) {
+    if (keys.length >= limit) {
       if (onError) {
         return onError();
       }
