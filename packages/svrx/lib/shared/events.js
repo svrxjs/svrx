@@ -3,11 +3,10 @@
 // integrated sorted type broadcast and unsorted version
 /* eslint no-continue: "off", no-await-in-loop: "off" */
 
-function getEvtObj(type, payload) {
+function getCtrlObj(type) {
   let _stopped = false;
   return {
     type,
-    payload,
     stop() {
       _stopped = true;
     },
@@ -90,11 +89,11 @@ const API = {
       const fn = watcher && watcher.fn;
       if (typeof fn === 'function') {
         if (!sorted) {
-          const evtObj = getEvtObj(type, payload);
-          pending.push(fn.call(this, evtObj));
+          const ctrlObj = getCtrlObj(type);
+          pending.push(fn.call(this, payload, ctrlObj));
         } else {
-          if (!passedEvtObj) passedEvtObj = getEvtObj(type, payload);
-          await fn.call(this, passedEvtObj); // eslint-disable-line
+          if (!passedEvtObj) passedEvtObj = getCtrlObj(type);
+          await fn.call(this, payload, passedEvtObj); // eslint-disable-line
           if (passedEvtObj.isStoped) break;
         }
       }
