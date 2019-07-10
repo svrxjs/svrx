@@ -22,6 +22,7 @@ const getEvents = require('./shared/events');
 const logger = require('./util/logger');
 
 const NOOP = () => {};
+const DOC_URL = 'https://github.com/x-orpheus/svrx/wiki/Docuements#options';
 
 class Svrx {
   constructor(inlineOptions = {}, cliOptions = {}) {
@@ -119,6 +120,10 @@ class Svrx {
         }
       }
     });
+    console.log(
+      ''.padEnd(8),
+      `Visit ${DOC_URL} for more option detail`,
+    );
     console.log('\n');
   }
 
