@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
+const querystring = require('querystring');
+const { logger } = require('svrx-util');
 const CONFIG_LIST = require('../config-list');
 const BuiltinOption = require('./builtinOption');
 const Plugin = require('./plugin');
@@ -30,11 +32,16 @@ class Configure {
     this[CLI_OPTION] = cliOption;
 
     // generate builtin option ( remove plugin info
-    const rcOpionWithoutPlugins = _.pickBy(rcOption, (value, key) => key !== 'plugins');
+    const rcOpionWithoutPlugins = _.pickBy(
+      rcOption,
+      (value, key) => key !== 'plugins',
+    );
     const configKeys = _.keys(this[BUILTIN_CONFIG]);
-    // (keys that not list in _builtinConfig will be recognized as plugin
-    // names)
-    const cliOptionWithoutPlugins = _.pickBy(cliOption, (value, key) => configKeys.includes(key));
+    // (keys that not list in _builtinConfig will be recognized as plugin names)
+    const cliOptionWithoutPlugins = _.pickBy(
+      cliOption,
+      (value, key) => key !== 'plugins' && configKeys.includes(key),
+    );
     this[BUILTIN_OPTION] = new BuiltinOption({
       cli: cliOptionWithoutPlugins,
       rc: rcOpionWithoutPlugins,
@@ -45,7 +52,8 @@ class Configure {
     const cliPlugins = this._pickPluginsFromCli(cliOption);
     const rcPlugins = Configure._pickPluginsFromRc(rcOption);
     const userPlugins = Configure._mergePlugins(cliPlugins, rcPlugins);
-    const plugins = Configure._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
+    // add builtin plugins
+    const plugins = Configure._mergePlugins(userPlugins, builtinPlugins);
 
     _.forEach(plugins, (plugin) => {
       const pIns = new Plugin(plugin, this[BUILTIN_OPTION], this[BUILTIN_DEFAULTS]);
@@ -56,9 +64,9 @@ class Configure {
   }
 
   /**
-     * get user option by pathes
-     * @param builtinPathes
-     */
+   * get user option by pathes
+   * @param builtinPathes
+   */
   get(builtinPathes) {
     const userOption = this[BUILTIN_OPTION].get(builtinPathes);
     if (userOption === undefined) {
@@ -72,34 +80,35 @@ class Configure {
   }
 
   /**
-     * get all plugins
-     * @returns {Array}
-     */
+   * get all plugins
+   * @returns {Array}
+   */
   getPlugins() {
     return this[PLUGINS];
   }
 
   /**
-     * get plugin option instance by plugin name
-     * @param name
-     * @returns {*}
-     */
+   * get plugin option instance by plugin name
+   * @param name
+   * @returns {*}
+   */
   getPlugin(name) {
     return this[PLUGINS].find(p => p.getInfo('name') === name);
   }
 
   /**
-     * watch builtin option change
-     * @param pathes
-     * @param callback
-     */
+   * watch builtin option change
+   * @param pathes
+   * @param callback
+   */
   watch(pathes, callback) {
     this[BUILTIN_OPTION].watch(pathes, callback);
   }
 
   updateRcOptions(rcOptions = {}) {
     // builtins
-    const opionWithoutPlugins = _.pickBy(rcOptions, (value, key) => key !== 'plugins');
+    const opionWithoutPlugins = _.pickBy(rcOptions, (value, key) => key
+      !== 'plugins');
     this[BUILTIN_OPTION].updateOptions(opionWithoutPlugins);
 
     // plugins
@@ -108,7 +117,9 @@ class Configure {
     const cliPlugins = this._pickPluginsFromCli(this[CLI_OPTION]);
     const rcPlugins = Configure._pickPluginsFromRc(rcOptions);
     const userPlugins = Configure._mergePlugins(cliPlugins, rcPlugins);
-    const plugins = Configure._mergePlugins(userPlugins, builtinPlugins); // add builtin plugins
+    const plugins = Configure._mergePlugins(userPlugins, builtinPlugins); // add
+    // builtin
+    // plugins
     // rc file change, reload all plugins
     this[PLUGINS] = [];
     _.forEach(plugins, (plugin) => {
@@ -121,14 +132,14 @@ class Configure {
     const noDash = this._removeDashProp(raw);
     const noAlias = this._removeAlias(noDash);
     const arrayed = Configure._formatArray(noAlias);
-    return arrayed;
+    return Configure._parsePluginQueryString(arrayed);
   }
 
   /**
-     * remove original dashed key, keep the camel ones
-     * @param raw
-     * @private
-     */
+   * remove original dashed key, keep the camel ones
+   * @param raw
+   * @private
+   */
   _removeDashProp(raw = {}) {
     const options = _.mapValues(raw, (o) => {
       if (_.isPlainObject(o)) {
@@ -141,10 +152,10 @@ class Configure {
   }
 
   /**
-     * replace alias with their real name
-     * @param raw
-     * @returns {*}
-     */
+   * replace alias with their real name
+   * @param raw
+   * @returns {*}
+   */
   _removeAlias(raw = {}) {
     const options = _.cloneDeep(raw);
     const allPathAndAlias = [];
@@ -152,7 +163,8 @@ class Configure {
     const traverse = (obj, objpath = '') => {
       if (obj.type === 'object') {
         _.keys(obj.properties).forEach((key) => {
-          traverse(obj.properties[key], objpath === '' ? key : `${objpath}.${key}`);
+          traverse(obj.properties[key], objpath === '' ? key
+            : `${objpath}.${key}`);
         });
         return;
       }
@@ -178,11 +190,11 @@ class Configure {
   }
 
   /**
-     * transform cli array('a,b,c') to array([a,b,c])
-     * @param raw
-     * @returns {*}
-     * @private
-     */
+   * transform cli array('a,b,c') to array([a,b,c])
+   * @param raw
+   * @returns {*}
+   * @private
+   */
   static _formatArray(raw = {}) {
     const result = _.cloneDeep(raw);
     const traverse = (obj, objpath = '') => {
@@ -202,21 +214,64 @@ class Configure {
   }
 
   /**
-     * generate plugins[] from cli options
-     * (keys that not list in svrx/config-list.js will be recognized as plugin
-     * names)
-     *   {pluginName: true} -> { plugins: [{ name: pluginName }] }
-     *   {pluginName: false} -> { plugins: [{ name: pluginName, _enable: false
-     * }] }
-     *   {pluginName: {pluginOptions}} -> { plugins: [
+   * parse cli plugin query string, add 'plugins' and remove 'plugin'
+   * --plugin @scope/webpack@0.0.1?foo=bar&biz=piz
+   * @param raw
+   * @private
+   */
+  static _parsePluginQueryString(raw = {}) {
+    const result = _.cloneDeep(raw);
+    const pluginStrings = result.plugin;
+    const plugins = [];
+    const reg = /^((@\w+\/)?\w+)(@(\d+\.\d+\.\d+))?(\?(\w+=\w+(&\w+=\w+)*))?$/;
+    const getPlugin = (pluginString) => {
+      const matches = reg.exec(pluginString);
+      if (matches) {
+        return {
+          name: matches[1],
+          version: matches[4],
+          options: matches[6] ? querystring.parse(matches[6]) : {},
+        };
+      }
+      logger.error(`Plugin string parse error: ${pluginString}`);
+      return null;
+    };
+
+    if (_.isString(pluginStrings)) {
+      const plugin = getPlugin(pluginStrings);
+      if (plugin) {
+        plugins.push(plugin);
+      }
+    } else if (_.isArray(pluginStrings)) {
+      pluginStrings.forEach((pstring) => {
+        const plugin = getPlugin(pstring);
+        if (plugin) {
+          plugins.push(plugin);
+        }
+      });
+    }
+    result.plugins = plugins;
+    delete result.plugin;
+
+    return result;
+  }
+
+  /**
+   * generate plugins[] from cli options
+   * (keys that not list in svrx/config-list.js will be recognized as plugin
+   * names)
+   *   {pluginName: true} -> { plugins: [{ name: pluginName }] }
+   *   {pluginName: false} -> { plugins: [{ name: pluginName, _enable: false
+   * }] }
+   *   {pluginName: {pluginOptions}} -> { plugins: [
    *        { name: pluginName, options: {...pluginInfos} }
    *     ] }
-     * @param raw
-     * @returns {Array}
-     * @private
-     */
+   * @param raw
+   * @returns {Array}
+   * @private
+   */
   _pickPluginsFromCli(raw = {}) {
-    const plugins = [];
+    const plugins = raw.plugins || [];
     const configKeys = _.keys(this[BUILTIN_CONFIG]);
     const cliPlugins = _.pickBy(raw, (value, key) => !configKeys.includes(key));
 
@@ -254,13 +309,13 @@ class Configure {
   }
 
   /**
-     * merge plugins that has the same name
-     * srcPlugins option has a higher priority
-     * @param srcPlugins
-     * @param addonPlugins
-     * @returns {*}
-     * @private
-     */
+   * merge plugins that has the same name
+   * srcPlugins option has a higher priority
+   * @param srcPlugins
+   * @param addonPlugins
+   * @returns {*}
+   * @private
+   */
   static _mergePlugins(srcPlugins = [], addonPlugins = []) {
     const pluginMap = new Map();
 
@@ -296,11 +351,11 @@ class Configure {
   }
 
   /**
-     * get local plugin name (local plugin is defined with 'path')
-     * @param plugin
-     * @returns {string}
-     * @private
-     */
+   * get local plugin name (local plugin is defined with 'path')
+   * @param plugin
+   * @returns {string}
+   * @private
+   */
   static _getLocalPluginName(plugin) {
     if (plugin.path) {
       const tmp = path.basename(plugin.path);
