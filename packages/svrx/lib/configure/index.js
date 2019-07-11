@@ -282,11 +282,6 @@ class Configure {
       if (value === false) {
         newValue._enable = false;
       }
-      if (_.isPlainObject(value)) {
-        _.assign(newValue, {
-          options: value,
-        });
-      }
       plugins.push(newValue);
     });
 
