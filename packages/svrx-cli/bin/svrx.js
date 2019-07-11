@@ -23,7 +23,7 @@ const manager = new Manager();
 const prepareSvrx = async () => {
   try {
     logger.debug('Loading svrx...');
-    await manager.loadConfigFile(); // load user config file
+    manager.loadConfigFile(); // load user config file
     const svrx = await Manager.loadSvrx(options);
     logger.debug('Successfully loaded svrx');
 
