@@ -26,8 +26,6 @@ module.exports = {
 
         if (open === true) open = 'local';
 
-        if (typeof open !== 'string') return;
-
         const openUrl = open.replace(
           /^(external|local)\b/,
           capture => URL_MAPING[capture],
