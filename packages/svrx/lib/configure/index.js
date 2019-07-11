@@ -223,6 +223,26 @@ class Configure {
     const result = _.cloneDeep(raw);
     const pluginStrings = result.plugin;
     const plugins = [];
+    const parseTypes = (ops) => {
+      const newOps = {};
+      const keyMap = {
+        undefined,
+        null: null,
+        true: true,
+        false: false,
+      };
+      Object.keys(ops).forEach((key) => {
+        const value = ops[key];
+        if (/\d+/.test(value)) {
+          newOps[key] = parseInt(value, 10);
+        } else if (value in keyMap) {
+          newOps[key] = keyMap[value];
+        } else {
+          newOps[key] = value;
+        }
+      });
+      return newOps;
+    };
     const reg = /^((@\w+\/)?\w+)(@(\d+\.\d+\.\d+))?(\?(\w+=\w+(&\w+=\w+)*))?$/;
     const getPlugin = (pluginString) => {
       const matches = reg.exec(pluginString);
@@ -230,7 +250,7 @@ class Configure {
         return {
           name: matches[1],
           version: matches[4],
-          options: matches[6] ? querystring.parse(matches[6]) : {},
+          options: matches[6] ? parseTypes(querystring.parse(matches[6])) : {},
         };
       }
       logger.error(`Plugin string parse error: ${pluginString}`);

@@ -36,7 +36,7 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin).not.to.be(undefined);
-      expect(testPlugin.get('foo')).to.eql('bar');
+      expect(testPlugin.get('foo')).to.equal('bar');
     });
 
     it('add plugins with options', () => {
@@ -49,12 +49,12 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin).not.to.be(undefined);
-      expect(testPlugin.get('foo')).to.eql('bar');
+      expect(testPlugin.get('foo')).to.equal('bar');
 
       const demoPlugin = server.config.getPlugin('demo');
       expect(demoPlugin).not.to.be(undefined);
-      expect(demoPlugin.get('foo2')).to.eql('str');
-      expect(demoPlugin.get('bar2')).to.eql('far');
+      expect(demoPlugin.get('foo2')).to.equal('str');
+      expect(demoPlugin.get('bar2')).to.equal('far');
     });
 
     it('add a plugin with version', () => {
@@ -64,7 +64,7 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin).not.to.be(undefined);
-      expect(testPlugin.getInfo('version')).to.eql('0.0.1');
+      expect(testPlugin.getInfo('version')).to.equal('0.0.1');
     });
 
     it('add a plugin with version,options', () => {
@@ -74,9 +74,9 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin).not.to.be(undefined);
-      expect(testPlugin.getInfo('version')).to.eql('0.0.1');
-      expect(testPlugin.get('foo')).to.eql('bar');
-      expect(testPlugin.get('bar')).to.eql('foo');
+      expect(testPlugin.getInfo('version')).to.equal('0.0.1');
+      expect(testPlugin.get('foo')).to.equal('bar');
+      expect(testPlugin.get('bar')).to.equal('foo');
     });
 
     it('add plugins with version,options', () => {
@@ -89,13 +89,13 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin).not.to.be(undefined);
-      expect(testPlugin.getInfo('version')).to.eql('0.0.1');
-      expect(testPlugin.get('foo')).to.eql('bar');
-      expect(testPlugin.get('bar')).to.eql('foo');
+      expect(testPlugin.getInfo('version')).to.equal('0.0.1');
+      expect(testPlugin.get('foo')).to.equal('bar');
+      expect(testPlugin.get('bar')).to.equal('foo');
       const demoPlugin = server.config.getPlugin('demo');
       expect(demoPlugin).not.to.be(undefined);
-      expect(demoPlugin.getInfo('version')).to.eql('1.0.1');
-      expect(demoPlugin.get('foo')).to.eql('bar');
+      expect(demoPlugin.getInfo('version')).to.equal('1.0.1');
+      expect(demoPlugin.get('foo')).to.equal('bar');
     });
 
     it('add scoped plugin', () => {
@@ -114,7 +114,7 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('@scope/test');
       expect(testPlugin).not.to.be(undefined);
-      expect(testPlugin.getInfo('version')).to.eql('1.0.0');
+      expect(testPlugin.getInfo('version')).to.equal('1.0.0');
     });
 
     it('add scoped plugin with version,options', () => {
@@ -124,14 +124,56 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('@scope/test');
       expect(testPlugin).not.to.be(undefined);
-      expect(testPlugin.getInfo('version')).to.eql('1.0.0');
-      expect(testPlugin.get('foo')).to.eql('bar');
+      expect(testPlugin.getInfo('version')).to.equal('1.0.0');
+      expect(testPlugin.get('foo')).to.equal('bar');
+    });
+
+    it('add wrong format string', () => {
+      const server = createServer({}, {
+        plugin: [
+          'wrong@1?foo=bar',
+          'wrong2?foo&bar=foo',
+        ],
+      });
+      const wrongPlugin = server.config.getPlugin('wrong');
+      const wrongPlugin2 = server.config.getPlugin('wrong2');
+      expect(wrongPlugin).to.be(undefined);
+      expect(wrongPlugin2).to.be(undefined);
     });
   });
 
   describe('parse --plugin string options', () => {
-    it('should split all options correctly', () => {
-      // todo
+    it('should parse number string as number', () => {
+      const server = createServer({}, {
+        plugin: 'test?number=123',
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin.get('number')).to.equal(123);
+    });
+
+    it('should parse boolean string as boolean', () => {
+      const server = createServer({}, {
+        plugin: 'test?really=true&nah=false',
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin.get('really')).to.equal(true);
+      expect(testPlugin.get('nah')).to.equal(false);
+    });
+
+    it('should parse "undefined" as undefined', () => {
+      const server = createServer({}, {
+        plugin: 'test?undefined=undefined',
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin.get('undefined')).to.equal(undefined);
+    });
+
+    it('should parse "null" as null', () => {
+      const server = createServer({}, {
+        plugin: 'test?null=null',
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin.get('null')).to.equal(null);
     });
   });
 });
