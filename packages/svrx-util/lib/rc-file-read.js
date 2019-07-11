@@ -3,6 +3,7 @@ const userHome = require('user-home');
 const path = require('path');
 const fs = require('fs');
 
+const RC_FILES = ['.svrxrc.js', 'svrx.config.js'];
 const readGlobal = () => {
   const configRoot = process.env.SVRX_DIR;
   if (!configRoot && !userHome) {
@@ -10,21 +11,21 @@ const readGlobal = () => {
   }
 
   const root = configRoot || path.resolve(userHome, '.svrx');
-  const configPath = `${root}/config/.svrxrc.js`;
+  const fileName = RC_FILES.find(file => fs.existsSync(`${root}/config/${file}`));
 
-  if (fs.existsSync(configPath)) {
-    return require(configPath); // eslint-disable-line
+  if (fileName) {
+    return require(`${root}/config/${fileName}`); // eslint-disable-line
   }
+
   return {};
 };
 
 const readScope = () => {
   const explorer = cosmiconfig('svrx', {
-    searchPlaces: ['.svrxrc.js', 'svrx.config.js'],
+    searchPlaces: RC_FILES,
   });
   const result = explorer.searchSync();
   if (result && !result.isEmpty) {
-    this._rcFilePath = result.filepath;
     return result.config;
   }
   return {};
