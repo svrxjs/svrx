@@ -1,8 +1,7 @@
 /* eslint no-console: "off" */
 
-const cosmiconfig = require('cosmiconfig');
+const { rcFileRead } = require('svrx-util');
 const ffp = require('find-free-port');
-const chokidar = require('chokidar');
 const libPath = require('path');
 const chalk = require('chalk');
 const https = require('https');
@@ -27,8 +26,7 @@ const DOC_URL = 'https://github.com/x-orpheus/svrx/wiki/Docuements#options';
 class Svrx {
   constructor(inlineOptions = {}, cliOptions = {}) {
     this.Svrx = Svrx;
-    this._rcFilePath = null;
-    const rcOptions = this._rcFileRead();
+    const rcOptions = Svrx._rcFileRead();
     this.config = new Configure({
       inline: inlineOptions,
       cli: cliOptions,
@@ -72,9 +70,6 @@ class Svrx {
 
     // @TODO: need dynamic
     app.use(this.koaMiddleware());
-
-    // watch file change
-    this._watchRcfile();
   }
 
   async ready() {
@@ -151,32 +146,15 @@ class Svrx {
       });
   }
 
-  _rcFileRead() {
+  static _rcFileRead() {
     try {
       logger.debug('Reading config file...');
-      const explorer = cosmiconfig('svrx', {
-        searchPlaces: ['.svrxrc.js', 'svrx.config.js'],
-      });
-      const result = explorer.searchSync();
-      if (result && !result.isEmpty) {
-        this._rcFilePath = result.filepath;
-        return result.config;
-      }
+      return rcFileRead();
     } catch (e) {
       logger.error(`Config file loaded fail because \n\n${e.message}`);
     }
 
     return {};
-  }
-
-  _watchRcfile() {
-    const rcfilePath = this._rcFilePath;
-    if (!rcfilePath) return;
-    chokidar.watch(rcfilePath).on('change', () => {
-      const rcOptions = this._rcFileRead(); // xxx perf
-      this.config.updateRcOptions(rcOptions);
-      // todo reloadPlugins();
-    });
   }
 
   _tryStart(port, callback) {
