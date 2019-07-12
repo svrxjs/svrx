@@ -22,6 +22,7 @@ const getEvents = require('./shared/events');
 const logger = require('./util/logger');
 
 const NOOP = () => {};
+const DOC_URL = 'https://github.com/x-orpheus/svrx/wiki/Docuements#options';
 
 class Svrx {
   constructor(inlineOptions = {}, cliOptions = {}) {
@@ -57,8 +58,8 @@ class Svrx {
 
     // @TODO
     this.loader = new Loader();
-    this.loader.on('error', evt => logger.error(evt.payload));
-    this.loader.on('update', evt => logger.notify(`[routing update] ${evt.payload}`));
+    this.loader.on('error', payload => logger.error(payload));
+    this.loader.on('update', payload => logger.notify(`[routing update] ${payload}`));
 
     this.system = new PluginSystem({
       router: exportsToPlugin(this.loader),
@@ -99,7 +100,8 @@ class Svrx {
     this._server.close(callback);
   }
 
-  static printHelp() {
+  // cli
+  static printBuiltinOptionsHelp() {
     Object.keys(CONFIGS).forEach((name) => {
       const option = CONFIGS[name];
       if (option.cli !== false) {
@@ -110,11 +112,24 @@ class Svrx {
           const hint = defaultHint.replace(/^(\w)/, a => a.toLowerCase());
 
           const defaults = option.default ? ` (default: ${option.default})` : '';
-          console.log(`     ${cmd.padEnd(22)}${desc}${hint || defaults}`);
+          console.log(
+            ''.padEnd(8),
+            cmd.padEnd(22),
+            `${desc}${hint || defaults}`,
+          );
         }
       }
     });
+    console.log(
+      ''.padEnd(8),
+      `Visit ${DOC_URL} for more option detail`,
+    );
     console.log('\n');
+  }
+
+  // cli
+  static getCurrentVersion() {
+    return require('../package').version; // eslint-disable-line
   }
 
   async setup() {

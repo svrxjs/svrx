@@ -1,35 +1,41 @@
 // @TODO Shared IO Logic between server and client
 const io = require('socket.io');
+
+const { IO_PATH } = require('../shared/consts');
+const { getBody } = require('../util/helper');
 const events = require('../shared/events');
 const cache = require('../shared/cache');
-const logger = require('../util/logger');
 
 const SERVICE_CACHE = Symbol('service');
 const MAX_LIMIT_SERVICES = 500;
 
 class IO {
-  constructor({ server }) {
+  constructor({ server, middleware }) {
     this.events = events();
-    this._io = io(server);
+    this._io = io(server, {
+      path: IO_PATH,
+    });
+
+    // add $call middleware
+    middleware.add('$call', {
+      onCreate: () => async (ctx, next) => {
+        if (ctx.path === IO_PATH) {
+          let body = await getBody(ctx);
+          body = JSON.parse(body.toString());
+          try {
+            ctx.body = await this.call(body.serviceName, body.payload);
+          } catch (e) {
+            ctx.status = 500;
+            ctx.body = e.message;
+          }
+          return null;
+        }
+        return next();
+      },
+    });
     this._io.on('connection', (socket) => {
       socket.on('$message', ({ type, payload }) => {
         this.events.emit.call(this, type, payload);
-      });
-      socket.on('$call', (evt) => {
-        this.call(evt.serviceName, evt.payload)
-          .then((data) => {
-            socket.emit('$onCall', {
-              callId: evt.callId,
-              data,
-            });
-          })
-          .catch((e) => {
-            logger.error(e.message);
-            socket.emit('$onCall', {
-              callId: evt.callId,
-              error: e.message || e,
-            });
-          });
       });
     });
     this[SERVICE_CACHE] = cache({

@@ -2,12 +2,15 @@ const request = require('supertest');
 const expect = require('expect.js');
 const rimraf = require('rimraf');
 const libPath = require('path');
+const sinon = require('sinon');
+const childProcess = require('child_process');
 
+const { createServer } = require('../util');
 const System = require('../../lib/plugin/system');
 const Configure = require('../../lib/configure');
 const constants = require('../../lib/constant');
 const npm = require('../../lib/plugin/npm');
-const Svrx = require('../../lib/svrx');
+
 
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
@@ -18,12 +21,6 @@ function changeVersion(version) {
   return () => {
     constants.VERSION = PRE_VERSION;
   };
-}
-
-function createServer(option) {
-  option = option || {};
-  option.livereload = false;
-  return new Svrx(option);
 }
 
 const { BUILTIN_PLUGIN } = constants;
@@ -420,20 +417,9 @@ describe('Plugin System', () => {
           .end(done);
       });
     });
-
-
-    it('plugin url parser', () => {});
-
-    it('only one plugin is enable', () => {});
-
-    it('plugin config cli builder', () => {});
-
-    it('plugin props handle via propModels', () => {});
-
-    it('selector on props', () => {});
   });
 
-  describe('Builtin', () => {
+  describe('Builtin:serve', () => {
     it('serveStatic: basic', (done) => {
       const svrx = createServer({
         port: 3000,
@@ -461,6 +447,22 @@ describe('Plugin System', () => {
           .get('/demo.html')
           .expect('Content-Type', /html/)
           .expect(/src="\/svrx\/svrx-client.js"/, done);
+      });
+    });
+  });
+
+  describe('Builtin: open', () => {
+    const stub = sinon.stub(childProcess, 'exec');
+    it('basic usage', (done) => {
+      const svrx = createServer({
+        port: 3000,
+        open: true,
+      });
+      svrx.start(() => {
+        expect(stub.called).to.equal(true);
+        expect(stub.firstCall.args[0]).to.match(new RegExp(svrx.config.get('urls.local')));
+        stub.restore();
+        svrx.close(done);
       });
     });
   });

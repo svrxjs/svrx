@@ -1,62 +1,39 @@
 // @WARNING: client script, dont require unnessary resource
 const ioClient = require('socket.io-client');
+const qwest = require('qwest');
 const events = require('../shared/events');
-const cache = require('../shared/cache');
-const uid = require('../shared/uid');
+const { IO_PATH } = require('../shared/consts');
 
 const io = {};
 module.exports = io;
 const eventObject = events();
 const { origin } = window.location;
-const socket = ioClient.connect(origin);
+const socket = ioClient.connect(origin, {
+  path: IO_PATH,
+  transports: ['websocket'],
+});
+
+socket.on('reconnect_attempt', () => {
+  const { transports } = socket.io.opts;
+  if (transports.length === 1 && transports[0] === 'websocket') {
+    /* eslint-disable no-console */
+    console.log('[svrx] try websocket failed, falling back to long polling...');
+    socket.io.opts.transports = ['polling', 'websocket'];
+  }
+});
 
 io._socket = socket;
 
 io.call = (function getCall() {
-  const MAX_LIMIT_SERVICES = 500;
-
-  const CALLBACK_CACHE = cache({
-    limit: MAX_LIMIT_SERVICES,
-    onError() {
-      throw Error('max caller size limit exceeded');
-    },
-  });
-
-  const MAX_CALL_TIMEOUT = 2000;
-
-  socket.on('$onCall', (evt) => {
-    const { callId } = evt;
-    const handler = CALLBACK_CACHE.get(callId);
-    if (handler) {
-      handler(evt);
-      CALLBACK_CACHE.del(callId);
-    }
-  });
-
-  function onCall(callId, callback) {
-    CALLBACK_CACHE.set(callId, callback);
-  }
-
   return function call(serviceName, payload) {
-    return new Promise((resolve, reject) => {
-      const callId = uid();
-      socket.emit('$call', {
+    return qwest
+      .post(IO_PATH, {
         serviceName,
         payload,
-        callId,
-      });
-      onCall(callId, (evt) => {
-        if (evt.error) {
-          reject(new Error(evt.error));
-        } else {
-          resolve(evt.data);
-        }
-      });
-      setTimeout(() => {
-        CALLBACK_CACHE.del(callId);
-        reject(new Error(`call ${serviceName} timeout exceeded`));
-      }, MAX_CALL_TIMEOUT);
-    });
+      }, {
+        dataType: 'json',
+      })
+      .then((xhr, data) => data);
   };
 }());
 

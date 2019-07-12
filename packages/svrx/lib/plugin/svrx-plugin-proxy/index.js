@@ -1,11 +1,10 @@
 const request = require('co-request');
-const getRawBody = require('raw-body');
 const libUrl = require('url');
 const _ = require('lodash');
 const micromatch = require('micromatch');
 const { logger } = require('svrx-util');
 const { gunzip } = require('../../util/gzip');
-const { isHtmlType, isRespGzip } = require('../../util/helper');
+const { isHtmlType, isRespGzip, getBody } = require('../../util/helper');
 const { PRIORITY } = require('../../constant');
 
 const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
@@ -49,17 +48,7 @@ async function proxy({ proxyRule, ctx }) {
   const path = rewritePath(ctx.originalUrl, pathRewrite);
   const urlObj = new libUrl.URL(path, target);
   const { headers } = ctx;
-  const getBody = async () => {
-    try {
-      return /POST|PUT/.test(ctx.method)
-        ? await getRawBody(ctx.req)
-        : ctx.request.body;
-    } catch (e) {
-      logger.error(`Proxy Error: ${e.message}`);
-      return '';
-    }
-  };
-  const body = await getBody();
+  const body = await getBody(ctx);
 
   headers.host = changeOrigin ? urlObj.hostname : headers.host;
 
@@ -89,6 +78,7 @@ async function proxy({ proxyRule, ctx }) {
 }
 
 module.exports = {
+  proxy,
   priority: PRIORITY.PROXY,
   hooks: {
     async onCreate({ middleware, config }) {

@@ -37,8 +37,8 @@ module.exports = {
               data.css = path.slice(dir.length);
             }
 
-            events.emit('file:change', data, true).then((evt) => {
-              if (!evt.isStoped) {
+            events.emit('file:change', data, true).then((ctrl) => {
+              if (!ctrl.isStoped) {
                 io.emit('file:change', data);
               }
             });

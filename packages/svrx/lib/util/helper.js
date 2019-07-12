@@ -1,5 +1,6 @@
 // safe listening port
 const EventEmitter = require('events');
+const getRawBody = require('raw-body');
 const libPath = require('path');
 const libFs = require('fs');
 const _ = require('lodash');
@@ -179,6 +180,17 @@ function simpleRender(template, params) {
   return template.replace(pattern, (capture, name) => params[name] || '');
 }
 
+
+const getBody = async (ctx) => {
+  try {
+    return !/HEAD|GET/.test(ctx.method)
+      ? await getRawBody(ctx.req)
+      : ctx.request.body;
+  } catch (e) {
+    return '';
+  }
+};
+
 exports.normalizePluginName = normalizePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
 exports.isWritableStream = isWritableStream;
@@ -192,6 +204,7 @@ exports.isRespGzip = isRespGzip;
 exports.formatDate = formatDate;
 exports.isHtmlType = isHtmlType;
 exports.nodeCall = nodeCall;
+exports.getBody = getBody;
 exports.typeOf = typeOf;
 exports.npCall = npCall;
 exports.clone = clone;

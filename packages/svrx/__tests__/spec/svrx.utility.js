@@ -1,16 +1,19 @@
 const expect = require('expect.js');
 const util = require('util');
 const events = require('../../lib/shared/events');
+const limitCache = require('../../lib/shared/cache');
 const semver = require('../../lib/util/semver');
 const consts = require('../../lib/constant');
 const Imodel = require('../../lib/model');
 const im = require('../../lib/util/im');
 
-
 const setImmediatePromise = util.promisify(setImmediate);
 
 describe('Svrx Utility', () => {
-  describe('helper.semver', () => {
+  describe('helper', () => {
+
+  });
+  describe('semver', () => {
     it('satisfies', () => {
       expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false);
       expect(semver.satisfies('~0.0.1', '0.0.1')).to.equal(true);
@@ -114,11 +117,11 @@ describe('Svrx Utility', () => {
     it('basic unordered emit', (done) => {
       const bus = events({});
       const marks = [];
-      bus.on('a', (evt) => {
-        marks.push(`${evt.payload}1`);
+      bus.on('a', (payload) => {
+        marks.push(`${payload}1`);
       });
-      bus.on('a', (evt) => {
-        marks.push(`${evt.payload}2`);
+      bus.on('a', (payload) => {
+        marks.push(`${payload}2`);
       });
       bus.emit('a', 'hello').then(() => {
         expect(marks).to.eql(['hello1', 'hello2']);
@@ -148,15 +151,15 @@ describe('Svrx Utility', () => {
       const marks = [];
       bus.on(
         'a',
-        (evt) => {
-          marks.push(`${evt.payload}1`);
+        (payload) => {
+          marks.push(`${payload}1`);
         },
         9,
       );
       bus.on(
         'a',
-        (evt) => {
-          marks.push(`${evt.payload}2`);
+        (payload) => {
+          marks.push(`${payload}2`);
         },
         { priority: 11 },
       );
@@ -171,16 +174,16 @@ describe('Svrx Utility', () => {
       const marks = [];
       bus.on(
         'a',
-        (evt) => {
-          marks.push(`${evt.payload}1`);
-          evt.stop();
+        (payload, ctrl) => {
+          marks.push(`${payload}1`);
+          ctrl.stop();
         },
         { priority: 9 },
       );
       bus.on(
         'a',
-        (evt) => {
-          marks.push(`${evt.payload}2`);
+        (payload) => {
+          marks.push(`${payload}2`);
         },
         { priority: 11 },
       );
@@ -205,7 +208,8 @@ describe('Svrx Utility', () => {
         count += 1;
       };
       bus.on('a', fn);
-      bus.emit('a')
+      bus
+        .emit('a')
         .then(() => {
           expect(count).to.equal(1);
           bus.off('a', fn);
@@ -215,6 +219,20 @@ describe('Svrx Utility', () => {
           expect(count).to.equal(1);
           done();
         });
+    });
+
+    it('void emit', () => {
+      const bus = events({});
+
+      expect(() => {
+        bus.emit('one');
+      }).to.not.throwError();
+
+      bus.on('one', () => {});
+
+      expect(() => {
+        bus.emit('two');
+      }).to.not.throwError();
     });
     it('off all event', (done) => {
       const bus = events();
@@ -236,25 +254,25 @@ describe('Svrx Utility', () => {
       });
     });
 
-    it('ordered emit: shared evt object ', (done) => {
+    it('ordered emit: shared ctrl object ', (done) => {
       const bus = events({});
       bus.on(
         'a',
-        (evt) => {
-          evt.payload += ' world';
+        (payload) => {
+          payload.name += ' world';
         },
         { priority: 11 },
       );
       bus.on(
         'a',
-        (evt) => {
-          expect(evt.payload).to.equal('hello world');
-          evt.done = true;
+        (payload, ctrl) => {
+          expect(payload).to.eql({ name: 'hello world' });
+          ctrl.done = true;
         },
         { priority: 9 },
       );
-      bus.emit('a', 'hello', true).then((evtObj) => {
-        expect(evtObj.done).to.equal(true);
+      bus.emit('a', { name: 'hello' }, true).then((ctrl) => {
+        expect(ctrl.done).to.equal(true);
         done();
       });
     });
@@ -262,30 +280,81 @@ describe('Svrx Utility', () => {
       const bus = events({});
       bus.on(
         'a',
-        (evt) => {
-          evt.payload += '1';
-          evt.stop();
+        (payload, ctrl) => {
+          ctrl.name += '1';
+          ctrl.stop();
         },
         // default priority === 10
       );
       bus.on(
         'a',
-        (evt) => {
-          evt.payload += '2';
+        (payload, ctrl) => {
+          ctrl.name += '2';
         },
         { priority: 9 },
       );
       bus.on(
         'a',
-        (evt) => {
-          evt.payload += '3';
+        (payload, ctrl) => {
+          ctrl.name = '3';
         },
         { priority: 11 },
       );
       bus.emit('a', '', true).then((evt) => {
-        expect(evt.payload).to.eql('31');
+        expect(evt.name).to.eql('31');
         done();
       });
+    });
+  });
+
+  describe('cache', () => {
+    it('basic usage', () => {
+      const cache = limitCache(1);
+      cache.set('a', '1');
+      expect(cache.get('a')).to.equal('1');
+      expect(() => {
+        cache.set('b', '2');
+      }).to.throwError(/limit/);
+    });
+
+    it('keys values size', () => {
+      const cache = limitCache();
+
+      cache.set('a', '1');
+      cache.set('b', '2');
+
+      expect(cache.keys()).to.eql(['a', 'b']);
+      expect(cache.values()).to.eql(['1', '2']);
+      expect(cache.size()).to.eql(2);
+    });
+
+    it('custom onError', () => {
+      let mark = false;
+      const cache = limitCache({
+        limit: 1,
+        onError: () => {
+          mark = true;
+        },
+      });
+      cache.set('a', '1');
+      expect(cache.get('a')).to.equal('1');
+      cache.set('b', '2');
+      expect(mark).to.equal(true);
+    });
+
+    it('del', () => {
+      const cache = limitCache();
+
+      cache.set('a', '1');
+      cache.set('b', '2');
+
+      expect(cache.size()).to.equal(2);
+
+      cache.del('a');
+
+      expect(cache.size()).to.equal(1);
+      expect(cache.get('a')).to.equal(undefined);
+      expect(cache.get('b')).to.equal('2');
     });
   });
 
