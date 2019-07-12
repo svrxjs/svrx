@@ -20,9 +20,13 @@ class Manager {
     config.setWorkRoot(this.WORK_ROOT);
   }
 
-  async loadConfigFile() {
+  loadConfigFile() {
     if (this.loaded) return;
-    await config.loadFile();
+    try {
+      config.loadFile();
+    } catch (e) {
+      logger.error(`Config file reading failed: ${e}`);
+    }
     this.loaded = true;
   }
 

@@ -1,7 +1,7 @@
-const cosmiconfig = require('cosmiconfig');
 const userHome = require('user-home');
 const path = require('path');
 const mkdirp = require('mkdirp');
+const { rcFileRead } = require('svrx-util');
 
 class Config {
   constructor() {
@@ -39,13 +39,8 @@ class Config {
     this.WORK_ROOT = dir;
   }
 
-  async loadFile() {
-    const explorer = cosmiconfig('svrx', {
-      searchPlaces: ['.svrxrc.js', 'svrx.config.js'],
-    });
-    const result = await explorer.search();
-    if (!result || result.isEmpty) return;
-    this.addConfigs(result.config);
+  loadFile() {
+    this.addConfigs(rcFileRead());
   }
 
   addConfigs(configs) {
