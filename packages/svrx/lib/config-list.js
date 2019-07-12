@@ -11,7 +11,6 @@ module.exports = {
     ui: false,
   },
   svrx: {
-    alias: 'v',
     type: 'string',
     description: 'the version of svrx you want to use',
     defaultHint: 'default to the latest version installed locally',

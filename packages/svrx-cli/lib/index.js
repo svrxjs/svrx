@@ -27,7 +27,7 @@ class Manager {
   }
 
   static async loadSvrx(optionsFromCli = {}) {
-    const cliVersion = optionsFromCli.svrx || optionsFromCli.v;
+    const cliVersion = optionsFromCli.svrx;
     const rcVersion = config.getConfig().svrx;
     // use the latest version in local if no version supplied
     const version = cliVersion || rcVersion || (await local.getLatestVersion());
