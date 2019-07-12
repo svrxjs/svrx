@@ -10,7 +10,10 @@ const im = require('../../lib/util/im');
 const setImmediatePromise = util.promisify(setImmediate);
 
 describe('Svrx Utility', () => {
-  describe('helper.semver', () => {
+  describe('helper', () => {
+
+  });
+  describe('semver', () => {
     it('satisfies', () => {
       expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false);
       expect(semver.satisfies('~0.0.1', '0.0.1')).to.equal(true);

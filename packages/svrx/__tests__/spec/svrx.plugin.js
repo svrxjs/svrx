@@ -5,11 +5,12 @@ const libPath = require('path');
 const sinon = require('sinon');
 const childProcess = require('child_process');
 
+const { createServer } = require('../util');
 const System = require('../../lib/plugin/system');
 const Configure = require('../../lib/configure');
 const constants = require('../../lib/constant');
 const npm = require('../../lib/plugin/npm');
-const Svrx = require('../../lib/svrx');
+
 
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
@@ -20,12 +21,6 @@ function changeVersion(version) {
   return () => {
     constants.VERSION = PRE_VERSION;
   };
-}
-
-function createServer(option) {
-  option = option || {};
-  option.livereload = false;
-  return new Svrx(option);
 }
 
 const { BUILTIN_PLUGIN } = constants;
@@ -422,17 +417,6 @@ describe('Plugin System', () => {
           .end(done);
       });
     });
-
-
-    it('plugin url parser', () => {});
-
-    it('only one plugin is enable', () => {});
-
-    it('plugin config cli builder', () => {});
-
-    it('plugin props handle via propModels', () => {});
-
-    it('selector on props', () => {});
   });
 
   describe('Builtin:serve', () => {

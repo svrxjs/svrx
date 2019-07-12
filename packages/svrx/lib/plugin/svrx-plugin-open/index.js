@@ -1,4 +1,4 @@
-const { exec } = require('child_process');
+const childProcess = require('child_process');
 
 function openBrowser(target, callback) {
   const map = {
@@ -8,7 +8,7 @@ function openBrowser(target, callback) {
 
   const opener = map[process.platform] || 'xdg-open';
 
-  return exec(`${opener} ${target}`, callback);
+  return childProcess.exec(`${opener} ${target}`, callback);
 }
 
 module.exports = {

@@ -250,11 +250,11 @@ module.exports = {
         onCreate: () => async (ctx, next) => composeMiddlewares(ctx, next),
       });
 
-      events.on('file:change', (evt) => {
-        const { payload: { path } } = evt;
+      events.on('file:change', (payload, ctrl) => {
+        const { path } = payload;
         // means it is a webpack resource
         if (config.get('hot') && dataToBeRecycle.modules.indexOf(path) !== -1) {
-          evt.stop();
+          ctrl.stop();
         }
       });
 

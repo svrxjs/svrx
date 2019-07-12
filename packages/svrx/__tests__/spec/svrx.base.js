@@ -4,14 +4,7 @@ const expect = require('expect.js');
 const Koa = require('koa');
 
 const Middleware = require('../../lib/middleware');
-const Svrx = require('../../lib/svrx');
-
-function createServer(option) {
-  option = option || {};
-  option.livereload = false;
-  return new Svrx(option);
-}
-
+const { createServer } = require('../util');
 
 const getPort = number => new Promise((resolve) => {
   ffp(3000, 8000, '127.0.0.1', number || 1, (err, ...ports) => {
@@ -50,7 +43,6 @@ describe('Basic', () => {
       svrx.close(done);
     });
   });
-
 
   it('#port conflict', (done) => {
     getPort().then((ps) => {
@@ -104,6 +96,10 @@ describe('Middleware', () => {
       .get('/')
       .expect('one two', done);
   });
+});
 
-  describe('Builtin', () => { });
+describe('Public API', () => {
+  it('svrx.create() & svrx()', () => {
+
+  });
 });
