@@ -47,6 +47,17 @@ module.exports = {
     default: false,
     errorMessage: 'should be boolean or object',
   },
+  plugin: {
+    group: GROUPS.CORE,
+    alias: 'p',
+    description: 'Add a plugin by "[@{scope}/]{name}[@{version}][?{optionsQueryString}]"',
+    anyOf: [
+      { type: 'string' },
+      { type: 'array', items: { type: 'string' } },
+    ],
+    ui: false,
+    errorMessage: 'should be string or array of string',
+  },
   urls: {
     type: 'object',
     properties: {
@@ -84,9 +95,17 @@ module.exports = {
       },
     },
   },
+  plugins: {
+    type: 'array',
+    group: GROUPS.CORE,
+    cli: false,
+    ui: false,
+  },
   middlewares: {
     type: 'array',
     group: GROUPS.CORE,
+    cli: false,
+    ui: false,
   },
 
   // built plugin configs
