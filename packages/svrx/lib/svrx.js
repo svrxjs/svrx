@@ -58,8 +58,8 @@ class Svrx {
 
     // @TODO
     this.loader = new Loader();
-    this.loader.on('error', evt => logger.error(evt.payload));
-    this.loader.on('update', evt => logger.notify(`[routing update] ${evt.payload}`));
+    this.loader.on('error', payload => logger.error(payload));
+    this.loader.on('update', payload => logger.notify(`[routing update] ${payload}`));
 
     this.system = new PluginSystem({
       router: exportsToPlugin(this.loader),

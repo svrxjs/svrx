@@ -23,8 +23,7 @@ void (function(svrx) {
             return true;
         };
 
-        io.on('file:change', function(evt) {
-            const data = evt.payload;
+        io.on('file:change', function(data ) {
             if (data.css && updateStyle(data.css)) return true;
 
             window.location.reload();

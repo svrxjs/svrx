@@ -31,6 +31,7 @@ module.exports = {
   https: {
     description: 'enable https',
     type: 'boolean',
+    default: false,
     group: GROUPS.CORE,
   },
   route: {
@@ -176,7 +177,7 @@ module.exports = {
     errorMessage: 'should be boolean or object',
   },
   open: {
-    description: 'open something after server starting',
+    description: 'open target page after server start',
     group: GROUPS.COMMON,
     default: 'local',
     anyOf: [

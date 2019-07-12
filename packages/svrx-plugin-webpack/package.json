@@ -7,7 +7,7 @@
     "svrx-plugin"
   ],
   "engines": {
-    "svrx": "^0.0.3"
+    "svrx": "^0.0.4"
   },
   "homepage": "https://github.com/x-orpheus/svrx#readme",
   "license": "MIT",
