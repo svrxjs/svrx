@@ -1,6 +1,6 @@
 {
   "name": "svrx",
-  "version": "0.0.3-beta.3",
+  "version": "0.0.3",
   "description": "svrx server live-reload mock ",
   "keywords": [
     "svrx",
@@ -43,8 +43,6 @@
     "koa2-cors": "^2.0.6",
     "lodash": "^4.17.11",
     "micromatch": "^4.0.2",
-    "npm": "^6.9.0",
-    "npmi": "^2.0.1",
     "path-to-regexp": "^3.0.0",
     "raw-body": "^2.4.0",
     "resolve": "^1.10.0",
@@ -52,7 +50,7 @@
     "serve-index": "^1.9.1",
     "socket.io": "^2.2.0",
     "super-ajv": "^1.1.6",
-    "svrx-util": "^0.0.3-beta.3"
+    "svrx-util": "^0.0.3"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",

@@ -2,7 +2,6 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "changelog": "lerna-changelog",
     "build": "lerna run build",
     "lint": "run-p lint:*",
     "lint:js": "eslint \"**/*.js\"",
@@ -11,7 +10,8 @@
     "test": "lerna run test",
     "clean": "run-s clean:*",
     "clean:dependency": "lerna clean -y && rimraf -rf node_modules",
-    "lerna:version": "lerna version prerelease --preid beta",
+    "changelog": "lerna-changelog",
+    "lerna:version": "lerna version",
     "lerna:publish": "lerna publish from-git --yes",
     "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --no-audit && git add packages/*/package-lock.json",
     "postinstall": "lerna bootstrap",
@@ -41,5 +41,6 @@
       "pre-push": "npm test",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
-  }
+  },
+  "dependencies": {}
 }

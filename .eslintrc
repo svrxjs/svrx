@@ -28,5 +28,13 @@
         "devDependencies": true
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": "examples/**/*.js",
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    }
+  ]
 }
