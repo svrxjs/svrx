@@ -81,7 +81,7 @@ module.exports = {
   proxy,
   priority: PRIORITY.PROXY,
   hooks: {
-    async onCreate({ middleware, config }) {
+    async onCreate({ middleware, config, router }) {
       const proxyConfig = config.get('proxy');
       if (proxyConfig) {
         if (_.isArray(proxyConfig)) {
@@ -108,6 +108,15 @@ module.exports = {
           };
           return next();
         },
+      });
+
+      // add proxy action
+      router.action('proxy', (target, options = {}) => async (ctx) => {
+        const proxyRule = {
+          target,
+          ...options,
+        };
+        await proxy({ proxyRule, ctx });
       });
     },
 
