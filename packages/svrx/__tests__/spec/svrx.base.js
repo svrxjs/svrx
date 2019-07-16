@@ -2,6 +2,7 @@ const ffp = require('find-free-port');
 const request = require('supertest');
 const expect = require('expect.js');
 const Koa = require('koa');
+const svrx = require('../../index');
 
 const Middleware = require('../../lib/middleware');
 const Svrx = require('../../lib/svrx');
@@ -30,11 +31,11 @@ describe('Basic', () => {
 
   it('#start', (done) => {
     ffp(3000, '127.0.0.1', (err, p) => {
-      const svrx = createServer({
+      const svr = createServer({
         port: p,
         open: false,
       });
-      svrx.start((port) => {
+      svr.start((port) => {
         expect(port).to.eql(p);
         svrx.close(done);
       });
@@ -42,10 +43,10 @@ describe('Basic', () => {
   });
 
   it('#start with no port', (done) => {
-    const svrx = createServer({
+    const svr = createServer({
       open: false,
     });
-    svrx.start((port) => {
+    svr.start((port) => {
       expect(port).to.not.equal(undefined);
       svrx.close(done);
     });
@@ -55,9 +56,9 @@ describe('Basic', () => {
   it('#port conflict', (done) => {
     getPort().then((ps) => {
       const [p] = ps;
-      const svrx = createServer({ port: p, open: false });
+      const svr = createServer({ port: p, open: false });
 
-      svrx.start((port) => {
+      svr.start((port) => {
         expect(port).to.eql(p);
         const svrx2 = createServer({
           port: p,
@@ -104,6 +105,35 @@ describe('Middleware', () => {
       .get('/')
       .expect('one two', done);
   });
+});
 
-  describe('Builtin', () => { });
+describe('Public API', () => {
+  it('svrx.create() & svrx()', async () => {
+    const server = svrx({
+      open: false,
+      livereload: false,
+    });
+
+    const server2 = svrx.create({
+      open: false,
+      livereload: false,
+      plugins: {
+        inplace: true,
+        hooks: {
+          async onRoute(ctx) {
+            ctx.body = 'hello';
+          },
+        },
+      },
+    });
+
+    await request(server.__svrx.callback())
+      .get('/')
+      .expect(404);
+
+    return request(server2.__svrx.callback())
+      .get('/')
+      .expect(200)
+      .expect('hello');
+  });
 });
