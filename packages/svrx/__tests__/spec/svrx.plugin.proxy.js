@@ -27,6 +27,7 @@ describe('Proxy Action', async () => {
                 secure: false,
               });
               get('/secure/api/noset').to.proxy(PROXY_SERVER_HTTPS);
+              get('/dynamic/host/:port').to.proxy('http://localhost:{port}');
             });
           },
         },
@@ -50,6 +51,7 @@ describe('Proxy Action', async () => {
                   ctx.body = 'changeOrigin proxied';
                 }
               });
+              get('/dynamic/host/:port').to.send('dynamic proxied');
             });
           },
         },
@@ -116,4 +118,8 @@ describe('Proxy Action', async () => {
   it('should work after set secure to false with server that has no valid SSL certificate', () => agent
     .get('/secure/api/test')
     .expect('secure proxied'));
+
+  it('should work when set a dynamic target hostname', () => agent
+    .get('/dynamic/host/9003')
+    .expect('dynamic proxied'));
 });

@@ -4,7 +4,9 @@ const _ = require('lodash');
 const micromatch = require('micromatch');
 const { logger } = require('svrx-util');
 const { gunzip } = require('../../util/gzip');
-const { isHtmlType, isRespGzip, getBody } = require('../../util/helper');
+const {
+  isHtmlType, isRespGzip, getBody, simpleRender,
+} = require('../../util/helper');
 const { PRIORITY } = require('../../constant');
 
 const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
@@ -113,7 +115,7 @@ module.exports = {
       // add proxy action
       router.action('proxy', (target, options = {}) => async (ctx) => {
         const proxyRule = {
-          target,
+          target: simpleRender(target, ctx.params),
           ...options,
         };
         await proxy({ proxyRule, ctx });
