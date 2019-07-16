@@ -8,6 +8,35 @@ const createServer = (inlineOptions = {}, cliOptions = {}) => {
 };
 
 describe('CLI Config', () => {
+  it('should replace alias with real param name', () => {
+    const server = createServer({}, {
+      p: 'test',
+    });
+    const testPlugin = server.config.getPlugin('test');
+    expect(testPlugin).not.to.be(undefined);
+  });
+
+  it('should format string with comma to array values', () => {
+    const server = createServer({}, {
+      livereload: {
+        exclude: 'a,b,c',
+      },
+    });
+    const livereload = server.config.get('livereload');
+    expect(livereload.exclude).to.eql(['a', 'b', 'c']);
+  });
+
+  it('should read boolean value correctly', () => {
+    const server = createServer({}, {
+      livereload: false,
+      serve: true,
+    });
+    const livereload = server.config.get('livereload');
+    const serve = server.config.get('serve');
+    expect(livereload).to.eql(false);
+    expect(serve).to.eql(true);
+  });
+
   describe('add plugin and options with --plugin', () => {
     it('add a plugin', () => {
       // --plugin test
@@ -174,6 +203,35 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin.get('null')).to.equal(null);
+    });
+  });
+
+  describe('add plugin with shortcut', () => {
+    it('should enable plugin with --pluginName', () => {
+      const server = createServer({}, {
+        test: true,
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin).not.to.be(undefined);
+    });
+
+    it('should disable plugin with --no-pluginName', () => {
+      const server = createServer({}, {
+        test: false,
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin).to.be(undefined);
+    });
+
+    it('should enable multiple plugins', () => {
+      const server = createServer({}, {
+        test: true,
+        test2: true,
+      });
+      const testPlugin = server.config.getPlugin('test');
+      const testPlugin2 = server.config.getPlugin('test2');
+      expect(testPlugin).not.to.be(undefined);
+      expect(testPlugin2).not.to.be(undefined);
     });
   });
 });
