@@ -88,6 +88,7 @@ describe('Plugin System', () => {
     }).timeout(10000);
 
     it('system#loadOne with name', (done) => {
+      const revert = changeVersion('0.0.3');
       const config = new Configure({
         rc: {
           root: MODULE_PATH,
@@ -100,6 +101,7 @@ describe('Plugin System', () => {
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system.load(plugins).then(() => {
         expect(system.get('demo').name).to.equal('demo');
+        revert();
         done();
       });
     }).timeout(10000);
@@ -151,6 +153,7 @@ describe('Plugin System', () => {
     });
 
     it('wont install twice if installed', (done) => {
+      const revert = changeVersion('0.0.3');
       const config = new Configure({
         rc: {
           root: MODULE_PATH,
@@ -175,6 +178,7 @@ describe('Plugin System', () => {
         .then((plugModule) => {
           system.load(plugins).then(() => {
             expect(plugModule).to.equal(system.get('demo'));
+            revert();
             done();
           });
         });

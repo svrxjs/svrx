@@ -6,9 +6,9 @@ svrx(server-x) is a platform built for efficient front-end development.
 
 ## Documentation
 
-You can read documentation [here](https://github.com/x-orpheus/svrx/wiki/Docuements).
+You can read documentation [here](https://svrx.gitbook.io/docs/).
 
-你可以在[这里](https://github.com/x-orpheus/svrx/wiki/%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3)阅读使用文档。
+你可以在[这里](https://svrx.gitbook.io/docs/)阅读使用文档。
 
 ## Contributing
 
