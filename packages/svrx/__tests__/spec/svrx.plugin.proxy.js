@@ -47,7 +47,7 @@ describe('Proxy Action', async () => {
             route(({ get }) => {
               get('/api(.*)').to.send('proxied');
               get('/origin/api(.*)').to.handle((ctx) => {
-                if (ctx.request.headers.host === 'localhost') {
+                if (ctx.request.headers.host === 'localhost:9003') {
                   ctx.body = 'changeOrigin proxied';
                 }
               });

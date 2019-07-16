@@ -3,6 +3,7 @@ const libUrl = require('url');
 const _ = require('lodash');
 const micromatch = require('micromatch');
 const { logger } = require('svrx-util');
+const required = require('requires-port');
 const { gunzip } = require('../../util/gzip');
 const {
   isHtmlType, isRespGzip, getBody, simpleRender,
@@ -43,6 +44,10 @@ const rewritePath = (path, rules) => {
   return path;
 };
 
+function hasPort(host) {
+  return host.indexOf(':') >= 0;
+}
+
 async function proxy({ proxyRule, ctx }) {
   const {
     target, pathRewrite, changeOrigin, secure = true,
@@ -52,7 +57,11 @@ async function proxy({ proxyRule, ctx }) {
   const { headers } = ctx;
   const body = await getBody(ctx);
 
-  headers.host = changeOrigin ? urlObj.hostname : headers.host;
+  if (changeOrigin) {
+    headers.host = required(urlObj.port, urlObj.protocol) && !hasPort(urlObj.host)
+      ? `${urlObj.host}:${urlObj.port}`
+      : urlObj.host;
+  }
 
   const options = {
     method: ctx.method,
