@@ -5,14 +5,6 @@ const IModel = require('../model');
 const logger = require('../util/logger');
 
 class Option extends IModel {
-  updateOptions(options = {}) {
-    this.produce((draft) => {
-      _.keys(options).forEach((key) => {
-        draft[key] = options[key];
-      });
-    });
-  }
-
   validate(configs = {}) {
     const options = this.get();
     const ajv = new Ajv({
