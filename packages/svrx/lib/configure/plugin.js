@@ -71,15 +71,6 @@ class Plugin {
     });
     this[OPTION].validate(configs);
   }
-
-  /**
-     * watch option change
-     * @param pathes
-     * @param callback
-     */
-  watch(pathes, callback) {
-    this[OPTION].watch(pathes, callback);
-  }
 }
 
 module.exports = Plugin;
