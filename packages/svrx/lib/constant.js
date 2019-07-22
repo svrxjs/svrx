@@ -27,4 +27,9 @@ module.exports = {
   BUILTIN_PLUGIN: ['livereload', 'proxy', 'serve', 'cors', 'open'],
   CUSTOM_SCHEMA_TYPES: ['compute', 'function'],
   GROUPS,
+  EVENTS: {
+    FILE_CHANGE: 'file:change',
+    CREATE: 'create',
+    READY: 'ready',
+  },
 };

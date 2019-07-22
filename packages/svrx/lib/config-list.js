@@ -31,6 +31,7 @@ module.exports = {
   https: {
     description: 'enable https',
     type: 'boolean',
+    default: false,
     group: GROUPS.CORE,
   },
   route: {
@@ -45,6 +46,17 @@ module.exports = {
     anyOf: [{ type: 'boolean' }, { type: 'object' }],
     default: false,
     errorMessage: 'should be boolean or object',
+  },
+  plugin: {
+    group: GROUPS.CORE,
+    alias: 'p',
+    description: 'Add a plugin by "[@{scope}/]{name}[@{version}][?{optionsQueryString}]"',
+    anyOf: [
+      { type: 'string' },
+      { type: 'array', items: { type: 'string' } },
+    ],
+    ui: false,
+    errorMessage: 'should be string or array of string',
   },
   urls: {
     type: 'object',
@@ -83,9 +95,17 @@ module.exports = {
       },
     },
   },
+  plugins: {
+    type: 'array',
+    group: GROUPS.CORE,
+    cli: false,
+    ui: false,
+  },
   middlewares: {
     type: 'array',
     group: GROUPS.CORE,
+    cli: false,
+    ui: false,
   },
 
   // built plugin configs
@@ -176,7 +196,7 @@ module.exports = {
     errorMessage: 'should be boolean or object',
   },
   open: {
-    description: 'open something after server starting',
+    description: 'open target page after server start',
     group: GROUPS.COMMON,
     default: 'local',
     anyOf: [

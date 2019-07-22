@@ -6,15 +6,8 @@ const Koa = require('koa');
 
 
 const Middleware = require('../../lib/middleware');
-const Svrx = require('../../lib/svrx');
-const svrx = require('../../index');
 
-function createServer(option) {
-  option = option || {};
-  option.livereload = false;
-  return new Svrx(option);
-}
-
+const { createServer } = require('../util');
 
 const getPort = number => new Promise((resolve) => {
   ffp(3000, 8000, '127.0.0.1', number || 1, (err, ...ports) => {
@@ -53,7 +46,6 @@ describe('Basic', () => {
       svr.close(done);
     });
   });
-
 
   it('#port conflict', (done) => {
     getPort().then((ps) => {
@@ -199,5 +191,6 @@ describe('Public API', () => {
     await server.reload();
 
     expect(spy.calledOnce).to.equal(true);
+
   });
 });

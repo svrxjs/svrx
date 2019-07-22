@@ -1,11 +1,13 @@
 const request = require('co-request');
-const getRawBody = require('raw-body');
 const libUrl = require('url');
 const _ = require('lodash');
 const micromatch = require('micromatch');
 const { logger } = require('svrx-util');
+const required = require('requires-port');
 const { gunzip } = require('../../util/gzip');
-const { isHtmlType, isRespGzip } = require('../../util/helper');
+const {
+  isHtmlType, isRespGzip, getBody, simpleRender,
+} = require('../../util/helper');
 const { PRIORITY } = require('../../constant');
 
 const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
@@ -42,6 +44,10 @@ const rewritePath = (path, rules) => {
   return path;
 };
 
+function hasPort(host) {
+  return host.indexOf(':') >= 0;
+}
+
 async function proxy({ proxyRule, ctx }) {
   const {
     target, pathRewrite, changeOrigin, secure = true,
@@ -49,19 +55,13 @@ async function proxy({ proxyRule, ctx }) {
   const path = rewritePath(ctx.originalUrl, pathRewrite);
   const urlObj = new libUrl.URL(path, target);
   const { headers } = ctx;
-  const getBody = async () => {
-    try {
-      return /POST|PUT/.test(ctx.method)
-        ? await getRawBody(ctx.req)
-        : ctx.request.body;
-    } catch (e) {
-      logger.error(`Proxy Error: ${e.message}`);
-      return '';
-    }
-  };
-  const body = await getBody();
+  const body = await getBody(ctx);
 
-  headers.host = changeOrigin ? urlObj.hostname : headers.host;
+  if (changeOrigin) {
+    headers.host = required(urlObj.port, urlObj.protocol) && !hasPort(urlObj.host)
+      ? `${urlObj.host}:${urlObj.port}`
+      : urlObj.host;
+  }
 
   const options = {
     method: ctx.method,
@@ -89,9 +89,10 @@ async function proxy({ proxyRule, ctx }) {
 }
 
 module.exports = {
+  proxy,
   priority: PRIORITY.PROXY,
   hooks: {
-    async onCreate({ middleware, config }) {
+    async onCreate({ middleware, config, router }) {
       const proxyConfig = config.get('proxy');
       if (proxyConfig) {
         if (_.isArray(proxyConfig)) {
@@ -118,6 +119,15 @@ module.exports = {
           };
           return next();
         },
+      });
+
+      // add proxy action
+      router.action('proxy', (target, options = {}) => async (ctx) => {
+        const proxyRule = {
+          target: simpleRender(target, ctx.params),
+          ...options,
+        };
+        await proxy({ proxyRule, ctx });
       });
     },
 
