@@ -10,7 +10,7 @@
   ],
   "homepage": "http://x-orpheus.github.io/svrx",
   "license": "MIT",
-  "main": "lib/svrx.js",
+  "main": "index.js",
   "directories": {
     "lib": "lib"
   },
