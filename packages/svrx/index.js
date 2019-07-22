@@ -1,14 +1,16 @@
-const { EVENTS } = require('./lib/constant');
 const Svrx = require('./lib/svrx');
 
 function mapSvrxToExports(ctx) {
   function reload() {
-    ctx.events.emit(EVENTS.FILE_CHANGE);
-    return ctx;
+    return ctx.events.emit('file:change', {}, true);
   }
 
   function start() {
     return new Promise(resolve => ctx.start(resolve));
+  }
+
+  function close() {
+    return new Promise(resolve => ctx.close(resolve));
   }
 
   const forExports = {};
@@ -16,6 +18,7 @@ function mapSvrxToExports(ctx) {
   forExports.__svrx = ctx;
 
   forExports.start = start;
+  forExports.close = close;
   forExports.reload = reload;
 
   forExports.on = ctx.events.on.bind(ctx.events);
