@@ -27,7 +27,7 @@ class Configure {
       properties: this[BUILTIN_CONFIG],
     });
 
-    const rcOption = _.assign(rc, inline);
+    const rcOption = _.assign({}, rc, inline);
     const cliOption = this._parseCliOption(cli); // parse cli option
     this[CLI_OPTION] = cliOption;
 

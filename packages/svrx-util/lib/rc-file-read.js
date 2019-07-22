@@ -14,7 +14,7 @@ const readGlobal = () => {
   const fileName = RC_FILES.find(file => fs.existsSync(`${root}/config/${file}`));
 
   if (fileName) {
-    return {...require(`${root}/config/${fileName}`)}; // eslint-disable-line
+    return require(`${root}/config/${fileName}`); // eslint-disable-line
   }
 
   return {};
@@ -35,5 +35,5 @@ module.exports = () => {
   const globalConfig = readGlobal();
   const scopeConfig = readScope();
 
-  return Object.assign(globalConfig, scopeConfig);
+  return Object.assign({}, globalConfig, scopeConfig);
 };
