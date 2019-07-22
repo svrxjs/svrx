@@ -3,6 +3,7 @@ const request = require('supertest');
 const expect = require('expect.js');
 const sinon = require('sinon');
 const Koa = require('koa');
+const svrx = require('../../index');
 
 
 const Middleware = require('../../lib/middleware');
@@ -191,6 +192,5 @@ describe('Public API', () => {
     await server.reload();
 
     expect(spy.calledOnce).to.equal(true);
-
   });
 });
