@@ -15,7 +15,7 @@
     "lib": "lib"
   },
   "files": [
-    "lib"
+    "lib", "resource", "README.md"
   ],
   "repository": {
     "type": "git",
