@@ -10,9 +10,7 @@
       "PR: new feature": ":rocket: New Feature",
       "PR: breaking change": ":boom: Breaking Change",
       "PR: bug fix": ":bug: Bug Fix",
-      "PR: enhancement": ":nail_care: Enhancement",
-      "PR: documentation": ":memo: Documentation",
-      "PR: internal": ":house: Internal"
+      "PR: enhancement": ":nail_care: Enhancement"
     },
     "cacheDir": ".changelog"
   },
