@@ -27,7 +27,7 @@ class Configure {
       properties: this[BUILTIN_CONFIG],
     });
 
-    const rcOption = _.assign(rc, inline);
+    const rcOption = _.assign({}, rc, inline);
     const cliOption = this._parseCliOption(cli); // parse cli option
     this[CLI_OPTION] = cliOption;
 
@@ -94,38 +94,6 @@ class Configure {
    */
   getPlugin(name) {
     return this[PLUGINS].find(p => p.getInfo('name') === name);
-  }
-
-  /**
-   * watch builtin option change
-   * @param pathes
-   * @param callback
-   */
-  watch(pathes, callback) {
-    this[BUILTIN_OPTION].watch(pathes, callback);
-  }
-
-  updateRcOptions(rcOptions = {}) {
-    // builtins
-    const opionWithoutPlugins = _.pickBy(rcOptions, (value, key) => key
-      !== 'plugins');
-    this[BUILTIN_OPTION].updateOptions(opionWithoutPlugins);
-
-    // plugins
-    // pick plugins and plugin options from rcOption & cliOption
-    const builtinPlugins = BUILTIN_PLUGIN.map(p => ({ name: p }));
-    const cliPlugins = this._pickPluginsFromCli(this[CLI_OPTION]);
-    const rcPlugins = Configure._pickPluginsFromRc(rcOptions);
-    const userPlugins = Configure._mergePlugins(cliPlugins, rcPlugins);
-    const plugins = Configure._mergePlugins(userPlugins, builtinPlugins); // add
-    // builtin
-    // plugins
-    // rc file change, reload all plugins
-    this[PLUGINS] = [];
-    _.forEach(plugins, (plugin) => {
-      const pIns = new Plugin(plugin, this[BUILTIN_OPTION], this[BUILTIN_DEFAULTS]);
-      this[PLUGINS].push(pIns);
-    });
   }
 
   _parseCliOption(raw = {}) {
@@ -352,12 +320,6 @@ class Configure {
           pluginMap.set(p.name, _.assign(pluginMap.get(p.name), p));
         } else {
           pluginMap.set(p.name, p);
-        }
-      } else {
-        // local plugins
-        const name = Configure._getLocalPluginName(p);
-        if (name) {
-          pluginMap.set(name, { ...p, name });
         }
       }
     });

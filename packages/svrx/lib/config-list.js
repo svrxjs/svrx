@@ -38,14 +38,12 @@ module.exports = {
     description: 'the path of routing config file',
     anyOf: [{ type: 'string' }, { type: 'array' }],
     group: GROUPS.CORE,
-    errorMessage: 'should be string or array',
   },
   historyApiFallback: {
     group: GROUPS.CORE,
     description: 'Enable historyApiFallback middleware',
     anyOf: [{ type: 'boolean' }, { type: 'object' }],
     default: false,
-    errorMessage: 'should be boolean or object',
   },
   plugin: {
     group: GROUPS.CORE,
@@ -56,7 +54,6 @@ module.exports = {
       { type: 'array', items: { type: 'string' } },
     ],
     ui: false,
-    errorMessage: 'should be string or array of string',
   },
   urls: {
     type: 'object',
@@ -136,7 +133,6 @@ module.exports = {
         },
       },
     ],
-    errorMessage: 'should be boolean or object',
   },
 
   proxy: {
@@ -153,7 +149,6 @@ module.exports = {
         type: 'array',
       },
     ],
-    errorMessage: 'should be boolean, array or object',
   },
 
   livereload: {
@@ -173,12 +168,10 @@ module.exports = {
               { type: 'string' },
               { type: 'array', items: { type: 'string' } },
             ],
-            errorMessage: 'should be string or array of string',
           },
         },
       },
     ],
-    errorMessage: 'should be boolean or object',
   },
 
   cors: {
@@ -193,7 +186,6 @@ module.exports = {
         type: 'object',
       },
     ],
-    errorMessage: 'should be boolean or object',
   },
   open: {
     description: 'open target page after server start',
@@ -207,7 +199,6 @@ module.exports = {
         type: 'string',
       },
     ],
-    errorMessage: 'should be boolean or string',
   },
   logger: {
     description: 'global logger setting',
@@ -220,6 +211,5 @@ module.exports = {
         description: 'set log level, predefined values: \'silent\',\'notify\',\'error\',\'warn\', \'debug\'',
       },
     },
-    errorMessage: 'should be an object',
   },
 };

@@ -1,13 +1,55 @@
 const expect = require('expect.js');
+const libPath = require('path');
 const Svrx = require('../../lib/svrx');
+const Option = require('../../lib/configure/option');
+const CONFIGS = require('../../lib/config-list');
+const { BUILTIN_PLUGIN } = require('../../lib/constant');
 
-const createServer = (inlineOptions = {}, cliOptions = {}) => {
-  inlineOptions.livereload = false;
-  inlineOptions.open = false;
-  return new Svrx(inlineOptions, cliOptions);
-};
+const createServer = (inlineOptions = {}, cliOptions = {}) => new Svrx(inlineOptions, cliOptions);
+const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
 
 describe('CLI Config', () => {
+  it('should replace alias with real param name', () => {
+    const server = createServer({}, {
+      p: 'test',
+    });
+    const testPlugin = server.config.getPlugin('test');
+    expect(testPlugin).not.to.be(undefined);
+  });
+
+  it('should format string with comma to array values', () => {
+    const server = createServer({}, {
+      livereload: {
+        exclude: 'a,b,c',
+      },
+    });
+    const livereload = server.config.get('livereload');
+    expect(livereload.exclude).to.eql(['a', 'b', 'c']);
+  });
+
+  it('should read boolean value correctly', () => {
+    const server = createServer({}, {
+      livereload: false,
+      serve: true,
+    });
+    const livereload = server.config.get('livereload');
+    const serve = server.config.get('serve');
+    expect(livereload).to.eql(false);
+    expect(serve).to.eql(true);
+  });
+
+  it('should remove dashed params and keep camel ones', () => {
+    // svrx --history-api-fallback
+    const server = createServer({}, {
+      historyApiFallback: true,
+      'history-api-fallback': true,
+    });
+    const camel = server.config.get('historyApiFallback');
+    const dash = server.config.get('history-api-fallback');
+    expect(camel).to.equal(true);
+    expect(dash).to.equal(undefined);
+  });
+
   describe('add plugin and options with --plugin', () => {
     it('add a plugin', () => {
       // --plugin test
@@ -175,5 +217,200 @@ describe('CLI Config', () => {
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin.get('null')).to.equal(null);
     });
+  });
+
+  describe('add plugin with shortcut', () => {
+    it('should enable plugin with --pluginName', () => {
+      const server = createServer({}, {
+        test: true,
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin).not.to.be(undefined);
+    });
+
+    it('should disable plugin with --no-pluginName', () => {
+      const server = createServer({}, {
+        test: false,
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin).to.be(undefined);
+    });
+
+    it('should enable multiple plugins', () => {
+      const server = createServer({}, {
+        test: true,
+        test2: true,
+      });
+      const testPlugin = server.config.getPlugin('test');
+      const testPlugin2 = server.config.getPlugin('test2');
+      expect(testPlugin).not.to.be(undefined);
+      expect(testPlugin2).not.to.be(undefined);
+    });
+  });
+});
+
+describe('Inline/RC File Config', () => {
+  describe('plugins', () => {
+    it('should pick string plugins correctly', () => {
+      const server = createServer({
+        plugins: [
+          'test', 'demo',
+        ],
+      });
+      const testPlugin = server.config.getPlugin('test');
+      const demoPlugin = server.config.getPlugin('demo');
+      expect(testPlugin).not.to.be(undefined);
+      expect(demoPlugin).not.to.be(undefined);
+    });
+
+    it('should pick obj plugins correctly', () => {
+      const server = createServer({
+        plugins: [
+          {
+            name: 'test',
+          },
+        ],
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin).not.to.be(undefined);
+    });
+
+    it('should parse local plugin name correctly', () => {
+      const server = createServer({
+        plugins: [
+          {
+            path: TEST_PLUGIN_PATH,
+          },
+        ],
+      });
+      const testPlugin = server.config.getPlugin('test');
+      expect(testPlugin).not.to.be(undefined);
+    });
+  });
+});
+
+describe('Builtin Configs', () => {
+  it('should fill all default values', () => {
+    const server = createServer();
+    Object.keys(CONFIGS).forEach((key) => {
+      const value = CONFIGS[key];
+      if (value.default !== undefined) {
+        expect(server.config.get(key)).to.eql(value.default);
+      }
+    });
+  });
+
+  it('should enable all builtin plugins by default', () => {
+    const server = createServer();
+    const plugins = server.config.getPlugins();
+    expect(plugins.length).to.eql(BUILTIN_PLUGIN.length);
+    expect(plugins.map(p => p.getInfo('name'))).to.eql(BUILTIN_PLUGIN);
+  });
+
+  it('should concat array values from CLI and RC', () => {
+    const server = createServer({
+      livereload: {
+        exclude: ['a'],
+      },
+    }, {
+      livereload: {
+        exclude: ['b'],
+      },
+    });
+    expect(server.config.get('livereload.exclude')).to.eql(['a', 'b']);
+  });
+});
+
+describe('Config get/set', () => {
+  const server = createServer({
+    port: 3000,
+    plugins: [
+      {
+        name: 'test',
+        version: '0.0.1',
+        options: {
+          op: 123,
+        },
+      },
+    ],
+  });
+  const { config } = server;
+  const testPlugin = config.getPlugin('test');
+
+  it('should get builtin value corrently', () => {
+    expect(config.get('port')).to.equal(3000);
+  });
+
+  it('should set builtin value corrently', () => {
+    config.set('port', 4000);
+    expect(config.get('port')).to.equal(4000);
+    config.set('port', 3000);
+  });
+
+  it('should get plugin info corrently', () => {
+    expect(testPlugin.getInfo('version')).to.equal('0.0.1');
+  });
+
+  it('should get plugin option corrently', () => {
+    expect(testPlugin.get('op')).to.equal(123);
+  });
+
+  it('should set plugin option corrently', () => {
+    testPlugin.set('op', 321);
+    testPlugin.set('other', 'other info');
+    expect(testPlugin.get('op')).to.equal(321);
+    expect(testPlugin.get('other')).to.equal('other info');
+  });
+
+  it('should get builtin options in plugin config with $', () => {
+    expect(testPlugin.get('$.port')).to.equal(3000);
+  });
+});
+
+describe('Config Validate', () => {
+  it('should validate single type configs', () => {
+    const option = new Option({
+      https: 3000, // should be boolean
+      port: 'port', // should be number
+      svrx: 123, // should be string
+      urls: 'should be object', // should be object
+    });
+    const errors = option._validate(CONFIGS);
+    expect(errors).not.to.equal(null);
+    expect(errors.length).to.equal(4);
+    expect(errors[0]).to.equal('Config Error: .https should be boolean');
+    expect(errors[1]).to.equal('Config Error: .port should be number');
+    expect(errors[2]).to.equal('Config Error: .svrx should be string');
+    expect(errors[3]).to.equal('Config Error: .urls should be object');
+  });
+
+  it('should validate multi type configs', () => {
+    const option = new Option({
+      proxy: 123, // boolean,array,object
+      open: ['a', 'b'], // boolean,string
+      serve: 'string',
+    });
+    const errors = option._validate(CONFIGS);
+    expect(errors).not.to.equal(null);
+    expect(errors.length).to.equal(3);
+    expect(errors[0]).to.equal('Config Error: .open should be boolean or string');
+    expect(errors[1]).to.equal('Config Error: .proxy should be boolean or object or array');
+    expect(errors[2]).to.equal('Config Error: .serve should be boolean or object');
+  });
+
+  it('should log the error path correctly', () => {
+    const option = new Option({
+      serve: {
+        base: 123, // string
+      },
+      livereload: {
+        exclude: true,
+      },
+    });
+    const errors = option._validate(CONFIGS);
+    expect(errors).not.to.equal(null);
+    expect(errors.length).to.equal(2);
+    expect(errors[0]).to.equal('Config Error: .livereload.exclude should be string or array');
+    expect(errors[1]).to.equal('Config Error: .serve.base should be string');
   });
 });

@@ -35,5 +35,5 @@ module.exports = () => {
   const globalConfig = readGlobal();
   const scopeConfig = readScope();
 
-  return Object.assign(globalConfig, scopeConfig);
+  return Object.assign({}, globalConfig, scopeConfig);
 };

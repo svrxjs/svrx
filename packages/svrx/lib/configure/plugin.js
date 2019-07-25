@@ -47,9 +47,10 @@ class Plugin {
   }
 
   /**
-     * set plugin option
-     * @param pluginPathes
-     */
+   * set plugin option
+   * @param pluginPathes
+   * @param value
+   */
   set(pluginPathes, value) {
     this[OPTION].set(pluginPathes, value);
   }
@@ -63,6 +64,10 @@ class Plugin {
     return this[INFO].get(infoPathes);
   }
 
+  /**
+   * set config after plugin loaded
+   * @param configs
+   */
   setConfigs(configs = {}) {
     this[CONFIG] = configs;
     this[DEFAULTS] = defaults({
@@ -70,15 +75,6 @@ class Plugin {
       properties: configs,
     });
     this[OPTION].validate(configs);
-  }
-
-  /**
-     * watch option change
-     * @param pathes
-     * @param callback
-     */
-  watch(pathes, callback) {
-    this[OPTION].watch(pathes, callback);
   }
 }
 
