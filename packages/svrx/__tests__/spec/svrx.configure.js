@@ -1,5 +1,6 @@
 const expect = require('expect.js');
 const libPath = require('path');
+const sinon = require('sinon');
 const Svrx = require('../../lib/svrx');
 const Option = require('../../lib/configure/option');
 const CONFIGS = require('../../lib/config-list');
@@ -7,6 +8,11 @@ const { BUILTIN_PLUGIN } = require('../../lib/constant');
 
 const createServer = (inlineOptions = {}, cliOptions = {}) => new Svrx(inlineOptions, cliOptions);
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
+function requireEnsure(path) {
+  delete require.cache[path];
+  /* eslint-disable global-require, import/no-dynamic-require */
+  return require(path);
+}
 
 describe('CLI Config', () => {
   it('should replace alias with real param name', () => {
@@ -393,9 +399,15 @@ describe('Config Validate', () => {
     const errors = option._validate(CONFIGS);
     expect(errors).not.to.equal(null);
     expect(errors.length).to.equal(3);
-    expect(errors[0]).to.equal('Config Error: .open should be boolean or string');
-    expect(errors[1]).to.equal('Config Error: .proxy should be boolean or object or array');
-    expect(errors[2]).to.equal('Config Error: .serve should be boolean or object');
+    expect(errors[0])
+      .to
+      .equal('Config Error: .open should be boolean or string');
+    expect(errors[1])
+      .to
+      .equal('Config Error: .proxy should be boolean or object or array');
+    expect(errors[2])
+      .to
+      .equal('Config Error: .serve should be boolean or object');
   });
 
   it('should log the error path correctly', () => {
@@ -410,7 +422,42 @@ describe('Config Validate', () => {
     const errors = option._validate(CONFIGS);
     expect(errors).not.to.equal(null);
     expect(errors.length).to.equal(2);
-    expect(errors[0]).to.equal('Config Error: .livereload.exclude should be string or array');
+    expect(errors[0])
+      .to
+      .equal('Config Error: .livereload.exclude should be string or array');
     expect(errors[1]).to.equal('Config Error: .serve.base should be string');
+  });
+});
+
+describe('Plugin Config', () => {
+  it('should return default values when get plugin(load from path) option', async () => {
+    const server = createServer({
+      plugins: [{
+        path: TEST_PLUGIN_PATH,
+      }],
+    });
+    await server.setup();
+    const testPlugin = server.config.getPlugin('test');
+    expect(testPlugin.get('limit')).to.equal(100);
+  });
+
+  it('should return default values when get plugin(load from remote) option', async () => {
+    const server = createServer({
+      plugins: ['remote'],
+    });
+    const fakeLoadOne = sinon.fake.resolves({
+      name: 'remote',
+      path: TEST_PLUGIN_PATH,
+      module: requireEnsure(TEST_PLUGIN_PATH),
+      version: requireEnsure(TEST_PLUGIN_PATH).version,
+      pluginConfig: server.config.getPlugin('remote'),
+    });
+
+    const pluginDetail = await fakeLoadOne();
+    await server.system.buildOne(pluginDetail);
+
+    const testPlugin = server.config.getPlugin('remote');
+    expect(testPlugin.get('limit')).to.equal(100);
+    sinon.restore();
   });
 });
