@@ -5,9 +5,15 @@ const Svrx = require('../../lib/svrx');
 const Option = require('../../lib/configure/option');
 const CONFIGS = require('../../lib/config-list');
 const { BUILTIN_PLUGIN } = require('../../lib/constant');
+const defaults = require('../../lib/util/jsonSchemaDefaults');
 
 const createServer = (inlineOptions = {}, cliOptions = {}) => new Svrx(inlineOptions, cliOptions);
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
+const BUILTIN_DEFAULTS = defaults({
+  type: 'object',
+  properties: CONFIGS,
+});
+
 function requireEnsure(path) {
   delete require.cache[path];
   /* eslint-disable global-require, import/no-dynamic-require */
@@ -327,13 +333,20 @@ describe('Builtin Configs', () => {
   });
 });
 
-describe('Config get/set', () => {
+describe('Config get', () => {
   const server = createServer({
     port: 3000,
     plugins: [
       {
         name: 'test',
         version: '0.0.1',
+        inplace: true,
+        configSchema: {
+          foo: {
+            type: 'string',
+            default: 'bar',
+          },
+        },
         options: {
           op: 123,
         },
@@ -347,12 +360,6 @@ describe('Config get/set', () => {
     expect(config.get('port')).to.equal(3000);
   });
 
-  it('should set builtin value corrently', () => {
-    config.set('port', 4000);
-    expect(config.get('port')).to.equal(4000);
-    config.set('port', 3000);
-  });
-
   it('should get plugin info corrently', () => {
     expect(testPlugin.getInfo('version')).to.equal('0.0.1');
   });
@@ -361,15 +368,57 @@ describe('Config get/set', () => {
     expect(testPlugin.get('op')).to.equal(123);
   });
 
+  it('should get builtin options in plugin config with $', () => {
+    expect(testPlugin.get('$.port')).to.equal(3000);
+  });
+
+  it('should get all options (includes the defaults) when there\'s no path', () => {
+    expect(config.get()).to.eql({ ...BUILTIN_DEFAULTS, port: 3000 });
+  });
+
+  it('should get all plugin options (includes the defaults) when there\'s no path', async () => {
+    await server.setup();
+    expect(testPlugin.get()).to.eql({
+      op: 123,
+      foo: 'bar', // defaults
+    });
+  });
+});
+
+describe('Config set', () => {
+  const server = createServer({
+    port: 3000,
+    plugins: [
+      {
+        name: 'test',
+        version: '0.0.1',
+        inplace: true,
+        configSchema: {
+          foo: {
+            type: 'string',
+            default: 'bar',
+          },
+        },
+        options: {
+          op: 123,
+        },
+      },
+    ],
+  });
+  const { config } = server;
+  const testPlugin = config.getPlugin('test');
+
+  it('should set builtin value corrently', () => {
+    config.set('port', 4000);
+    expect(config.get('port')).to.equal(4000);
+    config.set('port', 3000);
+  });
+
   it('should set plugin option corrently', () => {
     testPlugin.set('op', 321);
     testPlugin.set('other', 'other info');
     expect(testPlugin.get('op')).to.equal(321);
     expect(testPlugin.get('other')).to.equal('other info');
-  });
-
-  it('should get builtin options in plugin config with $', () => {
-    expect(testPlugin.get('$.port')).to.equal(3000);
   });
 });
 
@@ -458,6 +507,7 @@ describe('Plugin Config', () => {
 
     const testPlugin = server.config.getPlugin('remote');
     expect(testPlugin.get('limit')).to.equal(100);
+    expect(testPlugin.get('$.port')).to.equal(8000);
     sinon.restore();
   });
 });

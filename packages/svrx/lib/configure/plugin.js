@@ -43,6 +43,9 @@ class Plugin {
     // get from plugin option
     const userOption = this[OPTION].get(pathes);
     if (userOption === undefined) return _.get(this[DEFAULTS], pathes);
+    if (pathes === undefined) { // get all and the defaults
+      return { ...this[DEFAULTS], ...userOption };
+    }
     return userOption;
   }
 
