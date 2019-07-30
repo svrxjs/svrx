@@ -105,7 +105,7 @@ class PluginSystem {
             return;
           }
           const svrxPattern = (pkg.engines && pkg.engines.svrx) || '*';
-          if (version && version === pkg.version && semver.satisfies(svrxPattern)) {
+          if ((!version || version === pkg.version) && semver.satisfies(svrxPattern)) {
             resolve({
               path: libPath.join(res.split(normalizedName)[0], normalizedName),
               /* eslint-disable global-require, import/no-dynamic-require */
