@@ -6,11 +6,10 @@ async function getProxyServer() {
 }
 
 
-function createServer(option) {
-  option = option || {};
-  option.livereload = false;
-  option.open = option.open || false;
-  return new Svrx(option);
+function createServer(inlineOptions = {}, cliOptions = {}) {
+  inlineOptions.livereload = false;
+  inlineOptions.open = inlineOptions.open || false;
+  return new Svrx(inlineOptions, cliOptions);
 }
 
 exports.getProxyServer = getProxyServer;

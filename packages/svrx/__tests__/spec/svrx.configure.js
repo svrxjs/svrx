@@ -1,13 +1,12 @@
 const expect = require('expect.js');
 const libPath = require('path');
 const sinon = require('sinon');
-const Svrx = require('../../lib/svrx');
 const Option = require('../../lib/configure/option');
 const CONFIGS = require('../../lib/config-list');
 const { BUILTIN_PLUGIN } = require('../../lib/constant');
 const defaults = require('../../lib/util/jsonSchemaDefaults');
+const { createServer } = require('../util');
 
-const createServer = (inlineOptions = {}, cliOptions = {}) => new Svrx(inlineOptions, cliOptions);
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
 const BUILTIN_DEFAULTS = defaults({
   type: 'object',
@@ -306,7 +305,8 @@ describe('Builtin Configs', () => {
     const server = createServer();
     Object.keys(CONFIGS).forEach((key) => {
       const value = CONFIGS[key];
-      if (value.default !== undefined) {
+      if (value.default !== undefined && key !== 'open' && key
+        !== 'livereload') {
         expect(server.config.get(key)).to.eql(value.default);
       }
     });
@@ -321,23 +321,17 @@ describe('Builtin Configs', () => {
 
   it('should concat array values from CLI and RC', () => {
     const server = createServer({
-      livereload: {
-        exclude: ['a'],
-      },
+      proxy: ['a'],
     }, {
-      livereload: {
-        exclude: ['b'],
-      },
+      proxy: ['b'],
     });
-    expect(server.config.get('livereload.exclude')).to.eql(['a', 'b']);
+    expect(server.config.get('proxy')).to.eql(['a', 'b']);
   });
 });
 
 describe('Config get', () => {
   const server = createServer({
     port: 3000,
-    open: false,
-    livereload: false,
     plugins: [
       {
         name: 'test',
@@ -485,8 +479,6 @@ describe('Config Validate', () => {
 describe('Plugin Config', () => {
   it('should return default values when get plugin(load from path) option', async () => {
     const server = createServer({
-      open: false,
-      livereload: false,
       plugins: [{
         path: TEST_PLUGIN_PATH,
       }],
