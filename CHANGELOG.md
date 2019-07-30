@@ -1,3 +1,15 @@
+## v0.0.5 (2019-07-25)
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#17](https://github.com/x-orpheus/svrx/pull/17) Set charset for injected script ([@xuchaoying](https://github.com/xuchaoying))
+  * [#19](https://github.com/x-orpheus/svrx/pull/19) Fix https not working ([@leeluolee](https://github.com/leeluolee))
+
+#### Committers: 2
+- C.Y.Xu ([@xuchaoying](https://github.com/xuchaoying))
+- ZhengHaibo ([@leeluolee](https://github.com/leeluolee))
+
+
 ## v0.0.4 (2019-07-16)
 
 #### :rocket: New Feature
