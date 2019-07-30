@@ -336,6 +336,8 @@ describe('Builtin Configs', () => {
 describe('Config get', () => {
   const server = createServer({
     port: 3000,
+    open: false,
+    livereload: false,
     plugins: [
       {
         name: 'test',
@@ -373,7 +375,9 @@ describe('Config get', () => {
   });
 
   it('should get all options (includes the defaults) when there\'s no path', () => {
-    expect(config.get()).to.eql({ ...BUILTIN_DEFAULTS, port: 3000 });
+    expect(config.get()).to.eql({
+      ...BUILTIN_DEFAULTS, port: 3000, open: false, livereload: false,
+    });
   });
 
   it('should get all plugin options (includes the defaults) when there\'s no path', async () => {
@@ -481,6 +485,8 @@ describe('Config Validate', () => {
 describe('Plugin Config', () => {
   it('should return default values when get plugin(load from path) option', async () => {
     const server = createServer({
+      open: false,
+      livereload: false,
       plugins: [{
         path: TEST_PLUGIN_PATH,
       }],
