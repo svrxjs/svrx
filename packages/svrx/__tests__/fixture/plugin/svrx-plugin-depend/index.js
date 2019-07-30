@@ -2,7 +2,7 @@
 module.exports = {
   name: 'test',
   priority: 100,
-  options: {
+  configSchema: {
     limit: {
       type: 'number',
       default: 100,

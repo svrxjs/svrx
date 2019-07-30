@@ -1,12 +1,23 @@
 const expect = require('expect.js');
 const libPath = require('path');
-const Svrx = require('../../lib/svrx');
+const sinon = require('sinon');
 const Option = require('../../lib/configure/option');
 const CONFIGS = require('../../lib/config-list');
 const { BUILTIN_PLUGIN } = require('../../lib/constant');
+const defaults = require('../../lib/util/jsonSchemaDefaults');
+const { createServer } = require('../util');
 
-const createServer = (inlineOptions = {}, cliOptions = {}) => new Svrx(inlineOptions, cliOptions);
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
+const BUILTIN_DEFAULTS = defaults({
+  type: 'object',
+  properties: CONFIGS,
+});
+
+function requireEnsure(path) {
+  delete require.cache[path];
+  /* eslint-disable global-require, import/no-dynamic-require */
+  return require(path);
+}
 
 describe('CLI Config', () => {
   it('should replace alias with real param name', () => {
@@ -294,7 +305,8 @@ describe('Builtin Configs', () => {
     const server = createServer();
     Object.keys(CONFIGS).forEach((key) => {
       const value = CONFIGS[key];
-      if (value.default !== undefined) {
+      if (value.default !== undefined && key !== 'open' && key
+        !== 'livereload') {
         expect(server.config.get(key)).to.eql(value.default);
       }
     });
@@ -309,25 +321,28 @@ describe('Builtin Configs', () => {
 
   it('should concat array values from CLI and RC', () => {
     const server = createServer({
-      livereload: {
-        exclude: ['a'],
-      },
+      proxy: ['a'],
     }, {
-      livereload: {
-        exclude: ['b'],
-      },
+      proxy: ['b'],
     });
-    expect(server.config.get('livereload.exclude')).to.eql(['a', 'b']);
+    expect(server.config.get('proxy')).to.eql(['a', 'b']);
   });
 });
 
-describe('Config get/set', () => {
+describe('Config get', () => {
   const server = createServer({
     port: 3000,
     plugins: [
       {
         name: 'test',
         version: '0.0.1',
+        inplace: true,
+        configSchema: {
+          foo: {
+            type: 'string',
+            default: 'bar',
+          },
+        },
         options: {
           op: 123,
         },
@@ -341,12 +356,6 @@ describe('Config get/set', () => {
     expect(config.get('port')).to.equal(3000);
   });
 
-  it('should set builtin value corrently', () => {
-    config.set('port', 4000);
-    expect(config.get('port')).to.equal(4000);
-    config.set('port', 3000);
-  });
-
   it('should get plugin info corrently', () => {
     expect(testPlugin.getInfo('version')).to.equal('0.0.1');
   });
@@ -355,15 +364,59 @@ describe('Config get/set', () => {
     expect(testPlugin.get('op')).to.equal(123);
   });
 
+  it('should get builtin options in plugin config with $', () => {
+    expect(testPlugin.get('$.port')).to.equal(3000);
+  });
+
+  it('should get all options (includes the defaults) when there\'s no path', () => {
+    expect(config.get()).to.eql({
+      ...BUILTIN_DEFAULTS, port: 3000, open: false, livereload: false,
+    });
+  });
+
+  it('should get all plugin options (includes the defaults) when there\'s no path', async () => {
+    await server.setup();
+    expect(testPlugin.get()).to.eql({
+      op: 123,
+      foo: 'bar', // defaults
+    });
+  });
+});
+
+describe('Config set', () => {
+  const server = createServer({
+    port: 3000,
+    plugins: [
+      {
+        name: 'test',
+        version: '0.0.1',
+        inplace: true,
+        configSchema: {
+          foo: {
+            type: 'string',
+            default: 'bar',
+          },
+        },
+        options: {
+          op: 123,
+        },
+      },
+    ],
+  });
+  const { config } = server;
+  const testPlugin = config.getPlugin('test');
+
+  it('should set builtin value corrently', () => {
+    config.set('port', 4000);
+    expect(config.get('port')).to.equal(4000);
+    config.set('port', 3000);
+  });
+
   it('should set plugin option corrently', () => {
     testPlugin.set('op', 321);
     testPlugin.set('other', 'other info');
     expect(testPlugin.get('op')).to.equal(321);
     expect(testPlugin.get('other')).to.equal('other info');
-  });
-
-  it('should get builtin options in plugin config with $', () => {
-    expect(testPlugin.get('$.port')).to.equal(3000);
   });
 });
 
@@ -393,9 +446,15 @@ describe('Config Validate', () => {
     const errors = option._validate(CONFIGS);
     expect(errors).not.to.equal(null);
     expect(errors.length).to.equal(3);
-    expect(errors[0]).to.equal('Config Error: .open should be boolean or string');
-    expect(errors[1]).to.equal('Config Error: .proxy should be boolean or object or array');
-    expect(errors[2]).to.equal('Config Error: .serve should be boolean or object');
+    expect(errors[0])
+      .to
+      .equal('Config Error: .open should be boolean or string');
+    expect(errors[1])
+      .to
+      .equal('Config Error: .proxy should be boolean or object or array');
+    expect(errors[2])
+      .to
+      .equal('Config Error: .serve should be boolean or object');
   });
 
   it('should log the error path correctly', () => {
@@ -410,7 +469,43 @@ describe('Config Validate', () => {
     const errors = option._validate(CONFIGS);
     expect(errors).not.to.equal(null);
     expect(errors.length).to.equal(2);
-    expect(errors[0]).to.equal('Config Error: .livereload.exclude should be string or array');
+    expect(errors[0])
+      .to
+      .equal('Config Error: .livereload.exclude should be string or array');
     expect(errors[1]).to.equal('Config Error: .serve.base should be string');
+  });
+});
+
+describe('Plugin Config', () => {
+  it('should return default values when get plugin(load from path) option', async () => {
+    const server = createServer({
+      plugins: [{
+        path: TEST_PLUGIN_PATH,
+      }],
+    });
+    await server.setup();
+    const testPlugin = server.config.getPlugin('test');
+    expect(testPlugin.get('limit')).to.equal(100);
+  });
+
+  it('should return default values when get plugin(load from remote) option', async () => {
+    const server = createServer({
+      plugins: ['remote'],
+    });
+    const fakeLoadOne = sinon.fake.resolves({
+      name: 'remote',
+      path: TEST_PLUGIN_PATH,
+      module: requireEnsure(TEST_PLUGIN_PATH),
+      version: requireEnsure(TEST_PLUGIN_PATH).version,
+      pluginConfig: server.config.getPlugin('remote'),
+    });
+
+    const pluginDetail = await fakeLoadOne();
+    await server.system.buildOne(pluginDetail);
+
+    const testPlugin = server.config.getPlugin('remote');
+    expect(testPlugin.get('limit')).to.equal(100);
+    expect(testPlugin.get('$.port')).to.equal(8000);
+    sinon.restore();
   });
 });

@@ -72,6 +72,9 @@ class Configure {
     if (userOption === undefined) {
       return _.get(this[BUILTIN_DEFAULTS], builtinPathes);
     }
+    if (builtinPathes === undefined) { // get all and the defaults
+      return { ...this[BUILTIN_DEFAULTS], ...userOption };
+    }
     return userOption;
   }
 
