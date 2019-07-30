@@ -456,8 +456,8 @@ describe('Plugin System', () => {
   });
 
   describe('Builtin: open', () => {
-    const stub = sinon.stub(childProcess, 'exec');
     it('basic usage', (done) => {
+      const stub = sinon.stub(childProcess, 'exec');
       const svrx = createServer({
         port: 3000,
         open: true,
