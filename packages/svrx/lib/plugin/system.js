@@ -72,6 +72,7 @@ class PluginSystem {
     const path = BUILTIN_PLUGIN.includes(name)
       ? libPath.join(__dirname, `./svrx-plugin-${name}`)
       : pluginConfig.getInfo('path');
+    const version = pluginConfig.getInfo('version');
     const hooks = pluginConfig.getInfo('hooks');
     const assets = pluginConfig.getInfo('assets');
     const inplace = pluginConfig.getInfo('inplace') || hooks || assets;
@@ -104,13 +105,15 @@ class PluginSystem {
             return;
           }
           const svrxPattern = (pkg.engines && pkg.engines.svrx) || '*';
-          if (semver.satisfies(svrxPattern)) {
+          if ((!version || version === pkg.version) && semver.satisfies(svrxPattern)) {
             resolve({
               path: libPath.join(res.split(normalizedName)[0], normalizedName),
               /* eslint-disable global-require, import/no-dynamic-require */
               module: require(res),
               pkg,
             });
+          } else {
+            resolve(null);
           }
         },
       );
