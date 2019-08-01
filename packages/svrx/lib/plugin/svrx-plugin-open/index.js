@@ -1,4 +1,5 @@
 const childProcess = require('child_process');
+const url = require('url');
 
 function openBrowser(target, callback) {
   const map = {
@@ -26,9 +27,10 @@ module.exports = {
 
         if (open === true) open = 'local';
 
-        const openUrl = open.replace(
-          /^(external|local)\b/,
-          capture => URL_MAPING[capture],
+        // make sure relative to absoulte url
+        const openUrl = url.resolve(
+          URL_MAPING.local,
+          open.replace(/^(external|local)\b/, capture => URL_MAPING[capture]),
         );
 
         openBrowser(openUrl, (err) => {
