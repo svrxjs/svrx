@@ -1,3 +1,17 @@
+## v0.0.6 (2019-07-30)
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#22](https://github.com/x-orpheus/svrx/pull/22) Fix config.get() to get all default values ([@xuchaoying](https://github.com/xuchaoying))
+
+#### :nail_care: Enhancement
+* `svrx`
+  * [#23](https://github.com/x-orpheus/svrx/pull/23) Add plugin version match check ([@xuchaoying](https://github.com/xuchaoying))
+
+#### Committers: 1
+- C.Y.Xu ([@xuchaoying](https://github.com/xuchaoying))
+
+
 ## v0.0.5 (2019-07-25)
 
 #### :bug: Bug Fix
