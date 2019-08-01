@@ -11,7 +11,6 @@ const Configure = require('../../lib/configure');
 const constants = require('../../lib/constant');
 const npm = require('../../lib/plugin/npm');
 
-
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
 
@@ -44,7 +43,8 @@ describe('Plugin System', () => {
 
     it('npm load satisfied version', (done) => {
       const revert = changeVersion('0.0.2');
-      npm.getSatisfiedVersion('demo')
+      npm
+        .getSatisfiedVersion('demo')
         .then((ret) => {
           expect(ret).to.equal('1.0.2');
           changeVersion('0.0.3');
@@ -193,7 +193,9 @@ describe('Plugin System', () => {
               name: 'inplace',
               priority: 10,
               hooks: {
-                async onRoute(ctx) { ctx.body = 'hello'; },
+                async onRoute(ctx) {
+                  ctx.body = 'hello';
+                },
               },
             },
           ],
@@ -268,7 +270,6 @@ describe('Plugin System', () => {
         });
     });
   });
-
 
   describe('Plugin:assets', () => {
     it('asset wraping', (done) => {
@@ -383,21 +384,24 @@ describe('Plugin System', () => {
         ],
       });
 
-      svrx.io.call('$.config', {
-        scope: 'hello-world',
-        command: 'get',
-        params: [],
-
-      }).then((res) => {
-        expect(res).to.eql({ limit: 300 });
-        return svrx.io.call('$.config', {
+      svrx.io
+        .call('$.config', {
           scope: 'hello-world',
           command: 'get',
-          params: ['limit'],
-        });
-      }).then((res) => {
-        expect(res).to.eql(300);
-      }).then(done)
+          params: [],
+        })
+        .then((res) => {
+          expect(res).to.eql({ limit: 300 });
+          return svrx.io.call('$.config', {
+            scope: 'hello-world',
+            command: 'get',
+            params: ['limit'],
+          });
+        })
+        .then((res) => {
+          expect(res).to.eql(300);
+        })
+        .then(done)
         .catch(done);
     });
     it('plugin-test onRoute', (done) => {
@@ -435,7 +439,7 @@ describe('Plugin System', () => {
       svrx.setup().then(() => {
         request(svrx.callback())
           .get('/demo.js')
-          .expect('parseInt(\'123\', 10);\n', done);
+          .expect("parseInt('123', 10);\n", done);
       });
     });
     it('serveStatic: injector', (done) => {
@@ -465,6 +469,34 @@ describe('Plugin System', () => {
       svrx.start(() => {
         expect(stub.called).to.equal(true);
         expect(stub.firstCall.args[0]).to.match(new RegExp(svrx.config.get('urls.local')));
+        stub.restore();
+        svrx.close(done);
+      });
+    });
+    it('external', (done) => {
+      const stub = sinon.stub(childProcess, 'exec');
+      const svrx = createServer({
+        port: 3000,
+        open: 'external',
+      });
+      svrx.start(() => {
+        expect(stub.called).to.equal(true);
+        expect(stub.firstCall.args[0]).to.match(new RegExp(svrx.config.get('urls.external')));
+        stub.restore();
+        svrx.close(done);
+      });
+    });
+    it('resolve to  absolute', (done) => {
+      const stub = sinon.stub(childProcess, 'exec');
+      const svrx = createServer({
+        port: 3000,
+        open: 'relative.md',
+      });
+      svrx.start(() => {
+        expect(stub.called).to.equal(true);
+        expect(stub.firstCall.args[0].split(/\s+/)[1]).to.equal(
+          `${svrx.config.get('urls.local')}/relative.md`,
+        );
         stub.restore();
         svrx.close(done);
       });
