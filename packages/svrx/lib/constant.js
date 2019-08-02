@@ -13,8 +13,8 @@ module.exports = {
   PRIORITY: {
     SERVE: 8,
     DEFAULT: 10,
-    ROUTER: 10,
-    HISTORY_API_FALLBACK: 20,
+    HISTORY_API_FALLBACK: 11,
+    ROUTER: 12,
     PROXY: 21,
     MOCK: 30,
     TRANSFORM: 100,
