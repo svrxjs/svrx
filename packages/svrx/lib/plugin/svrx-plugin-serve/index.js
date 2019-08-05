@@ -91,7 +91,7 @@ module.exports = {
         const historyApiFallbackMiddleware = historyApiFallback(
           historyApiFallbackOptions === true ? {} : historyApiFallbackOptions,
         );
-        middleware.add('$serve-history-api-fallback', {
+        middleware.add('$history-api-fallback', {
           priority: PRIORITY.HISTORY_API_FALLBACK,
           onCreate: () => async (ctx, next) => {
             if (ctx.status !== 404) {
