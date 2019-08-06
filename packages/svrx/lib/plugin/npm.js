@@ -1,5 +1,4 @@
 const { npm, logger } = require('svrx-util');
-const chalk = require('chalk');
 const semver = require('../util/semver');
 const { normalizePluginName } = require('../util/helper');
 
@@ -41,37 +40,25 @@ async function listMatchedPackageVersion(name) {
 }
 
 async function getSatisfiedVersion(name, semverVersion) {
-  const spinner = logger.progress(`Detecting satisfied plugin: ${chalk.gray(name)}`);
+  // const spinner = logger.progress(`Detecting satisfied plugin: ${chalk.gray(name)}`);
   try {
     const packages = await getMatchedPkg(name, semverVersion);
 
-    if (spinner) spinner();
+    // if (spinner) spinner();
     if (!packages.length) return false;
     const matchedPackage = semver.getClosestPackage(packages);
 
     return matchedPackage ? matchedPackage.version : false;
   } catch (e) {
-    if (spinner) spinner();
+    // if (spinner) spinner();
     logger.error(e);
     return false;
   }
 }
 
-async function install(options) {
-  const spinner = logger.progress(`Installing plugin: ${chalk.gray(options.name)}`);
-
-  try {
-    options.registry = storage.registry;
-    const result = await npm.install(options);
-    if (spinner) spinner();
-
-    return result;
-  } catch (e) {
-    if (spinner) spinner();
-    logger.error(e);
-    process.exit(1);
-    return null;
-  }
+function install(options) {
+  options.registry = storage.registry;
+  return npm.install(options);
 }
 
 module.exports = {

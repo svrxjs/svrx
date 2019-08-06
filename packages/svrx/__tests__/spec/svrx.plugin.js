@@ -10,6 +10,7 @@ const System = require('../../lib/plugin/system');
 const Configure = require('../../lib/configure');
 const constants = require('../../lib/constant');
 const npm = require('../../lib/plugin/npm');
+// const logger = require('../../lib/util/logger');
 
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
@@ -68,6 +69,48 @@ describe('Plugin System', () => {
     afterEach((done) => {
       cleanModule(done);
     });
+
+
+    // it('multiple install', async ()=>{
+
+    //   const config = new Configure({
+    //     rc: {
+    //       root: MODULE_PATH,
+    //       plugins: [{
+    //         name: 'hello',
+    //         async load(){
+    //           return {
+    //             name:'hello'
+    //           }
+    //         }
+    //       }, {
+    //         name: 'world',
+    //         async load(){
+    //           return {
+    //             name:'world'
+    //           }
+    //         }
+    //       }
+    //       ]
+    //     },
+    //   });
+
+    //   const system = new System({
+    //     config,
+    //   });
+
+    //   const plugins = config.getPlugins().filter(
+    // p => {!BUILTIN_PLUGIN.includes(p.getInfo('name')));
+    //   const stub = sinon.stub(logger, 'progress');
+    //   await system.load(plugins);
+
+    //   expect(stub.called).to.equal(true);
+
+
+    //   expect(stub.calledTwice.args[0]).to.match(/hello,world/);
+
+    //   stub.restore();
+    // })
 
     it('system#loadOne with path', (done) => {
       const config = new Configure({

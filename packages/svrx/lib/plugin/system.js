@@ -1,20 +1,13 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
-const chalk = require('chalk');
 
+const { getLoader } = require('./loader');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
-const {
-  install, getSatisfiedVersion, listMatchedPackageVersion, setRegistry,
-} = require('./npm');
+const { setRegistry } = require('./npm');
 
-function requireEnsure(path) {
-  delete require.cache[path];
-  /* eslint-disable global-require, import/no-dynamic-require */
-  return require(path);
-}
 
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
@@ -49,46 +42,28 @@ class PluginSystem {
     const { config } = this;
     // regist initialize service
     this.io.registService('$.config', async (payload) => {
-      const targetConfig = payload.scope
-        ? config.getPlugin(payload.scope)
-        : config;
+      const targetConfig = payload.scope ? config.getPlugin(payload.scope) : config;
       if (!targetConfig) throw Error(`plugin ${payload.scope} doesn't exsits`);
       return targetConfig[payload.command](...payload.params);
     });
   }
 
   async load(plugins) {
-    return plugins.reduce(
-      (left, right) => left.then(() => this.loadOne(right)),
-      Promise.resolve(),
-    );
+    if (!Array.isArray(plugins) || !plugins.length) return;
+    const names = plugins.map(p => p.getInfo('name')).filter(name => !BUILTIN_PLUGIN.includes(name));
+    const restore = logger.progress(`loading plugin${plugins.length > 1 ? 's' : ''} ${names.join(',')} `);
+    await Promise.all(plugins.map(p => this.loadOne(p)));
+    restore();
   }
 
   // @TODO: 重构重复代码过多
   async loadOne(pluginConfig) {
-    const { config } = this;
-    const pluginMap = this[PLUGIN_MAP];
     const name = pluginConfig.getInfo('name');
-    const path = BUILTIN_PLUGIN.includes(name)
-      ? libPath.join(__dirname, `./svrx-plugin-${name}`)
-      : pluginConfig.getInfo('path');
     const version = pluginConfig.getInfo('version');
-    const hooks = pluginConfig.getInfo('hooks');
-    const assets = pluginConfig.getInfo('assets');
-    const inplace = pluginConfig.getInfo('inplace') || hooks || assets;
+    const pluginMap = this[PLUGIN_MAP];
+    const { config } = this;
 
     if (pluginMap[name]) return pluginMap[name];
-
-    // load inplace plugin
-    if (inplace) {
-      pluginMap[name] = {
-        name,
-        module: pluginConfig.getInfo(),
-        path: config.get('root'),
-        pluginConfig,
-      };
-      return pluginMap[name];
-    }
 
     // load local plugin by name
     const resolveRet = await new Promise((resolve) => {
@@ -118,6 +93,7 @@ class PluginSystem {
         },
       );
     });
+
     if (resolveRet) {
       pluginMap[name] = {
         name,
@@ -126,82 +102,86 @@ class PluginSystem {
         version: resolveRet.pkg.version,
         pluginConfig,
       };
-      return pluginMap[name];
+    } else {
+      const loader = getLoader(pluginConfig);
+
+      const pluginModule = await loader.load(pluginConfig, config);
+
+      pluginMap[name] = pluginModule;
     }
+
+    return pluginMap[name];
 
     // load local plugin by path
-    if (path && !pluginConfig.getInfo('install')) {
-      // no install , just require
-      let pkg;
-      try {
-        /* eslint-disable global-require, import/no-dynamic-require */
-        pkg = require(libPath.join(path, 'package.json'));
-      } catch (e) {
-        pkg = {};
-      }
-      pluginMap[name] = {
-        name,
-        path,
-        module: require(path),
-        version: pkg.version,
-        pluginConfig,
-      };
-      return pluginMap[name];
-    }
+    // if (path && !pluginConfig.getInfo('install')) {
+    //   // no install , just require
+    //   let pkg;
+    //   try {
+    //     /* eslint-disable global-require, import/no-dynamic-require */
+    //     pkg = require(libPath.join(path, 'package.json'));
+    //   } catch (e) {
+    //     pkg = {};
+    //   }
+    //   pluginMap[name] = {
+    //     name,
+    //     path,
+    //     module: require(path),
+    //     version: pkg.version,
+    //     pluginConfig,
+    //   };
+    //   return pluginMap[name];
+    // }
 
-    // install and load plugin
-    const installOptions = {
-      path: config.get('root'),
-      npmLoad: {
-        // loaded: true,
-        prefix: config.get('root'),
-      },
-    };
+    // // install and load plugin
+    // const installOptions = {
+    //   path: config.get('root'),
+    //   npmLoad: {
+    //     // loaded: true,
+    //     prefix: config.get('root'),
+    //   },
+    // };
 
-    if (path === undefined) {
-      // remote
+    // if (path === undefined) {
+    //   // remote
 
-      const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
-      if (!targetVersion) {
-        // @TODO
-        const matchedPackageVersion = await listMatchedPackageVersion(name);
-        throw Error(
-          'unmatched plugin version, please use other version\n'
+    //   const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
+    //   if (!targetVersion) {
+    //     // @TODO
+    //     const matchedPackageVersion = await listMatchedPackageVersion(name);
+    //     throw Error(
+    //       'unmatched plugin version, please use other version\n'
+    //         + `${matchedPackageVersion.join('\n')}`,
+    //     );
+    //   } else {
+    //     installOptions.name = normalizePluginName(name);
+    //     installOptions.version = targetVersion;
+    //   }
+    // } else {
+    //   // local install
+    //   installOptions.name = path;
+    //   installOptions.localInstall = true;
+    // }
 
-                        + `${matchedPackageVersion.join('\n')}`,
-        );
-      } else {
-        installOptions.name = normalizePluginName(name);
-        installOptions.version = targetVersion;
-      }
-    } else {
-      // local install
-      installOptions.name = path;
-      installOptions.localInstall = true;
-    }
+    // const installRet = await install(installOptions);
 
-    const installRet = await install(installOptions);
-
-    let pkg;
-    const requirePath = libPath.join(path || installRet.path, 'package.json');
-    try {
-      pkg = requireEnsure(requirePath);
-    } catch (e) {
-      pkg = {};
-    }
-    logger.notify(
-      `${chalk.gray(name)}${
-        pkg.version ? `@${pkg.version}` : ''
-      } installed completely!`,
-    );
-    pluginMap[name] = {
-      name,
-      path: path || installRet.path,
-      module: requireEnsure(path || installRet.path),
-      version: pkg.version,
-      pluginConfig,
-    };
-    return pluginMap[name];
+    // let pkg;
+    // const requirePath = libPath.join(path || installRet.path, 'package.json');
+    // try {
+    //   pkg = requireEnsure(requirePath);
+    // } catch (e) {
+    //   pkg = {};
+    // }
+    // logger.notify(
+    //   `${chalk.gray(name)}${pkg.version ? `@${pkg.version}` : ''} installed completely!`,
+    // );
+    // pluginMap[name] = {
+    //   name,
+    //   path: path || installRet.path,
+    //   module: requireEnsure(path || installRet.path),
+    //   version: pkg.version,
+    //   pluginConfig,
+    // };
+    // return pluginMap[name];
   }
 
   getInstalledPluginNames() {
