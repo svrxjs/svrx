@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const events = require('../../lib/shared/events');
 const limitCache = require('../../lib/shared/cache');
 const semver = require('../../lib/util/semver');
+const compose = require('../../lib/util/compose');
 const consts = require('../../lib/constant');
 const Imodel = require('../../lib/model');
 const im = require('../../lib/util/im');
@@ -12,7 +13,6 @@ const {
 } = require('../../lib/util/helper');
 
 const setImmediatePromise = util.promisify(setImmediate);
-
 
 describe('Svrx Utility', () => {
   describe('helper', () => {
@@ -48,6 +48,36 @@ describe('Svrx Utility', () => {
       });
     });
   });
+  describe('compose', () => {
+    it('error boundary', (done) => {
+      expect(() => compose()).to.throwError(/Middleware stack must be an array!/);
+      expect(() => compose([() => {}, 'a'])).to.throwError(
+        /Middleware must be composed of functions!/,
+      );
+      const middleware = compose([
+        (ctx, next) => {
+          next();
+          return next();
+        },
+      ]);
+      middleware({}, () => {}).catch((e) => {
+        expect(e.message).to.match(/next\(\) called multiple times/);
+        const middleware2 = compose([
+          () => {
+            throw Error('custom error');
+          },
+        ]);
+        middleware2({}, () => {}).catch((err) => {
+          expect(err.message).to.match(/custom error/);
+          const middleware3 = compose([(ctx, next) => next()]);
+          // wont throw Error
+          middleware3({}).then(() => {
+            done();
+          });
+        });
+      });
+    });
+  });
   describe('semver', () => {
     it('satisfies', () => {
       expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false);
@@ -71,12 +101,21 @@ describe('Svrx Utility', () => {
       consts.VERSION = PRE_VERSION;
     });
   });
-  describe('helper.im', () => {
+  describe('im', () => {
     it('im#set basic', () => {
       const obj1 = { a: { b: 1 } };
       const obj2 = im.set(obj1, 'a.b', 3);
       expect(obj1).to.not.equal(obj2);
       expect(obj2.a.b).to.equal(3);
+    });
+
+    it('im#set no changed', () => {
+      const noChanged = [1];
+      const obj1 = { a: { b: noChanged } };
+      const obj2 = im.set(obj1, 'a.b', noChanged, {
+        replace: true,
+      });
+      expect(obj2.a.b).to.equal(noChanged);
     });
 
     it('im#set autoCreaete', () => {
@@ -125,6 +164,13 @@ describe('Svrx Utility', () => {
       const obj1 = { a: [{ b: 1 }] };
       expect('b' in im.del(obj1, 'a.0.b').a[0]).to.equal(false);
       expect('b' in im.del(obj1, 'a.b').a).to.equal(false);
+    });
+
+    it('im#del boundary', () => {
+      const obj1 = { a: [{ b: 1 }] };
+      expect(im.del(null)).to.equal(null);
+      expect(im.del(obj1, [])).to.equal(obj1);
+      expect(im.del('hello', '0')).to.equal('hello');
     });
 
     it('im#del #set #get Number', () => {

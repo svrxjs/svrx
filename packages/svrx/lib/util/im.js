@@ -94,10 +94,11 @@ const im = {
 
     const len = pathes.length;
 
-    const dest = _.clone(target);
     if (!len) {
-      return dest;
+      return target;
     }
+
+    const dest = _.clone(target);
 
     const nextPath = pathes.shift();
     const tType = _.typeOf(target);
