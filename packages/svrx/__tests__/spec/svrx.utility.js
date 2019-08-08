@@ -7,10 +7,47 @@ const semver = require('../../lib/util/semver');
 const consts = require('../../lib/constant');
 const Imodel = require('../../lib/model');
 const im = require('../../lib/util/im');
+const {
+  formatDate, getBody, npCall, normalizePluginName,
+} = require('../../lib/util/helper');
 
 const setImmediatePromise = util.promisify(setImmediate);
 
+
 describe('Svrx Utility', () => {
+  describe('helper', () => {
+    it('formatDate', () => {
+      const date = new Date(2014, 1, 1, 12, 36, 40);
+      expect(formatDate(date)).to.equal('2014-02-01 12:36');
+      expect(formatDate(date, 'yyyy-MM-dd HH小时ss秒')).to.equal('2014-02-01 12小时40秒');
+    });
+    it('getBody wont throw Error', async () => {
+      const body = await getBody({});
+      expect(body).to.equal('');
+    });
+    it('normalizePluginName', () => {
+      const name1 = normalizePluginName('world');
+      const name2 = normalizePluginName('hello-world');
+      const name3 = normalizePluginName('@orpheus/world');
+      expect(name1).to.equal('svrx-plugin-world');
+      expect(name2).to.equal('svrx-plugin-hello-world');
+      expect(name3).to.equal('@orpheus/svrx-plugin-world');
+    });
+
+    it('npCall', (done) => {
+      const nodeStyleTest = (name, callback) => {
+        if (name === 'pass') callback(null, name);
+        else callback(`error:${name}`);
+      };
+      npCall(nodeStyleTest, ['failed']).catch((err) => {
+        expect(err).to.equal('error:failed');
+        npCall(nodeStyleTest, ['pass']).then((data) => {
+          expect(data).to.equal('pass');
+          done();
+        });
+      });
+    });
+  });
   describe('semver', () => {
     it('satisfies', () => {
       expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false);
