@@ -98,6 +98,13 @@ describe('Svrx Utility', () => {
         ]).version,
       ).to.equal('0.0.6');
 
+      expect(
+        semver.getClosestPackage([]),
+      ).to.equal(null);
+      expect(
+        semver.getClosestPackage(),
+      ).to.equal(null);
+
       consts.VERSION = PRE_VERSION;
     });
   });

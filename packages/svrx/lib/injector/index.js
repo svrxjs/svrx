@@ -107,11 +107,12 @@ module.exports = class Injector {
         def.content = fs.readFileSync(filename, 'utf8');
       } catch (e) {
         logger.error(`readFile(${filename}) failed \n ${e.message}${e.message}`);
-        def.content = '';
+        return this;
       }
     }
 
     this[ASSETS][type].push(def);
+    return this;
   }
 
   replace(pattern, fn) {
