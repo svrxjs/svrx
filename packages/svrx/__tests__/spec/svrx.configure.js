@@ -185,13 +185,10 @@ describe('CLI Config', () => {
       const server = createServer({}, {
         plugin: [
           'wrong@1?foo=bar',
-          'wrong2?foo&bar=foo',
         ],
       });
       const wrongPlugin = server.config.getPlugin('wrong');
-      const wrongPlugin2 = server.config.getPlugin('wrong2');
       expect(wrongPlugin).to.be(undefined);
-      expect(wrongPlugin2).to.be(undefined);
     });
   });
 
@@ -227,6 +224,25 @@ describe('CLI Config', () => {
       });
       const testPlugin = server.config.getPlugin('test');
       expect(testPlugin.get('null')).to.equal(null);
+    });
+
+    it('should parse string with dot', () => {
+      const server = createServer({}, {
+        plugin: 'webpack?file=custom.config.js',
+      });
+      const testPlugin = server.config.getPlugin('webpack');
+      expect(testPlugin.get('file')).to.equal('custom.config.js');
+    });
+
+    it('should parse single param to empty string', () => {
+      const server = createServer({}, {
+        plugin: [
+          'test?foo&bar=foo',
+        ],
+      });
+      const plugin = server.config.getPlugin('test');
+      expect(plugin.get('foo')).to.eql('');
+      expect(plugin.get('bar')).to.eql('foo');
     });
   });
 
