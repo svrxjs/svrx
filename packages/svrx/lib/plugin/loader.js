@@ -1,7 +1,8 @@
+const { fork } = require('child_process');
 const libPath = require('path');
+
 const { BUILTIN_PLUGIN, VERSION } = require('../constant');
-const { install, getSatisfiedVersion, listMatchedPackageVersion } = require('./npm');
-const { normalizePluginName } = require('../util/helper');
+
 
 function requireEnsure(path) {
   delete require.cache[path];
@@ -38,7 +39,7 @@ const loaders = [
         name: pluginConfig.getInfo('name'),
         module: pluginConfig.getInfo(),
         path: config.get('root'),
-        version: '*',
+        version: pluginConfig.getInfo('version'),
         pluginConfig,
       };
     },
@@ -75,35 +76,27 @@ const loaders = [
     },
     async load(pluginConfig, config) {
       const name = pluginConfig.getInfo('name');
-      const installOptions = {
-        path: config.get('root'),
-        npmLoad: {
-          prefix: config.get('root'),
-        },
-      };
+      const root = config.get('root');
+      const version = pluginConfig.getInfo('version');
       const path = pluginConfig.getInfo('path');
+      const registry = config.get('registry');
 
-      if (path === undefined) {
-        const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
-        if (!targetVersion) {
-          // @TODO
-          const matchedPackageVersion = await listMatchedPackageVersion(name);
-          throw Error(
-            'unmatched plugin version, please use other version\n'
 
-                          + `${matchedPackageVersion.join('\n')}`,
-          );
-        } else {
-          installOptions.name = normalizePluginName(name);
-          installOptions.version = targetVersion;
-        }
-      } else {
-        // local install
-        installOptions.name = path;
-        installOptions.localInstall = true;
-      }
+      const task = fork(libPath.join(__dirname, './task.js'), {
+        silent: true,
+      });
 
-      const installRet = await install(installOptions);
+
+      const installRet = await new Promise((resolve, reject) => {
+        task.on('error', reject);
+        task.on('message', (ret) => {
+          if (ret.error) reject(new Error(ret.error));
+          else resolve(ret);
+        });
+        task.send({
+          path, name, root, version, registry,
+        });
+      });
 
       let pkg;
       const requirePath = libPath.join(path || installRet.path, 'package.json');
@@ -124,9 +117,9 @@ const loaders = [
 ];
 
 function getLoader(plugin) {
-  if (typeof plugin.loader === 'function') return plugin.loader;
+  if (typeof plugin.getInfo('load') === 'function') return plugin.getInfo('load');
 
-  return loaders.find(loader => loader.test(plugin));
+  return loaders.find(loader => loader.test(plugin)).load;
 }
 
 module.exports = { getLoader };

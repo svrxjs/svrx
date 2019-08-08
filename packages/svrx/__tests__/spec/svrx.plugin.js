@@ -10,10 +10,11 @@ const System = require('../../lib/plugin/system');
 const Configure = require('../../lib/configure');
 const constants = require('../../lib/constant');
 const npm = require('../../lib/plugin/npm');
-// const logger = require('../../lib/util/logger');
+const logger = require('../../lib/util/logger');
 
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
+const { getInstallForTask } = npm;
 
 function changeVersion(version) {
   const PRE_VERSION = constants.VERSION;
@@ -58,6 +59,32 @@ describe('Plugin System', () => {
         })
         .catch(done);
     }).timeout(10000);
+    it('npm getInstallRetForTask', (done) => {
+      const restore = changeVersion('0.0.2');
+      getInstallForTask({
+        name: 'demo',
+        version: '1.0.2',
+        root: MODULE_PATH,
+      }).then((ret) => {
+        expect(ret.name).to.equal('svrx-plugin-demo');
+        expect(ret.version).to.equal('1.0.2');
+        restore();
+        done();
+      });
+    }).timeout(10000);
+
+    it('npm unmatched version', (done) => {
+      const revert = changeVersion('0.0.3');
+      getInstallForTask({
+        name: 'demo',
+        version: '1.0.10',
+        root: MODULE_PATH,
+      }).catch((err) => {
+        expect(err).to.match(/unmatched plugin demo version/);
+        revert();
+        done();
+      });
+    });
   });
 
   describe('System', () => {
@@ -71,46 +98,46 @@ describe('Plugin System', () => {
     });
 
 
-    // it('multiple install', async ()=>{
+    it('multiple install', async () => {
+      const config = new Configure({
+        rc: {
+          root: MODULE_PATH,
+          plugins: [{
+            name: 'hello',
+            async load() {
+              return {
+                name: 'hello',
+              };
+            },
+          }, {
+            name: 'world',
+            async load() {
+              return {
+                name: 'world',
+              };
+            },
+          },
+          ],
+        },
+      });
 
-    //   const config = new Configure({
-    //     rc: {
-    //       root: MODULE_PATH,
-    //       plugins: [{
-    //         name: 'hello',
-    //         async load(){
-    //           return {
-    //             name:'hello'
-    //           }
-    //         }
-    //       }, {
-    //         name: 'world',
-    //         async load(){
-    //           return {
-    //             name:'world'
-    //           }
-    //         }
-    //       }
-    //       ]
-    //     },
-    //   });
+      const system = new System({
+        config,
+      });
 
-    //   const system = new System({
-    //     config,
-    //   });
+      const plugins = config.getPlugins().filter(
+        p => !BUILTIN_PLUGIN.includes(p.getInfo('name')),
+      );
+      const stub = sinon.stub(logger, 'spin').callsFake(() => () => {});
 
-    //   const plugins = config.getPlugins().filter(
-    // p => {!BUILTIN_PLUGIN.includes(p.getInfo('name')));
-    //   const stub = sinon.stub(logger, 'progress');
-    //   await system.load(plugins);
+      await system.load(plugins);
 
-    //   expect(stub.called).to.equal(true);
+      expect(stub.called).to.equal(true);
 
+      expect(stub.firstCall.args[0]).to.match(/hello,world/);
 
-    //   expect(stub.calledTwice.args[0]).to.match(/hello,world/);
-
-    //   stub.restore();
-    // })
+      stub.restore();
+    });
 
     it('system#loadOne with path', (done) => {
       const config = new Configure({
@@ -126,25 +153,6 @@ describe('Plugin System', () => {
       system.load(plugins).then(() => {
         expect(system.get('test').name).to.equal('test');
         expect(system.get('test').module.priority).to.equal(100);
-        done();
-      });
-    }).timeout(10000);
-
-    it('system#loadOne with name', (done) => {
-      const revert = changeVersion('0.0.3');
-      const config = new Configure({
-        rc: {
-          root: MODULE_PATH,
-          plugins: [{ name: 'demo' }],
-        },
-      });
-      const system = new System({
-        config,
-      });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-      system.load(plugins).then(() => {
-        expect(system.get('demo').name).to.equal('demo');
-        revert();
         done();
       });
     }).timeout(10000);
@@ -196,13 +204,13 @@ describe('Plugin System', () => {
     });
 
     it('wont install twice if installed', (done) => {
-      const revert = changeVersion('0.0.3');
       const config = new Configure({
         rc: {
           root: MODULE_PATH,
           plugins: [
             {
-              name: 'demo',
+              path: libPath.join(MODULE_PATH, 'svrx-plugin-test'),
+              install: true,
             },
           ],
         },
@@ -214,14 +222,13 @@ describe('Plugin System', () => {
       system
         .load(plugins)
         .then(() => {
-          const plugModule = system.get('demo');
-          expect(plugModule.name).to.equal('demo');
+          const plugModule = system.get('test');
+          expect(plugModule.name).to.equal('test');
           return plugModule;
         })
         .then((plugModule) => {
           system.load(plugins).then(() => {
-            expect(plugModule).to.equal(system.get('demo'));
-            revert();
+            expect(plugModule).to.equal(system.get('test'));
             done();
           });
         });
@@ -254,63 +261,6 @@ describe('Plugin System', () => {
         expect(plugModule.path).to.eql(MODULE_PATH);
         done();
       });
-    });
-
-    it('loadVersion', (done) => {
-      const revert = changeVersion('0.0.2');
-      const config = new Configure({
-        rc: {
-          root: MODULE_PATH,
-          plugins: [
-            {
-              name: 'demo',
-              version: '1.0.2',
-            },
-          ],
-        },
-      });
-      const system = new System({
-        config,
-      });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-      system
-        .load(plugins)
-        .then(() => {
-          const plugModule = system.get('demo');
-          expect(plugModule.version).to.equal('1.0.2');
-
-          revert();
-          done();
-        })
-        .catch(done);
-    });
-    it('load unmatched Version ', (done) => {
-      const config = new Configure({
-        rc: {
-          root: MODULE_PATH,
-          plugins: [
-            {
-              name: 'demo',
-              version: '1.0.10',
-            },
-          ],
-        },
-      });
-      const system = new System({
-        config,
-      });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
-      const revert = changeVersion('0.0.3');
-      system
-        .loadOne(plugins[0])
-        .then(() => {
-          done('Expect Throw Error, but not');
-        })
-        .catch((err) => {
-          expect(err).to.match(/unmatched plugin version/);
-          revert();
-          done();
-        });
     });
   });
 

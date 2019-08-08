@@ -1,6 +1,7 @@
 const { npm, logger } = require('svrx-util');
 const semver = require('../util/semver');
 const { normalizePluginName } = require('../util/helper');
+const { VERSION } = require('../constant');
 
 const storage = {};
 
@@ -25,47 +26,75 @@ async function getMatchedPkg(name, semverVersion) {
 }
 
 async function listMatchedPackageVersion(name) {
-  const spinner = logger.progress('');
-
   try {
     name = normalizePluginName(name);
     const packages = await getMatchedPkg(name);
 
-    if (spinner) spinner();
     return packages.map(p => `${name}@${p.version} satisfies svrx@${p.pattern}`);
   } catch (e) {
-    if (spinner) spinner();
     return [];
   }
 }
 
 async function getSatisfiedVersion(name, semverVersion) {
-  // const spinner = logger.progress(`Detecting satisfied plugin: ${chalk.gray(name)}`);
   try {
     const packages = await getMatchedPkg(name, semverVersion);
 
-    // if (spinner) spinner();
     if (!packages.length) return false;
     const matchedPackage = semver.getClosestPackage(packages);
 
     return matchedPackage ? matchedPackage.version : false;
   } catch (e) {
-    // if (spinner) spinner();
     logger.error(e);
     return false;
   }
 }
 
 function install(options) {
-  options.registry = storage.registry;
+  options.registry = options.registry || storage.registry;
   return npm.install(options);
 }
+
+async function getInstallForTask({
+  name, path, version, root, registry,
+}) {
+  if (registry) setRegistry(registry);
+
+  const installOptions = {
+    registry,
+    path: root,
+    npmLoad: {
+      prefix: root,
+    },
+  };
+
+  if (path === undefined) {
+    const targetVersion = await getSatisfiedVersion(name, version);
+    if (!targetVersion) {
+      // @TODO
+      throw Error(
+        `unmatched plugin ${name} version for svrx@${VERSION}, please check it`,
+      );
+    } else {
+      installOptions.name = normalizePluginName(name);
+      installOptions.version = targetVersion;
+    }
+  } else {
+    // local install
+    installOptions.name = path;
+    installOptions.localInstall = true;
+  }
+
+  return install(installOptions);
+}
+
 
 module.exports = {
   // view,
   // search,
   install,
   getSatisfiedVersion,
+  getInstallForTask,
   listMatchedPackageVersion,
   setRegistry,
 };

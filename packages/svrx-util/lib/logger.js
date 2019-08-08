@@ -43,6 +43,7 @@ class Logger {
   }
 
   static lock() {
+    if (Logger.state === STATE.LOCKED) return;
     const stdout = Logger.stream;
     Logger.oldWrite = stdout._write;
 
@@ -60,7 +61,6 @@ class Logger {
     delete Logger.oldWrite;
     Logger.state = STATE.UNLOCKED;
   }
-
 
   constructor(category = 'global') {
     this.category = category;
@@ -102,14 +102,20 @@ class Logger {
     if (content) Logger.stream.write(content);
   }
 
-  progress(msg, label) {
+  spin(msg, label) {
     const spinner = ora(this._getWriteMsg(msg, label)).start();
+    return () => {
+      spinner.stop();
+    };
+  }
+
+  progress(msg, label) {
+    const releaseSpin = this.spin(msg, label);
 
     Logger.lock();
-
     return function release() {
       Logger.release();
-      spinner.stop();
+      releaseSpin();
     };
   }
 

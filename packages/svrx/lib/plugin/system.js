@@ -1,5 +1,6 @@
 const nodeResolve = require('resolve');
 const libPath = require('path');
+const chalk = require('chalk');
 
 const { getLoader } = require('./loader');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
@@ -7,7 +8,6 @@ const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
 const { setRegistry } = require('./npm');
-
 
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
@@ -49,14 +49,30 @@ class PluginSystem {
   }
 
   async load(plugins) {
+    const startTime = Date.now();
     if (!Array.isArray(plugins) || !plugins.length) return;
-    const names = plugins.map(p => p.getInfo('name')).filter(name => !BUILTIN_PLUGIN.includes(name));
-    const restore = logger.progress(`loading plugin${plugins.length > 1 ? 's' : ''} ${names.join(',')} `);
-    await Promise.all(plugins.map(p => this.loadOne(p)));
-    restore();
+    const names = plugins
+      .map(p => p.getInfo('name'))
+      .filter(name => !BUILTIN_PLUGIN.includes(name));
+    const release = logger.spin(
+      `loading plugin${plugins.length > 1 ? 's' : ''} ${names.join(',')} `,
+    );
+    const pModules = await Promise.all(plugins.map(p => this.loadOne(p)));
+
+    release();
+
+    const showNames = pModules
+      .filter(p => !BUILTIN_PLUGIN.includes(p.name))
+      .map((p) => {
+        if (p.version) return `${p.name}@${p.version}`;
+        return p.name;
+      });
+
+    if (showNames.length) {
+      logger.notify(`${chalk.gray(showNames.join(','))} load successfully in ${((Date.now() - startTime) / 1000).toFixed(2)}s!`);
+    }
   }
 
-  // @TODO: 重构重复代码过多
   async loadOne(pluginConfig) {
     const name = pluginConfig.getInfo('name');
     const version = pluginConfig.getInfo('version');
@@ -66,7 +82,33 @@ class PluginSystem {
     if (pluginMap[name]) return pluginMap[name];
 
     // load local plugin by name
-    const resolveRet = await new Promise((resolve) => {
+    const resolveRet = await this.resolveLocalModule(name, version);
+
+    if (resolveRet) {
+      pluginMap[name] = {
+        installed: true,
+        name,
+        path: resolveRet.path,
+        module: resolveRet.module,
+        version: resolveRet.pkg.version,
+        pluginConfig,
+      };
+    } else {
+      const load = getLoader(pluginConfig);
+
+      const pluginModule = await load(pluginConfig, config);
+
+
+      pluginMap[name] = pluginModule;
+    }
+
+
+    return pluginMap[name];
+  }
+
+  resolveLocalModule(name, version) {
+    const { config } = this;
+    return new Promise((resolve) => {
       const normalizedName = normalizePluginName(name);
       nodeResolve(
         normalizedName,
@@ -93,95 +135,6 @@ class PluginSystem {
         },
       );
     });
-
-    if (resolveRet) {
-      pluginMap[name] = {
-        name,
-        path: resolveRet.path,
-        module: resolveRet.module,
-        version: resolveRet.pkg.version,
-        pluginConfig,
-      };
-    } else {
-      const loader = getLoader(pluginConfig);
-
-      const pluginModule = await loader.load(pluginConfig, config);
-
-      pluginMap[name] = pluginModule;
-    }
-
-    return pluginMap[name];
-
-    // load local plugin by path
-    // if (path && !pluginConfig.getInfo('install')) {
-    //   // no install , just require
-    //   let pkg;
-    //   try {
-    //     /* eslint-disable global-require, import/no-dynamic-require */
-    //     pkg = require(libPath.join(path, 'package.json'));
-    //   } catch (e) {
-    //     pkg = {};
-    //   }
-    //   pluginMap[name] = {
-    //     name,
-    //     path,
-    //     module: require(path),
-    //     version: pkg.version,
-    //     pluginConfig,
-    //   };
-    //   return pluginMap[name];
-    // }
-
-    // // install and load plugin
-    // const installOptions = {
-    //   path: config.get('root'),
-    //   npmLoad: {
-    //     // loaded: true,
-    //     prefix: config.get('root'),
-    //   },
-    // };
-
-    // if (path === undefined) {
-    //   // remote
-
-    //   const targetVersion = await getSatisfiedVersion(name, pluginConfig.getInfo('version'));
-    //   if (!targetVersion) {
-    //     // @TODO
-    //     const matchedPackageVersion = await listMatchedPackageVersion(name);
-    //     throw Error(
-    //       'unmatched plugin version, please use other version\n'
-    //         + `${matchedPackageVersion.join('\n')}`,
-    //     );
-    //   } else {
-    //     installOptions.name = normalizePluginName(name);
-    //     installOptions.version = targetVersion;
-    //   }
-    // } else {
-    //   // local install
-    //   installOptions.name = path;
-    //   installOptions.localInstall = true;
-    // }
-
-    // const installRet = await install(installOptions);
-
-    // let pkg;
-    // const requirePath = libPath.join(path || installRet.path, 'package.json');
-    // try {
-    //   pkg = requireEnsure(requirePath);
-    // } catch (e) {
-    //   pkg = {};
-    // }
-    // logger.notify(
-    //   `${chalk.gray(name)}${pkg.version ? `@${pkg.version}` : ''} installed completely!`,
-    // );
-    // pluginMap[name] = {
-    //   name,
-    //   path: path || installRet.path,
-    //   module: requireEnsure(path || installRet.path),
-    //   version: pkg.version,
-    //   pluginConfig,
-    // };
-    // return pluginMap[name];
   }
 
   getInstalledPluginNames() {

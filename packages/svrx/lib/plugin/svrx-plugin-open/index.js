@@ -15,15 +15,14 @@ function openBrowser(target, callback) {
 module.exports = {
   hooks: {
     async onCreate({ events, config, logger }) {
-      events.on('ready', () => {
-        let open = config.get('open');
+      let open = config.get('open');
+      if (open === false) return;
 
+      events.on('ready', () => {
         const URL_MAPING = {
           external: config.get('urls.external'),
           local: config.get('urls.local'),
         };
-
-        if (open === false) return;
 
         if (open === true) open = 'local';
 
@@ -32,7 +31,7 @@ module.exports = {
           URL_MAPING.local,
           open.replace(/^(external|local)\b/, capture => URL_MAPING[capture]),
         );
-
+        // delay 500
         openBrowser(openUrl, (err) => {
           if (err) {
             logger.error(err);
