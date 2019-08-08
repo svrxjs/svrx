@@ -1,5 +1,6 @@
 const expect = require('expect.js');
 const util = require('util');
+const sinon = require('sinon');
 const events = require('../../lib/shared/events');
 const limitCache = require('../../lib/shared/cache');
 const semver = require('../../lib/util/semver');
@@ -10,9 +11,6 @@ const im = require('../../lib/util/im');
 const setImmediatePromise = util.promisify(setImmediate);
 
 describe('Svrx Utility', () => {
-  describe('helper', () => {
-
-  });
   describe('semver', () => {
     it('satisfies', () => {
       expect(semver.satisfies('^0.0.5', '0.0.1')).to.equal(false);
@@ -453,6 +451,57 @@ describe('Svrx Utility', () => {
       model.splice('a.b.e', 0, 1);
       model.del('a.b.c');
     });
+    it('unwatch should works', (done) => {
+      const model = new Imodel({
+        a: {
+          b: {
+            c: 2,
+            d: 3,
+            e: [1, 2, 3],
+          },
+        },
+      });
+      const callback = sinon.spy();
+      const unwatch = model.watch('a', callback);
+      model.set('a.f', 2);
+      setImmediatePromise().then(() => {
+        unwatch();
+        expect(callback.calledOnce).to.equal(true);
+        expect(callback.calledTwice).to.equal(false);
+        expect(callback.called).to.equal(true);
+        model.set('a.f', 4);
+        setImmediatePromise().then(() => {
+          expect(callback.calledTwice).to.equal(false);
+          done();
+        });
+      });
+    });
+
+    it('trigger only once', (done) => {
+      const model = new Imodel({
+        a: {
+          b: {
+            c: 2,
+            d: 3,
+            e: [1, 2, 3],
+          },
+        },
+      });
+      const callback = sinon.spy();
+      model.watch('a', callback);
+      model.set('a.f', 2);
+      setImmediatePromise().then(() => {
+        expect(callback.calledOnce).to.equal(true);
+        expect(callback.calledTwice).to.equal(false);
+        expect(callback.called).to.equal(true);
+        model._trigger();
+        setImmediatePromise().then(() => {
+          expect(callback.calledTwice).to.equal(false);
+          done();
+        });
+      });
+    });
+
     it('one event loop only trigger once', (done) => {
       const model = new Imodel({
         a: {

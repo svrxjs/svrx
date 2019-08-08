@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const Koa = require('koa');
 const svrx = require('../../index');
 
-
 const Middleware = require('../../lib/middleware');
 
 const { createServer } = require('../util');
@@ -112,15 +111,17 @@ describe('Public API', () => {
     const server2 = svrx.create({
       open: false,
       livereload: false,
-      plugins: [{
-        inplace: true,
-        name: 'hello-body',
-        hooks: {
-          async onRoute(ctx) {
-            ctx.body = 'hello';
+      plugins: [
+        {
+          inplace: true,
+          name: 'hello-body',
+          hooks: {
+            async onRoute(ctx) {
+              ctx.body = 'hello';
+            },
           },
         },
-      }],
+      ],
     });
     await server2.__svrx.setup();
 
@@ -141,15 +142,17 @@ describe('Public API', () => {
       port: TEST_PORT,
       open: false,
       livereload: false,
-      plugins: [{
-        inplace: true,
-        name: 'hello-body',
-        hooks: {
-          async onRoute(ctx) {
-            ctx.body = 'hello';
+      plugins: [
+        {
+          inplace: true,
+          name: 'hello-body',
+          hooks: {
+            async onRoute(ctx) {
+              ctx.body = 'hello';
+            },
           },
         },
-      }],
+      ],
     });
 
     await server.start();
