@@ -91,6 +91,10 @@ describe('Config get', () => {
       foo: 'bar', // defaults
     });
   });
+
+  it('should return schema correctly', () => {
+    expect(config.getSchema()).to.eql(CONFIGS);
+  });
 });
 
 describe('Config set', () => {
