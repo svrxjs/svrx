@@ -397,6 +397,10 @@ describe('Config get', () => {
       foo: 'bar', // defaults
     });
   });
+
+  it('should return schema correctly', () => {
+    expect(config.getSchema()).to.eql(CONFIGS);
+  });
 });
 
 describe('Config set', () => {
@@ -523,5 +527,12 @@ describe('Plugin Config', () => {
     expect(testPlugin.get('limit')).to.equal(100);
     expect(testPlugin.get('$.port')).to.equal(8000);
     sinon.restore();
+  });
+
+  it('should return schema correctly', () => {
+    const server = createServer({
+      plugins: ['test'],
+    });
+    expect(server.config.getPlugin('test').getSchema()).to.eql(CONFIGS);
   });
 });
