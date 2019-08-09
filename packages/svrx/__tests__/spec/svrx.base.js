@@ -4,6 +4,8 @@ const expect = require('expect.js');
 const sinon = require('sinon');
 const Koa = require('koa');
 const svrx = require('../../index');
+const Svrx = require('../../lib/svrx');
+const CONFIGS = require('../../lib/config-list');
 
 const Middleware = require('../../lib/middleware');
 
@@ -66,6 +68,13 @@ describe('Basic', () => {
       });
     });
   });
+
+  it('getCurrentVersion', () => {
+    expect(Svrx.getCurrentVersion()).to.equal(require('../../package.json').version);  // eslint-disable-line
+  });
+  it('printHelper', () => {
+    expect(Svrx.printBuiltinOptionsHelp()).to.match(new RegExp(Object.keys(CONFIGS).join('|')));
+  });
 });
 
 describe('Middleware', () => {
@@ -98,6 +107,21 @@ describe('Middleware', () => {
     request(app.callback())
       .get('/')
       .expect('one two', done);
+  });
+  it('add overflow', () => {
+    const m = new Middleware();
+
+    expect(() => {
+      for (let i = 0; i < 201; i += 1) {
+        m.add(`one${i}`, {
+          onCreate() {
+            return async (ctx, next) => {
+              await next();
+            };
+          },
+        });
+      }
+    }).to.throwError(/max middleware size limit exceeded/);
   });
 });
 

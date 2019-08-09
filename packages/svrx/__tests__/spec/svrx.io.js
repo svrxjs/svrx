@@ -3,7 +3,6 @@ const supertest = require('supertest');
 const expect = require('expect.js');
 const http = require('http');
 
-
 const { IO_PATH } = require('../../lib/shared/consts');
 const Middleware = require('../../lib/middleware');
 const { createServer } = require('../util');
@@ -134,5 +133,17 @@ describe('IO', () => {
         params: ['root'],
       }),
     ).to.equal(__dirname);
+
+    let err;
+    try {
+      await svrx.io.call('$.config', {
+        scope: 'not-exsits',
+        command: 'get',
+        params: ['hello'],
+      });
+    } catch (e) {
+      err = e;
+    }
+    expect(err).to.match(/plugin not-exsits/);
   });
 });
