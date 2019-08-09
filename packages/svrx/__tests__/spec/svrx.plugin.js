@@ -102,21 +102,24 @@ describe('Plugin System', () => {
       const config = new Configure({
         rc: {
           root: MODULE_PATH,
-          plugins: [{
-            name: 'hello',
-            async load() {
-              return {
-                name: 'hello',
-              };
+          plugins: [
+            {
+              name: 'hello',
+              async load() {
+                return {
+                  name: 'hello',
+                };
+              },
             },
-          }, {
-            name: 'world',
-            async load() {
-              return {
-                name: 'world',
-              };
+            {
+              name: 'world',
+              async load() {
+                return {
+                  name: 'world',
+                };
+              },
             },
-          },
+
           ],
         },
       });
@@ -125,10 +128,9 @@ describe('Plugin System', () => {
         config,
       });
 
-      const plugins = config.getPlugins().filter(
-        p => !BUILTIN_PLUGIN.includes(p.getInfo('name')),
-      );
+      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       const stub = sinon.stub(logger, 'spin').callsFake(() => () => {});
+
 
       await system.load(plugins);
 
@@ -202,6 +204,26 @@ describe('Plugin System', () => {
         done();
       });
     });
+    it('system#load: path with no package.json', (done) => {
+      const config = new Configure({
+        rc: {
+          root: MODULE_PATH,
+          plugins: [
+            {
+              path: libPath.join(MODULE_PATH, 'svrx-plugin-no-package'),
+            },
+          ],
+        },
+      });
+      const system = new System({
+        config,
+      });
+      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      system.load(plugins).then(() => {
+        expect(system.get('no-package').version).to.equal(undefined);
+        done();
+      });
+    });
 
     it('wont install twice if installed', (done) => {
       const config = new Configure({
@@ -234,6 +256,41 @@ describe('Plugin System', () => {
         });
     }).timeout(10000);
 
+    it('Error boundary', (done) => {
+      const config = new Configure({
+        rc: {
+          root: MODULE_PATH,
+          plugins: [
+            {
+              name: 'not-exsits-error',
+            },
+          ],
+        },
+      });
+      const system = new System({
+        config,
+      });
+      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      system
+        .load(plugins)
+        .catch((e) => {
+          expect(e).to.match(/unmatched plugin not-exsits-error/);
+          done();
+        });
+    }).timeout(4000);
+
+    it('load empty keep silent', (done) => {
+      const config = new Configure({
+        rc: {
+          root: MODULE_PATH,
+        },
+      });
+      const system = new System({
+        config,
+      });
+      system.load([]).then(done);
+    });
+
     it('inplace load', (done) => {
       const config = new Configure({
         rc: {
@@ -255,6 +312,7 @@ describe('Plugin System', () => {
         config,
       });
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+
       system.load(plugins).then(() => {
         const plugModule = system.get('inplace');
         expect(plugModule.name).to.equal('inplace');

@@ -4,7 +4,8 @@ const expect = require('expect.js');
 const sinon = require('sinon');
 const Koa = require('koa');
 const svrx = require('../../index');
-
+const Svrx = require('../../lib/svrx');
+const CONFIGS = require('../../lib/config-list');
 
 const Middleware = require('../../lib/middleware');
 
@@ -67,6 +68,13 @@ describe('Basic', () => {
       });
     });
   });
+
+  it('getCurrentVersion', () => {
+    expect(Svrx.getCurrentVersion()).to.equal(require('../../package.json').version);  // eslint-disable-line
+  });
+  it('printHelper', () => {
+    expect(Svrx.printBuiltinOptionsHelp()).to.match(new RegExp(Object.keys(CONFIGS).join('|')));
+  });
 });
 
 describe('Middleware', () => {
@@ -100,6 +108,21 @@ describe('Middleware', () => {
       .get('/')
       .expect('one two', done);
   });
+  it('add overflow', () => {
+    const m = new Middleware();
+
+    expect(() => {
+      for (let i = 0; i < 201; i += 1) {
+        m.add(`one${i}`, {
+          onCreate() {
+            return async (ctx, next) => {
+              await next();
+            };
+          },
+        });
+      }
+    }).to.throwError(/max middleware size limit exceeded/);
+  });
 });
 
 describe('Public API', () => {
@@ -112,15 +135,17 @@ describe('Public API', () => {
     const server2 = svrx.create({
       open: false,
       livereload: false,
-      plugins: [{
-        inplace: true,
-        name: 'hello-body',
-        hooks: {
-          async onRoute(ctx) {
-            ctx.body = 'hello';
+      plugins: [
+        {
+          inplace: true,
+          name: 'hello-body',
+          hooks: {
+            async onRoute(ctx) {
+              ctx.body = 'hello';
+            },
           },
         },
-      }],
+      ],
     });
     await server2.__svrx.setup();
 
@@ -141,15 +166,17 @@ describe('Public API', () => {
       port: TEST_PORT,
       open: false,
       livereload: false,
-      plugins: [{
-        inplace: true,
-        name: 'hello-body',
-        hooks: {
-          async onRoute(ctx) {
-            ctx.body = 'hello';
+      plugins: [
+        {
+          inplace: true,
+          name: 'hello-body',
+          hooks: {
+            async onRoute(ctx) {
+              ctx.body = 'hello';
+            },
           },
         },
-      }],
+      ],
     });
 
     await server.start();

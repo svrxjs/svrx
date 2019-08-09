@@ -25,16 +25,7 @@ async function getMatchedPkg(name, semverVersion) {
   return [];
 }
 
-async function listMatchedPackageVersion(name) {
-  try {
-    name = normalizePluginName(name);
-    const packages = await getMatchedPkg(name);
 
-    return packages.map(p => `${name}@${p.version} satisfies svrx@${p.pattern}`);
-  } catch (e) {
-    return [];
-  }
-}
 
 async function getSatisfiedVersion(name, semverVersion) {
   try {
@@ -95,6 +86,5 @@ module.exports = {
   install,
   getSatisfiedVersion,
   getInstallForTask,
-  listMatchedPackageVersion,
   setRegistry,
 };

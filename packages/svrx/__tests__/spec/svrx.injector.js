@@ -40,6 +40,12 @@ describe('Injector', () => {
         });
     });
 
+    it('valid file will return no error', () => {
+      expect(() => {
+        injector.add('style', { filename: 'content_not_exsits.js' });
+      }).to.not.throwError();
+    });
+
     it('Integration: style join', () => request(svrx.callback())
       .get(svrx.config.get('urls.style'))
       .set('accept-encoding', 'identity')
@@ -76,10 +82,22 @@ describe('Injector', () => {
       port: 8001,
       middlewares: [
         {
-          onCreate: () => async (ctx) => {
-            if (ctx.url === '/content') {
-              ctx.set('Content-Type', 'text/html');
-              ctx.body = '<head></head><body></body>';
+          onCreate: () => async (ctx, next) => {
+            switch (ctx.url) {
+              case '/content':
+                ctx.set('Content-Type', 'text/html');
+                ctx.body = '<head></head><body></body>';
+                break;
+              case '/buffer':
+                ctx.set('Content-Type', 'text/html');
+                ctx.body = Buffer.from('<head></head><body></body>');
+                break;
+              case '/stream':
+                ctx.set('Content-Type', 'text/html');
+                ctx.body = bufferToStream(Buffer.from('<head></head><body></body>'));
+                break;
+              default:
+                next();
             }
           },
         },
@@ -94,6 +112,12 @@ describe('Injector', () => {
         .get('/content')
         .set('accept-encoding', 'identity')
         .expect(/<script src="\/__nei__\/client\.js"><\/script>/);
+    });
+
+    it('invalid replace should throw error', () => {
+      expect(() => {
+        injector.replace(1, () => {});
+      }).to.throwError(/invalid replacement/);
     });
     it('html should be injected script and style', (done) => {
       request(svrx.callback())
@@ -119,6 +143,25 @@ describe('Injector', () => {
 
       request(svrx1.callback())
         .get('/')
+        .expect(new RegExp(`src="${svrx.config.get('urls.script')}"`))
+        .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
+        .end(done);
+    });
+
+    it('transform invalid ', () => {
+      expect(injector._transform([])).to.eql([]);
+    });
+
+    it('Buffer should work', (done) => {
+      request(svrx.callback())
+        .get('/buffer')
+        .expect(new RegExp(`src="${svrx.config.get('urls.script')}"`))
+        .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
+        .end(done);
+    });
+    it('Stream should work', (done) => {
+      request(svrx.callback())
+        .get('/stream')
         .expect(new RegExp(`src="${svrx.config.get('urls.script')}"`))
         .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
         .end(done);

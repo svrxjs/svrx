@@ -1,17 +1,82 @@
 const expect = require('expect.js');
 const util = require('util');
+const sinon = require('sinon');
 const events = require('../../lib/shared/events');
 const limitCache = require('../../lib/shared/cache');
 const semver = require('../../lib/util/semver');
+const compose = require('../../lib/util/compose');
 const consts = require('../../lib/constant');
 const Imodel = require('../../lib/model');
 const im = require('../../lib/util/im');
+const {
+  formatDate, getBody, npCall, normalizePluginName,
+} = require('../../lib/util/helper');
 
 const setImmediatePromise = util.promisify(setImmediate);
 
 describe('Svrx Utility', () => {
   describe('helper', () => {
+    it('formatDate', () => {
+      const date = new Date(2014, 1, 1, 12, 36, 40);
+      expect(formatDate(date)).to.equal('2014-02-01 12:36');
+      expect(formatDate(date, 'yyyy-MM-dd HH小时ss秒')).to.equal('2014-02-01 12小时40秒');
+    });
+    it('getBody wont throw Error', async () => {
+      const body = await getBody({});
+      expect(body).to.equal('');
+    });
+    it('normalizePluginName', () => {
+      const name1 = normalizePluginName('world');
+      const name2 = normalizePluginName('hello-world');
+      const name3 = normalizePluginName('@orpheus/world');
+      expect(name1).to.equal('svrx-plugin-world');
+      expect(name2).to.equal('svrx-plugin-hello-world');
+      expect(name3).to.equal('@orpheus/svrx-plugin-world');
+    });
 
+    it('npCall', (done) => {
+      const nodeStyleTest = (name, callback) => {
+        if (name === 'pass') callback(null, name);
+        else callback(`error:${name}`);
+      };
+      npCall(nodeStyleTest, ['failed']).catch((err) => {
+        expect(err).to.equal('error:failed');
+        npCall(nodeStyleTest, ['pass']).then((data) => {
+          expect(data).to.equal('pass');
+          done();
+        });
+      });
+    });
+  });
+  describe('compose', () => {
+    it('error boundary', (done) => {
+      expect(() => compose()).to.throwError(/Middleware stack must be an array!/);
+      expect(() => compose([() => {}, 'a'])).to.throwError(
+        /Middleware must be composed of functions!/,
+      );
+      const middleware = compose([
+        (ctx, next) => {
+          next();
+          return next();
+        },
+      ]);
+      middleware({}, () => {}).catch((e) => {
+        expect(e.message).to.match(/next\(\) called multiple times/);
+        const middleware2 = compose([
+          () => {
+            throw Error('custom error');
+          },
+        ]);
+        middleware2({}, () => {}).catch((err) => {
+          expect(err.message).to.match(/custom error/);
+          const middleware3 = compose([(ctx, next) => next()]);
+          // wont throw Error
+          middleware3({}).then(() => {
+            done();
+          });
+        });
+      });
+    });
   });
   describe('semver', () => {
     it('satisfies', () => {
@@ -33,15 +98,31 @@ describe('Svrx Utility', () => {
         ]).version,
       ).to.equal('0.0.6');
 
+      expect(
+        semver.getClosestPackage([]),
+      ).to.equal(null);
+      expect(
+        semver.getClosestPackage(),
+      ).to.equal(null);
+
       consts.VERSION = PRE_VERSION;
     });
   });
-  describe('helper.im', () => {
+  describe('im', () => {
     it('im#set basic', () => {
       const obj1 = { a: { b: 1 } };
       const obj2 = im.set(obj1, 'a.b', 3);
       expect(obj1).to.not.equal(obj2);
       expect(obj2.a.b).to.equal(3);
+    });
+
+    it('im#set no changed', () => {
+      const noChanged = [1];
+      const obj1 = { a: { b: noChanged } };
+      const obj2 = im.set(obj1, 'a.b', noChanged, {
+        replace: true,
+      });
+      expect(obj2.a.b).to.equal(noChanged);
     });
 
     it('im#set autoCreaete', () => {
@@ -90,6 +171,13 @@ describe('Svrx Utility', () => {
       const obj1 = { a: [{ b: 1 }] };
       expect('b' in im.del(obj1, 'a.0.b').a[0]).to.equal(false);
       expect('b' in im.del(obj1, 'a.b').a).to.equal(false);
+    });
+
+    it('im#del boundary', () => {
+      const obj1 = { a: [{ b: 1 }] };
+      expect(im.del(null)).to.equal(null);
+      expect(im.del(obj1, [])).to.equal(obj1);
+      expect(im.del('hello', '0')).to.equal('hello');
     });
 
     it('im#del #set #get Number', () => {
@@ -453,6 +541,57 @@ describe('Svrx Utility', () => {
       model.splice('a.b.e', 0, 1);
       model.del('a.b.c');
     });
+    it('unwatch should works', (done) => {
+      const model = new Imodel({
+        a: {
+          b: {
+            c: 2,
+            d: 3,
+            e: [1, 2, 3],
+          },
+        },
+      });
+      const callback = sinon.spy();
+      const unwatch = model.watch('a', callback);
+      model.set('a.f', 2);
+      setImmediatePromise().then(() => {
+        unwatch();
+        expect(callback.calledOnce).to.equal(true);
+        expect(callback.calledTwice).to.equal(false);
+        expect(callback.called).to.equal(true);
+        model.set('a.f', 4);
+        setImmediatePromise().then(() => {
+          expect(callback.calledTwice).to.equal(false);
+          done();
+        });
+      });
+    });
+
+    it('trigger only once', (done) => {
+      const model = new Imodel({
+        a: {
+          b: {
+            c: 2,
+            d: 3,
+            e: [1, 2, 3],
+          },
+        },
+      });
+      const callback = sinon.spy();
+      model.watch('a', callback);
+      model.set('a.f', 2);
+      setImmediatePromise().then(() => {
+        expect(callback.calledOnce).to.equal(true);
+        expect(callback.calledTwice).to.equal(false);
+        expect(callback.called).to.equal(true);
+        model._trigger();
+        setImmediatePromise().then(() => {
+          expect(callback.calledTwice).to.equal(false);
+          done();
+        });
+      });
+    });
+
     it('one event loop only trigger once', (done) => {
       const model = new Imodel({
         a: {

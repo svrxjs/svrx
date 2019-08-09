@@ -11,9 +11,6 @@ const CONST = require('../constant');
 const o2str = {}.toString;
 const { slice } = [];
 
-async function noopMiddleware(ctx, next) {
-  await next();
-}
 
 // return promise by callback node-callback-style handler
 function npCall(callback, args, ctx) {
@@ -29,20 +26,6 @@ function npCall(callback, args, ctx) {
   });
 }
 
-// node callback style result
-// ================================
-// const [err, data] = await nodeCall( func, 1,2,3 );
-function nodeCall(fnReturnPromise, ...args) {
-  return new Promise((resolve) => {
-    fnReturnPromise(...args)
-      .then((data) => {
-        resolve([null, data]);
-      })
-      .catch((err) => {
-        resolve([err]);
-      });
-  });
-}
 
 function normalizePluginName(name) {
   const combineName = n => (n.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + n : n);
@@ -59,10 +42,6 @@ function normalizePluginName(name) {
   return combineName(name);
 }
 
-function isWritableStream(test) {
-  // ducking type check
-  return test instanceof EventEmitter && typeof test.write === 'function' && typeof test.end === 'function';
-}
 function isReadableStream(test) {
   // ducking type check
   return test instanceof EventEmitter && typeof test.read === 'function';
@@ -91,9 +70,6 @@ function clone(target) {
   return target;
 }
 
-function is(someThing) {
-  return someThing;
-}
 
 const acceptMineTypes = /\b(xhtml|html|htm|xml)\b/;
 
@@ -166,14 +142,6 @@ const formatDate = (function getFormatDate() {
   };
 }());
 
-function getByteLength(content) {
-  if (Buffer.isBuffer(content)) {
-    return content.length;
-  } if (typeof content === 'string') {
-    return Buffer.byteLength(content);
-  }
-  return 0;
-}
 
 const pattern = /\{(\w+)\}/g;
 function simpleRender(template, params) {
@@ -191,21 +159,17 @@ const getBody = async (ctx) => {
   }
 };
 
+
 exports.normalizePluginName = normalizePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
-exports.isWritableStream = isWritableStream;
 exports.isReadableStream = isReadableStream;
-exports.noopMiddleware = noopMiddleware;
-exports.getByteLength = getByteLength;
 exports.getCert = _.memoize(getCert);
 exports.isAcceptGzip = isAcceptGzip;
 exports.simpleRender = simpleRender;
 exports.isRespGzip = isRespGzip;
 exports.formatDate = formatDate;
 exports.isHtmlType = isHtmlType;
-exports.nodeCall = nodeCall;
 exports.getBody = getBody;
 exports.typeOf = typeOf;
 exports.npCall = npCall;
 exports.clone = clone;
-exports.is = is;

@@ -35,9 +35,7 @@ class Svrx {
     });
     const { config } = this;
 
-    if (config.get('logger.level')) {
-      logger.setLevel(config.get('logger.level'));
-    }
+    this._prepareConfig(config);
     logger.debug('Config is loaded');
 
     this.app = new Koa();
@@ -73,8 +71,15 @@ class Svrx {
     app.use(this.koaMiddleware());
   }
 
-  async ready() {
-    return Promise.all(this._tasks);
+  _prepareConfig() {
+    const { config } = this;
+    if (config.get('logger.level')) {
+      logger.setLevel(config.get('logger.level'));
+    }
+    const root = config.get('root');
+    if (!libPath.isAbsolute(root)) {
+      config.set('root', libPath.join(process.cwd(), root));
+    }
   }
 
   // export koa middleware for exsited koa application
@@ -98,6 +103,7 @@ class Svrx {
 
   // cli
   static printBuiltinOptionsHelp() {
+    let message = '';
     Object.keys(CONFIGS).forEach((name) => {
       const option = CONFIGS[name];
       if (option.cli !== false) {
@@ -108,19 +114,19 @@ class Svrx {
           const hint = defaultHint.replace(/^(\w)/, a => a.toLowerCase());
 
           const defaults = option.default ? ` (default: ${option.default})` : '';
-          console.log(
-            ''.padEnd(8),
-            cmd.padEnd(22),
-            `${desc}${hint || defaults}`,
+          message += (
+            `\n${
+              ''.padEnd(8)
+            }${cmd.padEnd(22)
+            }${desc}${hint || defaults}`
           );
         }
       }
     });
-    console.log(
-      ''.padEnd(8),
-      `Visit ${DOC_URL} for more option detail`,
-    );
-    console.log('\n');
+    message += `\n${''.padEnd(8)} Visit ${DOC_URL} for more option detail`;
+
+    console.log(message);
+    return message;
   }
 
   // cli
