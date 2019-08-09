@@ -17,6 +17,7 @@ const Injector = require('./injector');
 const IO = require('./io');
 
 const CONFIGS = require('./config-list');
+const { PRIORITY } = require('./constant');
 const getEvents = require('./shared/events');
 const logger = require('./util/logger');
 
@@ -142,7 +143,7 @@ class Svrx {
       .then(() => this.system.build())
       .then(() => {
         middleware.add('$router', {
-          priority: 10,
+          priority: PRIORITY.ROUTER,
           onCreate: () => loader.middleware(),
         });
         if (typeof route === 'string') {

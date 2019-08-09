@@ -97,6 +97,7 @@ describe('Plugin System', () => {
       cleanModule(done);
     });
 
+
     it('multiple install', async () => {
       const config = new Configure({
         rc: {
@@ -118,6 +119,7 @@ describe('Plugin System', () => {
                 };
               },
             },
+
           ],
         },
       });
@@ -128,6 +130,7 @@ describe('Plugin System', () => {
 
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       const stub = sinon.stub(logger, 'spin').callsFake(() => () => {});
+
 
       await system.load(plugins);
 
@@ -309,6 +312,7 @@ describe('Plugin System', () => {
         config,
       });
       const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+
       system.load(plugins).then(() => {
         const plugModule = system.get('inplace');
         expect(plugModule.name).to.equal('inplace');
