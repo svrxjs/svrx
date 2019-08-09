@@ -99,6 +99,10 @@ class Configure {
     return this[PLUGINS].find(p => p.getInfo('name') === name);
   }
 
+  getSchema() {
+    return this[BUILTIN_CONFIG];
+  }
+
   _parseCliOption(raw = {}) {
     const noDash = this._removeDashProp(raw);
     const noAlias = this._removeAlias(noDash);
