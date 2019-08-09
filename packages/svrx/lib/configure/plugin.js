@@ -37,6 +37,10 @@ class Plugin {
     }
     if (_.isArray(pathes) && pathes.length > 0) {
       if (pathes[0] === '$') {
+        if (pathes.length === 1) {
+          // get all builtin options and the defaults
+          return { ...this[BUILTIN_DEFAULTS], ...this[BUILTIN_OPTION].get() };
+        }
         const userOption = this[BUILTIN_OPTION].get(pathes.slice(1));
         if (userOption === undefined) return _.get(this[BUILTIN_DEFAULTS], pathes.slice(1));
         return userOption;
