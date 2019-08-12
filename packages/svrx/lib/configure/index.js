@@ -91,6 +91,14 @@ class Configure {
   }
 
   /**
+   * get builtin plugins
+   * @returns {Array}
+   */
+  getExternalPlugins() {
+    return this[PLUGINS].filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+  }
+
+  /**
    * get plugin option instance by plugin name
    * @param name
    * @returns {*}

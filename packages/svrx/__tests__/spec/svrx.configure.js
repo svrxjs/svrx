@@ -401,6 +401,10 @@ describe('Config get', () => {
   it('should return schema correctly', () => {
     expect(config.getSchema()).to.eql(CONFIGS);
   });
+
+  it('should return all external plugins when getExternalPlugins()', () => {
+    expect(config.getExternalPlugins().map(p => p.getInfo('name'))).to.eql(['test']);
+  });
 });
 
 describe('Config set', () => {
@@ -527,13 +531,6 @@ describe('Plugin Config', () => {
     expect(testPlugin.get('limit')).to.equal(100);
     expect(testPlugin.get('$.port')).to.equal(8000);
     sinon.restore();
-  });
-
-  it('should return schema correctly', () => {
-    const server = createServer({
-      plugins: ['test'],
-    });
-    expect(server.config.getPlugin('test').getSchema()).to.eql(CONFIGS);
   });
 
   it('should return all builtin options when get(\'$\')', () => {
