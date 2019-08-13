@@ -205,7 +205,7 @@ class PluginSystem {
 
     // set plugin configs
     if (!isBuiltin && configSchema) {
-      config.setConfigs(configSchema);
+      config.setSchema(configSchema);
     }
 
     // regist service
