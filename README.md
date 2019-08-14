@@ -2,6 +2,8 @@
 
 # svrx
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/x-orpheus/svrx.svg)](https://greenkeeper.io/)
+
 svrx(server-x) is a platform built for efficient front-end development.
 
 ## Documentation
