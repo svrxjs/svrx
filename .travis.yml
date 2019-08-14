@@ -6,11 +6,16 @@ node_js:
 
 cache: npm
 
+install:
+  - npm install -g codecov
+
 before_script:
   - npm run build
 
 script:
   - npm test
+  - npm run coverage
+  - codecov
 
 before_deploy:
   - echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" >> $HOME/.npmrc 2> /dev/null

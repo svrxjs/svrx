@@ -26,7 +26,6 @@ async function getMatchedPkg(name, semverVersion) {
 }
 
 
-
 async function getSatisfiedVersion(name, semverVersion) {
   try {
     const packages = await getMatchedPkg(name, semverVersion);
