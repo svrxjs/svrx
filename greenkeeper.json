@@ -1,0 +1,12 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "package.json",
+        "packages/svrx-util/package.json",
+        "packages/svrx/__tests__/fixture/plugin/svrx-plugin-depend/package.json",
+        "packages/svrx/package.json"
+      ]
+    }
+  }
+}
