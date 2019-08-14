@@ -11,7 +11,7 @@
     "clean": "run-s clean:*",
     "clean:dependency": "lerna clean -y && rimraf -rf node_modules",
     "changelog": "lerna-changelog",
-    "coverage": "lerna run coverage",
+    "report-coverage": "lerna run report-coverage",
     "lerna:version": "lerna version",
     "lerna:publish": "lerna publish from-git --yes",
     "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --no-audit && git add packages/*/package-lock.json",
