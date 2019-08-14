@@ -12,7 +12,8 @@
     "lib"
   ],
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha __tests__/spec"
+    "test": "nyc --reporter=html --reporter=text mocha __tests__/spec",
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
     "type": "git",
