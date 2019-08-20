@@ -19,7 +19,7 @@
     "prepublish": "npm run build"
   },
   "devDependencies": {
-    "@commitlint/cli": "^7.5.2",
+    "@commitlint/cli": "^8.1.0",
     "@commitlint/config-conventional": "^7.5.0",
     "codecov": "^3.5.0",
     "coveralls": "^3.0.0",
