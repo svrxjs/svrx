@@ -55,8 +55,8 @@ class Svrx {
 
     // @TODO
     this.loader = new Loader();
-    this.loader.on('error', payload => logger.error(payload));
-    this.loader.on('update', payload => logger.notify(`[routing update] ${payload}`));
+    this.loader.on('error', (payload) => logger.error(payload));
+    this.loader.on('update', (payload) => logger.notify(`[routing update] ${payload}`));
 
     this.system = new PluginSystem({
       router: exportsToPlugin(this.loader),
@@ -109,9 +109,9 @@ class Svrx {
       if (option.cli !== false) {
         const cmd = option.alias ? `-${option.alias}, --${name}` : `--${name}`;
         if (option.description) {
-          const desc = option.description.replace(/^(\w)/, a => a.toUpperCase());
+          const desc = option.description.replace(/^(\w)/, (a) => a.toUpperCase());
           const defaultHint = option.defaultHint ? ` (${option.defaultHint})` : '';
-          const hint = defaultHint.replace(/^(\w)/, a => a.toLowerCase());
+          const hint = defaultHint.replace(/^(\w)/, (a) => a.toLowerCase());
 
           const defaults = option.default ? ` (default: ${option.default})` : '';
           message += (

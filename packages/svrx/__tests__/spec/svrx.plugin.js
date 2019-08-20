@@ -128,7 +128,7 @@ describe('Plugin System', () => {
         config,
       });
 
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       const stub = sinon.stub(logger, 'spin').callsFake(() => () => {});
 
 
@@ -151,7 +151,7 @@ describe('Plugin System', () => {
       const system = new System({
         config,
       });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system.load(plugins).then(() => {
         expect(system.get('test').name).to.equal('test');
         expect(system.get('test').module.priority).to.equal(100);
@@ -174,7 +174,7 @@ describe('Plugin System', () => {
       const system = new System({
         config,
       });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system
         .loadOne(plugins[0])
         .then(() => {
@@ -198,7 +198,7 @@ describe('Plugin System', () => {
       const system = new System({
         config,
       });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system.load(plugins).then(() => {
         expect(system.get('test').path).to.equal(TEST_PLUGIN_PATH);
         done();
@@ -218,7 +218,7 @@ describe('Plugin System', () => {
       const system = new System({
         config,
       });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system.load(plugins).then(() => {
         expect(system.get('no-package').version).to.equal(undefined);
         done();
@@ -240,7 +240,7 @@ describe('Plugin System', () => {
       const system = new System({
         config,
       });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system
         .load(plugins)
         .then(() => {
@@ -270,7 +270,7 @@ describe('Plugin System', () => {
       const system = new System({
         config,
       });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
       system
         .load(plugins)
         .catch((e) => {
@@ -311,7 +311,7 @@ describe('Plugin System', () => {
       const system = new System({
         config,
       });
-      const plugins = config.getPlugins().filter(p => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+      const plugins = config.getPlugins().filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
 
       system.load(plugins).then(() => {
         const plugModule = system.get('inplace');
@@ -403,7 +403,7 @@ describe('Plugin System', () => {
               limit: 300,
             },
             assets: {
-              script: config => `
+              script: (config) => `
                                     window.limit=${config.get('limit')};
                                 `,
             },

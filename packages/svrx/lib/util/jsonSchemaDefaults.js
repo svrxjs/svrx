@@ -11,7 +11,7 @@ module.exports = (() => {
      * @param {*} item
      * @return {Boolean}
      */
-  const isObject = item => typeof item === 'object' && item !== null && item.toString() === {}.toString();
+  const isObject = (item) => typeof item === 'object' && item !== null && item.toString() === {}.toString();
 
   /**
      * deep JSON object clone
@@ -151,7 +151,7 @@ module.exports = (() => {
       const ct = schema.minItems || 0;
       // tuple-typed arrays
       if (schema.items.constructor === Array) {
-        const values = schema.items.map(item => defaults(item, definitions));
+        const values = schema.items.map((item) => defaults(item, definitions));
         // remove undefined items at the end (unless required by minItems)
         for (let i = values.length - 1; i >= 0; i -= 1) {
           if (typeof values[i] !== 'undefined') {

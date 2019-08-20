@@ -332,7 +332,7 @@ describe('Builtin Configs', () => {
     const server = createServer();
     const plugins = server.config.getPlugins();
     expect(plugins.length).to.eql(BUILTIN_PLUGIN.length);
-    expect(plugins.map(p => p.getInfo('name'))).to.eql(BUILTIN_PLUGIN);
+    expect(plugins.map((p) => p.getInfo('name'))).to.eql(BUILTIN_PLUGIN);
   });
 
   it('should concat array values from CLI and RC', () => {

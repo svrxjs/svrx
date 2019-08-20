@@ -83,7 +83,7 @@ module.exports = class Injector {
     const assets = this[ASSETS][type];
 
     const appendContent = assets
-      .filter(m => !m.test || m.test(ctx.get('Referer')))
+      .filter((m) => !m.test || m.test(ctx.get('Referer')))
       .map((m) => {
         let { content } = m;
         if (typeof content === 'function') {
@@ -91,7 +91,7 @@ module.exports = class Injector {
         }
         return m.filter ? m.filter(content) : content;
       })
-      .filter(m => !!m)
+      .filter((m) => !!m)
       .join(TYPE_SPLITS[type] || '\n');
 
     const output = type === 'script' ? `${BASIC_SCRIPT}\n${appendContent}` : appendContent;

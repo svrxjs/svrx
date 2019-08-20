@@ -86,7 +86,7 @@ describe('Router ', () => {
               async onCreate({ router }) {
                 const { action, route, load } = router;
                 // action(name, handler )
-                action('say', name => (ctx) => {
+                action('say', (name) => (ctx) => {
                   ctx.body = `hello ${name}`;
                 });
 
@@ -172,7 +172,7 @@ describe('Router ', () => {
         .post('/blog/hello')
         .expect(200)
         .expect('Content-Type', /json/)
-        .expect(res => expect(res.body.code).to.equal(200))
+        .expect((res) => expect(res.body.code).to.equal(200))
         .end(done);
     });
 
@@ -188,7 +188,7 @@ describe('Router ', () => {
         .post('/blog/hello')
         .expect(200)
         .expect('Content-Type', /json/)
-        .expect(res => expect(res.body.code).to.equal(200))
+        .expect((res) => expect(res.body.code).to.equal(200))
         .end(done);
     });
     it('selector is need', () => {
@@ -228,7 +228,7 @@ describe('Router ', () => {
   describe('Loader', () => {
     let loaders = [];
     after((done) => {
-      loaders.forEach(loader => loader.destroy());
+      loaders.forEach((loader) => loader.destroy());
       loaders = [];
       cleanModule(done);
     });
@@ -502,7 +502,7 @@ describe('Router ', () => {
 
     let agent;
     before((done) => {
-      Promise.all([svrx.setup(), new Promise(resolve => proxyServer.start(resolve))]).then(() => {
+      Promise.all([svrx.setup(), new Promise((resolve) => proxyServer.start(resolve))]).then(() => {
         agent = supertest(svrx.callback());
         done();
       });

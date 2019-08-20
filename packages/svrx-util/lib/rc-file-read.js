@@ -11,7 +11,7 @@ const readGlobal = () => {
   }
 
   const root = configRoot || path.resolve(userHome, '.svrx');
-  const fileName = RC_FILES.find(file => fs.existsSync(`${root}/config/${file}`));
+  const fileName = RC_FILES.find((file) => fs.existsSync(`${root}/config/${file}`));
 
   if (fileName) {
     return require(`${root}/config/${fileName}`); // eslint-disable-line
@@ -35,5 +35,5 @@ module.exports = () => {
   const globalConfig = readGlobal();
   const scopeConfig = readScope();
 
-  return Object.assign({}, globalConfig, scopeConfig);
+  return { ...globalConfig, ...scopeConfig };
 };

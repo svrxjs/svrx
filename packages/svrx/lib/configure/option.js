@@ -29,10 +29,10 @@ class Option extends IModel {
     // define custom types
     // fixme validate is not work for function values
     ajv.addType('function', {
-      compile: () => data => _.isFunction(data),
+      compile: () => (data) => _.isFunction(data),
     });
     ajv.addType('compute', {
-      compile: () => data => _.isFunction(data),
+      compile: () => (data) => _.isFunction(data),
     });
 
     // errors formatting
@@ -49,7 +49,7 @@ class Option extends IModel {
     if (!valid) {
       const ajvErrors = ajv.errors;
       const formattedErrors = Option._format(ajvErrors);
-      return formattedErrors.map(err => `Config Error: ${err.dataPath.replace('/', '.')} ${err.message}`);
+      return formattedErrors.map((err) => `Config Error: ${err.dataPath.replace('/', '.')} ${err.message}`);
     }
 
     return null;
@@ -86,8 +86,8 @@ class Option extends IModel {
       }
 
       const types = valueArray
-        .filter(v => v.keyword === 'type')
-        .map(v => v.params.type)
+        .filter((v) => v.keyword === 'type')
+        .map((v) => v.params.type)
         .join(' or ');
       return {
         dataPath: k,

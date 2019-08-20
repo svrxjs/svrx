@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 const { produce } = require('immer');
 
 const TARGET_KEY = Symbol('target');
@@ -20,7 +21,7 @@ class WatchEvent {
 
 class ImmutableModel {
   constructor(target) {
-    this[TARGET_KEY] = Object.assign({}, target || {});
+    this[TARGET_KEY] = { ...target || {} };
     this[PREV_KEY] = this[TARGET_KEY];
     this[WATCH_KEY] = [];
     MUTATIONS.forEach((name) => {

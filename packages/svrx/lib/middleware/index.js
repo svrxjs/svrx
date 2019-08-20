@@ -72,14 +72,14 @@ class MiddlewareManager {
     const keys = this._getSortedKeys();
     return {
       keys,
-      middlewares: keys.map(key => cache.get(key)),
+      middlewares: keys.map((key) => cache.get(key)),
     };
   }
 
   _composeMiddlewares() {
     const { middlewares, keys } = this._getSortedMiddlewares();
 
-    this[COMPOSE_KEY] = compose(middlewares.map(m => m.onCreate()), keys);
+    this[COMPOSE_KEY] = compose(middlewares.map((m) => m.onCreate()), keys);
   }
 }
 

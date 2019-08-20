@@ -6,11 +6,11 @@ function mapSvrxToExports(ctx) {
   }
 
   function start() {
-    return new Promise(resolve => ctx.start(resolve));
+    return new Promise((resolve) => ctx.start(resolve));
   }
 
   function close() {
-    return new Promise(resolve => ctx.close(resolve));
+    return new Promise((resolve) => ctx.close(resolve));
   }
 
   const forExports = {};

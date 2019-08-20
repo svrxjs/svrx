@@ -119,7 +119,7 @@ const loaders = [
 function getLoader(plugin) {
   if (typeof plugin.getInfo('load') === 'function') return plugin.getInfo('load');
 
-  return loaders.find(loader => loader.test(plugin)).load;
+  return loaders.find((loader) => loader.test(plugin)).load;
 }
 
 module.exports = { getLoader };
