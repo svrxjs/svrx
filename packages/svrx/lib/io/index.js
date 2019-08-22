@@ -18,7 +18,7 @@ class IO {
 
     // add $call middleware
     middleware.add('$call', {
-      onCreate: () => async (ctx, next) => {
+      async onRoute(ctx, next) {
         if (ctx.path === IO_PATH) {
           let body = await getBody(ctx);
           body = JSON.parse(body.toString());
