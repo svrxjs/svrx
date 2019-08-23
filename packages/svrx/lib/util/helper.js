@@ -159,6 +159,10 @@ const getBody = async (ctx) => {
   }
 };
 
+function isFn(o) {
+  return typeof o === 'function';
+}
+
 
 exports.normalizePluginName = normalizePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
@@ -173,3 +177,4 @@ exports.getBody = getBody;
 exports.typeOf = typeOf;
 exports.npCall = npCall;
 exports.clone = clone;
+exports.isFn = isFn;

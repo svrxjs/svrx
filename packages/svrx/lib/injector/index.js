@@ -33,12 +33,12 @@ module.exports = class Injector {
 
     middleware.add('$injector', {
       priority: PRIORITY.INJECTOR,
-      onCreate: () => this.onClient.bind(this),
+      onRoute: this.onClient.bind(this),
     });
 
     middleware.add('$transform', {
       priority: PRIORITY.TRANSFORM,
-      onCreate: () => this.onTransform.bind(this),
+      onRoute: this.onTransform.bind(this),
     });
   }
 
