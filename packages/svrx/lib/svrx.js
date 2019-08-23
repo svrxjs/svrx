@@ -144,7 +144,7 @@ class Svrx {
       .then(() => {
         middleware.add('$router', {
           priority: PRIORITY.ROUTER,
-          onCreate: () => loader.middleware(),
+          onRoute: loader.middleware(),
         });
         if (typeof route === 'string') {
           return loader.load(libPath.resolve(this.config.get('root'), route));

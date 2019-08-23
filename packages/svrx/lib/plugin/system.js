@@ -69,7 +69,12 @@ class PluginSystem {
       });
 
     if (showNames.length) {
-      logger.notify(`${chalk.gray(showNames.join(','))} load successfully in ${((Date.now() - startTime) / 1000).toFixed(2)}s!`);
+      logger.notify(
+        `${chalk.gray(showNames.join(','))} load successfully in ${(
+          (Date.now() - startTime)
+          / 1000
+        ).toFixed(2)}s!`,
+      );
     }
   }
 
@@ -98,10 +103,8 @@ class PluginSystem {
 
       const pluginModule = await load(pluginConfig, config);
 
-
       pluginMap[name] = pluginModule;
     }
-
 
     return pluginMap[name];
   }
@@ -264,9 +267,9 @@ class PluginSystem {
     if (onRoute) {
       middleware.add(name, {
         priority: module.priority,
-        onCreate() {
-          return async (ctx, next) => onRoute(ctx, next, { config, logger: pluginLogger });
-        },
+        onRoute: async (ctx, next) => onRoute(ctx, next, {
+          config, io, events, logger: pluginLogger,
+        }),
       });
     }
 

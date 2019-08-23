@@ -110,7 +110,7 @@ module.exports = {
       // add proxy api to ctx
       middleware.add('$proxy.api', {
         priority: PRIORITY.MOCK + 1,
-        onCreate: () => async (ctx, next) => {
+        onRoute: async (ctx, next) => {
           ctx.proxy = async (context, proxyRule) => {
             await proxy({
               ctx: context,
