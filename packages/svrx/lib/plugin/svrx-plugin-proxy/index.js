@@ -50,7 +50,7 @@ function hasPort(host) {
 
 async function proxy({ proxyRule, ctx }) {
   const {
-    target, pathRewrite, changeOrigin, secure = true,
+    target, pathRewrite, changeOrigin = true, secure = true,
   } = proxyRule;
   const path = rewritePath(ctx.originalUrl, pathRewrite);
   const urlObj = new libUrl.URL(path, target);
