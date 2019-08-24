@@ -52,17 +52,17 @@ class PluginSystem {
     const startTime = Date.now();
     if (!Array.isArray(plugins) || !plugins.length) return;
     const names = plugins
-      .map(p => p.getInfo('name'))
-      .filter(name => !BUILTIN_PLUGIN.includes(name));
+      .map((p) => p.getInfo('name'))
+      .filter((name) => !BUILTIN_PLUGIN.includes(name));
     const release = logger.spin(
       `loading plugin${plugins.length > 1 ? 's' : ''} ${names.join(',')} `,
     );
-    const pModules = await Promise.all(plugins.map(p => this.loadOne(p)));
+    const pModules = await Promise.all(plugins.map((p) => this.loadOne(p)));
 
     release();
 
     const showNames = pModules
-      .filter(p => !BUILTIN_PLUGIN.includes(p.name))
+      .filter((p) => !BUILTIN_PLUGIN.includes(p.name))
       .map((p) => {
         if (p.version) return `${p.name}@${p.version}`;
         return p.name;
@@ -146,7 +146,7 @@ class PluginSystem {
 
   async build() {
     const plugins = Object.values(this[PLUGIN_MAP]);
-    return Promise.all(plugins.map(plugin => this.buildOne(plugin)));
+    return Promise.all(plugins.map((plugin) => this.buildOne(plugin)));
   }
 
   async buildOne(plugin) {

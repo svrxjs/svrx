@@ -81,8 +81,8 @@ describe('Proxy Action', async () => {
   before((done) => {
     Promise.all([
       svrx.setup(),
-      new Promise(resolve => proxyServer.start(resolve)),
-      new Promise(resolve => proxyServerHttps.start(resolve)),
+      new Promise((resolve) => proxyServer.start(resolve)),
+      new Promise((resolve) => proxyServerHttps.start(resolve)),
     ]).then(() => {
       agent = supertest(svrx.callback());
       done();

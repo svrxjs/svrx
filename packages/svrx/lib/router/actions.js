@@ -11,25 +11,25 @@ module.exports = actionCache;
 
 
 actionCache.set({
-  handle: middleware => middleware,
+  handle: (middleware) => middleware,
   send: (param, code) => (ctx) => {
     ctx.body = param;
     if (typeof code === 'number') {
       ctx.status = code;
     }
   },
-  json: param => (ctx) => {
+  json: (param) => (ctx) => {
     ctx.body = JSON.stringify(param, null, 2);
     ctx.type = 'json';
   },
-  header: headers => (ctx, next) => {
+  header: (headers) => (ctx, next) => {
     ctx.set(headers);
     return next();
   },
-  redirect: target => (ctx) => {
+  redirect: (target) => (ctx) => {
     ctx.redirect(simpleRender(target, ctx.params));
   },
-  rewrite: target => async (ctx, next) => {
+  rewrite: (target) => async (ctx, next) => {
     const original = ctx.url;
     ctx.path = simpleRender(target, ctx.params);
     await next();

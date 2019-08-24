@@ -86,7 +86,7 @@ class MiddlewareManager {
     const keys = this._getSortedKeys();
     return {
       keys,
-      middlewares: keys.map(key => cache.get(key)),
+      middlewares: keys.map((key) => cache.get(key)),
     };
   }
 
