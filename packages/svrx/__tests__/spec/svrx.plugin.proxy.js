@@ -105,8 +105,7 @@ describe('Proxy', () => {
       });
     });
     after((done) => {
-      proxyServer.close();
-      done();
+      proxyServer.close(done);
     });
 
     it('should proxy path to a target server', () => agent
@@ -161,8 +160,7 @@ describe('Proxy', () => {
       });
     });
     after((done) => {
-      proxyServer.close();
-      done();
+      proxyServer.close(done);
     });
 
     it('should proxy path to a target server', () => agent
@@ -210,8 +208,7 @@ describe('Proxy Api', () => {
     });
   });
   after((done) => {
-    proxyServer.close();
-    done();
+    proxyServer.close(done);
   });
 
   it('should apend a proxy api to ctx', () => agent
