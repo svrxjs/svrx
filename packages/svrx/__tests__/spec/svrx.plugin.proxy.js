@@ -230,10 +230,10 @@ describe('Proxy Action', async () => {
             const { route } = router;
             route(({ get }) => {
               get('/api(.*)').to.proxy(PROXY_SERVER);
-              get('/origin/api/test').to.proxy(PROXY_SERVER, {
-                changeOrigin: true,
+              get('/origin/api/test').to.proxy(PROXY_SERVER);
+              get('/origin/api/noset').to.proxy(PROXY_SERVER, {
+                changeOrigin: false,
               });
-              get('/origin/api/noset').to.proxy(PROXY_SERVER);
               get('/rewrite/api(.*)').to.proxy(PROXY_SERVER, {
                 pathRewrite: {
                   '^/rewrite/api': '/api',
@@ -254,8 +254,8 @@ describe('Proxy Action', async () => {
   before((done) => {
     Promise.all([
       svrx.setup(),
-      new Promise(resolve => proxyServer.start(resolve)),
-      new Promise(resolve => proxyServerHttps.start(resolve)),
+      new Promise((resolve) => proxyServer.start(resolve)),
+      new Promise((resolve) => proxyServerHttps.start(resolve)),
     ]).then(() => {
       agent = supertest(svrx.callback());
       done();

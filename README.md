@@ -1,19 +1,15 @@
+![](https://svrx.io/assets/images/twitter_header_photo_2.png)
+
 > A pluggable frontend server, it just works
 
 # svrx
 
+[![npm](https://img.shields.io/npm/v/svrx?style=flat-square)](https://www.npmjs.com/package/svrx)
+[![node](https://img.shields.io/node/v/svrx?style=flat-square)](https://nodejs.org/en/)
+[![Build Status](https://img.shields.io/travis/x-orpheus/svrx/master?style=flat-square&logo=travis)](https://travis-ci.org/x-orpheus/svrx)
+[![codecov](https://img.shields.io/codecov/c/gh/x-orpheus/svrx?style=flat-square&logo=codecov)](https://codecov.io/gh/x-orpheus/svrx)
+[![Dependabot Status](https://img.shields.io/badge/Dependabot-enabled-brightgreen.svg?style=flat-square&logo=dependabot)](https://dependabot.com)
+
 svrx(server-x) is a platform built for efficient front-end development.
 
-## Documentation
-
-You can read documentation [here](https://svrx.gitbook.io/docs/).
-
-你可以在[这里](https://svrx.gitbook.io/docs/)阅读使用文档。
-
-## Contributing
-
-Please see the [contributing guidelines]().
-
-## Providing a new plugin
-
-For contributors planning to write a new plugin, please see the [plugin development guide]().
+See our [website](https://svrx.io/) for more information.

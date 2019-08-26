@@ -29,7 +29,7 @@ module.exports = {
         // make sure relative to absoulte url
         const openUrl = url.resolve(
           URL_MAPING.local,
-          open.replace(/^(external|local)\b/, capture => URL_MAPING[capture]),
+          open.replace(/^(external|local)\b/, (capture) => URL_MAPING[capture]),
         );
         // delay 500
         openBrowser(openUrl, (err) => {

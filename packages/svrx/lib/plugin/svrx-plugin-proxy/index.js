@@ -14,12 +14,12 @@ const BLOCK_RESPONSE_HEADERS = ['content-security-policy', 'transfer-encoding'];
 const match = (url, config) => {
   const wildcardAndGlobMatch = (str, pattern) => {
     if (_.isString(pattern) && str.startsWith(pattern)) return true;
-    if (_.isArray(pattern) && pattern.some(p => str.startsWith(p))) return true;
+    if (_.isArray(pattern) && pattern.some((p) => str.startsWith(p))) return true;
     return micromatch.isMatch(str, pattern);
   };
 
   if (_.isPlainObject(config)) {
-    const matchedPattern = _.keys(config).find(pattern => wildcardAndGlobMatch(url, pattern));
+    const matchedPattern = _.keys(config).find((pattern) => wildcardAndGlobMatch(url, pattern));
     return config[matchedPattern];
   }
   if (_.isArray(config)) {
@@ -50,7 +50,7 @@ function hasPort(host) {
 
 async function proxy({ proxyRule, ctx }) {
   const {
-    target, pathRewrite, changeOrigin, secure = true,
+    target, pathRewrite, changeOrigin = true, secure = true,
   } = proxyRule;
   const path = rewritePath(ctx.originalUrl, pathRewrite);
   const urlObj = new libUrl.URL(path, target);
@@ -75,8 +75,8 @@ async function proxy({ proxyRule, ctx }) {
 
   const rsp = await request(options);
   Object.keys(rsp.headers)
-    .filter(item => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
-    .forEach(item => ctx.set(item, rsp.headers[item]));
+    .filter((item) => BLOCK_RESPONSE_HEADERS.indexOf(item) === -1)
+    .forEach((item) => ctx.set(item, rsp.headers[item]));
 
   const isGzipHtml = isRespGzip(rsp.headers) && isHtmlType(rsp.headers);
   if (isGzipHtml) {
@@ -110,7 +110,7 @@ module.exports = {
       // add proxy api to ctx
       middleware.add('$proxy.api', {
         priority: PRIORITY.MOCK + 1,
-        onCreate: () => async (ctx, next) => {
+        onRoute: async (ctx, next) => {
           ctx.proxy = async (context, proxyRule) => {
             await proxy({
               ctx: context,

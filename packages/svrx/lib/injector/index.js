@@ -33,12 +33,12 @@ module.exports = class Injector {
 
     middleware.add('$injector', {
       priority: PRIORITY.INJECTOR,
-      onCreate: () => this.onClient.bind(this),
+      onRoute: this.onClient.bind(this),
     });
 
     middleware.add('$transform', {
       priority: PRIORITY.TRANSFORM,
-      onCreate: () => this.onTransform.bind(this),
+      onRoute: this.onTransform.bind(this),
     });
   }
 
@@ -83,7 +83,7 @@ module.exports = class Injector {
     const assets = this[ASSETS][type];
 
     const appendContent = assets
-      .filter(m => !m.test || m.test(ctx.get('Referer')))
+      .filter((m) => !m.test || m.test(ctx.get('Referer')))
       .map((m) => {
         let { content } = m;
         if (typeof content === 'function') {
@@ -91,7 +91,7 @@ module.exports = class Injector {
         }
         return m.filter ? m.filter(content) : content;
       })
-      .filter(m => !!m)
+      .filter((m) => !!m)
       .join(TYPE_SPLITS[type] || '\n');
 
     const output = type === 'script' ? `${BASIC_SCRIPT}\n${appendContent}` : appendContent;

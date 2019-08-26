@@ -106,7 +106,7 @@ describe('Injector', () => {
     const { injector } = svrx;
 
     it('replace should work', () => {
-      injector.replace('</head>', cap => `<script src="/__nei__/client.js"></script>${cap}`);
+      injector.replace('</head>', (cap) => `<script src="/__nei__/client.js"></script>${cap}`);
 
       return request(svrx.callback())
         .get('/content')

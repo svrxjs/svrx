@@ -11,7 +11,7 @@ const Middleware = require('../../lib/middleware');
 
 const { createServer } = require('../util');
 
-const getPort = number => new Promise((resolve) => {
+const getPort = (number) => new Promise((resolve) => {
   ffp(3000, 8000, '127.0.0.1', number || 1, (err, ...ports) => {
     resolve(ports);
   });
@@ -78,7 +78,68 @@ describe('Basic', () => {
 });
 
 describe('Middleware', () => {
-  it('onCreate Basic', (done) => {
+  it('onRoute Basic', (done) => {
+    const m = new Middleware();
+
+    m.add('two', {
+      priority: 2,
+      async onRoute(ctx, next) {
+        ctx.body += ' two';
+        await next();
+      },
+    });
+
+    m.add('one', async (ctx, next) => {
+      ctx.body = 'one';
+      await next();
+    });
+
+    const app = new Koa();
+    app.use(m.middleware());
+
+    request(app.callback())
+      .get('/')
+      .expect('one two', done);
+  });
+  it('del: dynamic updating', async () => {
+    const m = new Middleware();
+
+    m.add('two', {
+      priority: 2,
+      async onRoute(ctx, next) {
+        ctx.body += ' two';
+        await next();
+      },
+    });
+
+    m.add('one', async (ctx, next) => {
+      ctx.body = 'one';
+      await next();
+    });
+
+    const app = new Koa();
+    app.use(m.middleware());
+
+    await request(app.callback())
+      .get('/')
+      .expect('one two');
+
+    m.del('two');
+
+    await request(app.callback())
+      .get('/')
+      .expect('one');
+  });
+  it('add: invalid input', async () => {
+    const m = new Middleware();
+
+    expect(() => {
+      m.add('two', {
+        priority: 2,
+      });
+    }).to.throwError(/two should contains onRoute field/);
+  });
+  it('onCreate Basic: deprecated in future', (done) => {
     const m = new Middleware();
 
     m.add('one', {

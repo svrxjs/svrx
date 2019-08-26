@@ -16,7 +16,7 @@ async function getMatchedPkg(name, semverVersion) {
     registry: storage.registry,
   });
   if (versions) {
-    const packages = Object.keys(versions).map(v => ({
+    const packages = Object.keys(versions).map((v) => ({
       version: v,
       pattern: (versions[v].engines && versions[v].engines.svrx) || '*',
     }));

@@ -28,7 +28,7 @@ function npCall(callback, args, ctx) {
 
 
 function normalizePluginName(name) {
-  const combineName = n => (n.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + n : n);
+  const combineName = (n) => (n.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + n : n);
   const isScoped = name.indexOf('/') >= 0;
 
   if (isScoped) {
@@ -65,7 +65,7 @@ function clone(target) {
     return slice.call(target);
   }
   if (type === 'object') {
-    return Object.assign({}, target);
+    return { ...target };
   }
   return target;
 }
@@ -86,7 +86,7 @@ function isRespGzip(headers) {
 }
 
 function getCert() {
-  const read = type => libFs.readFileSync(libPath.join(__dirname, `../../resource/cert/rootCA.${type}`), 'utf8');
+  const read = (type) => libFs.readFileSync(libPath.join(__dirname, `../../resource/cert/rootCA.${type}`), 'utf8');
   return {
     cert: read('crt'),
     key: read('key'),
@@ -138,7 +138,7 @@ const formatDate = (function getFormatDate() {
     format = format || 'yyyy-MM-dd HH:mm';
     value = new Date(value);
 
-    return format.replace(trunk, capture => (maps[capture] ? maps[capture](value) : ''));
+    return format.replace(trunk, (capture) => (maps[capture] ? maps[capture](value) : ''));
   };
 }());
 
@@ -159,6 +159,10 @@ const getBody = async (ctx) => {
   }
 };
 
+function isFn(o) {
+  return typeof o === 'function';
+}
+
 
 exports.normalizePluginName = normalizePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
@@ -173,3 +177,4 @@ exports.getBody = getBody;
 exports.typeOf = typeOf;
 exports.npCall = npCall;
 exports.clone = clone;
+exports.isFn = isFn;
