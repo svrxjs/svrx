@@ -14,10 +14,10 @@ describe('Proxy Action', async () => {
             const { route } = router;
             route(({ get }) => {
               get('/api(.*)').to.proxy(PROXY_SERVER);
-              get('/origin/api/test').to.proxy(PROXY_SERVER, {
-                changeOrigin: true,
+              get('/origin/api/test').to.proxy(PROXY_SERVER);
+              get('/origin/api/noset').to.proxy(PROXY_SERVER, {
+                changeOrigin: false,
               });
-              get('/origin/api/noset').to.proxy(PROXY_SERVER);
               get('/rewrite/api(.*)').to.proxy(PROXY_SERVER, {
                 pathRewrite: {
                   '^/rewrite/api': '/api',
