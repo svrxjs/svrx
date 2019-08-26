@@ -98,7 +98,7 @@ describe('Proxy', () => {
     before((done) => {
       Promise.all([
         svrx.setup(),
-        new Promise(resolve => proxyServer.start(resolve)),
+        new Promise((resolve) => proxyServer.start(resolve)),
       ]).then(() => {
         agent = supertest(svrx.callback());
         done();
@@ -154,7 +154,7 @@ describe('Proxy', () => {
     before((done) => {
       Promise.all([
         svrx.setup(),
-        new Promise(resolve => proxyServer.start(resolve)),
+        new Promise((resolve) => proxyServer.start(resolve)),
       ]).then(() => {
         agent = supertest(svrx.callback());
         done();
@@ -203,7 +203,7 @@ describe('Proxy Api', () => {
   before((done) => {
     Promise.all([
       svrx.setup(),
-      new Promise(resolve => proxyServer.start(resolve)),
+      new Promise((resolve) => proxyServer.start(resolve)),
     ]).then(() => {
       agent = supertest(svrx.callback());
       done();
