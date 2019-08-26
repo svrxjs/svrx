@@ -48,7 +48,7 @@ class Configure {
     });
 
     // pick plugins and plugin options from rcOption & cliOption
-    const builtinPlugins = BUILTIN_PLUGIN.map(p => ({ name: p }));
+    const builtinPlugins = BUILTIN_PLUGIN.map((p) => ({ name: p }));
     const cliPlugins = this._pickPluginsFromCli(cliOption);
     const rcPlugins = Configure._pickPluginsFromRc(rcOption);
     const userPlugins = Configure._mergePlugins(cliPlugins, rcPlugins);
@@ -96,7 +96,7 @@ class Configure {
    * @returns {*}
    */
   getPlugin(name) {
-    return this[PLUGINS].find(p => p.getInfo('name') === name);
+    return this[PLUGINS].find((p) => p.getInfo('name') === name);
   }
 
   _parseCliOption(raw = {}) {
@@ -150,7 +150,7 @@ class Configure {
     traverse({ type: 'object', properties: this[BUILTIN_CONFIG] });
 
     allPathAndAlias
-      .filter(pair => raw[pair.alias] !== undefined)
+      .filter((pair) => raw[pair.alias] !== undefined)
       .forEach((pair) => {
         const value = raw[pair.alias];
         delete options[pair.alias];
@@ -327,7 +327,7 @@ class Configure {
       }
     });
 
-    return [...pluginMap.values()].filter(p => p._enable !== false);
+    return [...pluginMap.values()].filter((p) => p._enable !== false);
   }
 
   /**

@@ -13,12 +13,12 @@ const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
   progress: false,
 };
 
-const load = _.memoize(async registry => nUtil.promisify(npm.load).bind(npm, {
+const load = _.memoize(async (registry) => nUtil.promisify(npm.load).bind(npm, {
   ...SILENT_SUGAR_NOT_NECESSARILY_WORKS,
   registry,
 })());
 
-const normalizeNpmCommand = command => async function callNpm(argsArr, options = {}) {
+const normalizeNpmCommand = (command) => async function callNpm(argsArr, options = {}) {
   const args = [argsArr];
   const { registry } = options;
   await load(registry);

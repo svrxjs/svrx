@@ -11,7 +11,7 @@ const Middleware = require('../../lib/middleware');
 
 const { createServer } = require('../util');
 
-const getPort = number => new Promise((resolve) => {
+const getPort = (number) => new Promise((resolve) => {
   ffp(3000, 8000, '127.0.0.1', number || 1, (err, ...ports) => {
     resolve(ports);
   });

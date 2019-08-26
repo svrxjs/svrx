@@ -1,6 +1,6 @@
 function onFetch(url) {
   fetch(url)
-    .then(resp => resp.json())
+    .then((resp) => resp.json())
     .then((result) => {
       console.log(result); // eslint-disable-line
       if (result && result.results) {
@@ -11,7 +11,7 @@ function onFetch(url) {
         };
         const textarea = document.getElementById(url);
         textarea.value = Object.keys(info)
-          .map(key => `${key}: ${info[key]}`)
+          .map((key) => `${key}: ${info[key]}`)
           .join('\n');
       }
     });
