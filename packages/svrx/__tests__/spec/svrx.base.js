@@ -1,3 +1,4 @@
+const ioClient = require('socket.io-client');
 const ffp = require('find-free-port');
 const request = require('supertest');
 const expect = require('expect.js');
@@ -6,6 +7,7 @@ const Koa = require('koa');
 const svrx = require('../../index');
 const Svrx = require('../../lib/svrx');
 const CONFIGS = require('../../lib/config-list');
+const { IO_PATH } = require('../../lib/shared/consts');
 
 const Middleware = require('../../lib/middleware');
 
@@ -267,18 +269,58 @@ describe('Public API', () => {
     expect(spy.calledOnce).to.equal(true);
   });
 
-  it('svrx.reload()', async () => {
-    const spy = sinon.spy();
-
+  it('events plugin', (done) => {
+    let called = false;
     const server = svrx({
       open: false,
       livereload: false,
     });
 
-    server.on('file:change', spy);
+    server.on('plugin', async ({
+      io, router, config, middleware, injector, logger, events,
+    }) => {
+      expect(io).to.not.equal(undefined);
+      expect(config).to.not.equal(undefined);
+      expect(router).to.not.equal(undefined);
+      expect(middleware).to.not.equal(undefined);
+      expect(injector).to.not.equal(undefined);
+      expect(logger).to.not.equal(undefined);
+      expect(events).to.not.equal(undefined);
+      called = true;
+    });
+    server.start().then(() => {
+      expect(called).to.equal(true);
+      server.close().then(done);
+    });
+  });
 
-    await server.reload();
+  it('svrx.reload()', (done) => {
+    const server = svrx({
+      open: false,
+      livereload: false,
+    });
 
-    expect(spy.calledOnce).to.equal(true);
+    server.start().then((port) => {
+      const socket = ioClient.connect(`http://localhost:${port}`, {
+        path: IO_PATH,
+      });
+      const handler = () => {
+        server.reload();
+      };
+
+      const { io } = server.__svrx;
+
+      io.on('svrx', (payload) => {
+        expect(payload).to.equal('hello');
+        socket.close();
+        io.off('svrx');
+        server.close().then(done);
+      });
+      io._io.on('connection', handler);
+      socket.on('$message', (evt) => {
+        expect(evt.type).to.equal('file:change');
+        socket.emit('$message', { type: 'svrx', payload: 'hello' });
+      });
+    });
   });
 });
