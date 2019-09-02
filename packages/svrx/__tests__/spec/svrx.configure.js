@@ -244,6 +244,16 @@ describe('CLI Config', () => {
       expect(plugin.get('foo')).to.eql('');
       expect(plugin.get('bar')).to.eql('foo');
     });
+
+    it('should parse web url with number correctly', () => {
+      const server = createServer({}, {
+        plugin: [
+          'test?host=https://test.163.com',
+        ],
+      });
+      const plugin = server.config.getPlugin('test');
+      expect(plugin.get('host')).to.eql('https://test.163.com');
+    });
   });
 
   describe('add plugin with shortcut', () => {

@@ -204,7 +204,7 @@ class Configure {
       };
       Object.keys(ops).forEach((key) => {
         const value = ops[key];
-        if (/\d+/.test(value)) {
+        if (/^\d+$/.test(value)) {
           newOps[key] = parseInt(value, 10);
         } else if (value in keyMap) {
           newOps[key] = keyMap[value];
