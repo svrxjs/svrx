@@ -1,3 +1,12 @@
+## 0.0.8 (2019-09-04)
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#77](https://github.com/x-orpheus/svrx/pull/77) Fix number check for option value ([@xuchaoying](https://github.com/xuchaoying))
+
+#### Committers: 1
+- C.Y.Xu ([@xuchaoying](https://github.com/xuchaoying))
+
 ## v0.0.7 (2019-08-26)
 
 #### :boom: Breaking Change
@@ -15,7 +24,7 @@
 * `svrx`
   * [#25](https://github.com/x-orpheus/svrx/pull/25) Support relative path to open plugin ([@leeluolee](https://github.com/leeluolee))
 
-#### Committers: 4
+#### Committers: 3
 - C.Y.Xu ([@xuchaoying](https://github.com/xuchaoying))
 - Cody Chan ([@int64ago](https://github.com/int64ago))
 - ZhengHaibo ([@leeluolee](https://github.com/leeluolee))
