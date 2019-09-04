@@ -72,6 +72,7 @@ async function getInstallForTask({
   } else {
     // local install
     installOptions.name = path;
+    installOptions.nameReal = normalizePluginName(name);
     installOptions.localInstall = true;
   }
 
