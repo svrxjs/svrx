@@ -14,7 +14,7 @@
     "report-coverage": "lerna run report-coverage",
     "lerna:version": "lerna version",
     "lerna:publish": "lerna publish from-git --yes",
-    "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --no-audit && git add packages/*/package-lock.json",
+    "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --no-audit && git add packages/*/npm-shrinkwrap.json",
     "postinstall": "lerna bootstrap",
     "prepublish": "npm run build"
   },
