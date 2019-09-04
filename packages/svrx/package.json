@@ -1,6 +1,6 @@
 {
   "name": "svrx",
-  "version": "0.0.8",
+  "version": "0.0.9-alpha.0",
   "description": "svrx server live-reload mock ",
   "keywords": [
     "svrx",
@@ -52,7 +52,7 @@
     "serve-index": "^1.9.1",
     "socket.io": "^2.2.0",
     "super-ajv": "^1.1.6",
-    "svrx-util": "^0.0.8"
+    "svrx-util": "^0.0.9-alpha.0"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
