@@ -214,7 +214,7 @@ class Configure {
       });
       return newOps;
     };
-    const reg = /^((@\w+\/)?\w+)(@(\d+\.\d+\.\d+))?(\?(.*))?$/;
+    const reg = /^((@\w+\/)?[\w-]+)(@(\d+\.\d+\.\d+))?(\?(.*))?$/;
     const getPlugin = (pluginString) => {
       const matches = reg.exec(pluginString);
       if (matches) {

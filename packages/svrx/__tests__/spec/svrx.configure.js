@@ -190,6 +190,14 @@ describe('CLI Config', () => {
       const wrongPlugin = server.config.getPlugin('wrong');
       expect(wrongPlugin).to.be(undefined);
     });
+
+    it('add plugin with dashed name', () => {
+      const server = createServer({}, {
+        plugin: 'hello-world',
+      });
+      const testPlugin = server.config.getPlugin('hello-world');
+      expect(testPlugin).not.to.be(undefined);
+    });
   });
 
   describe('parse --plugin string options', () => {
