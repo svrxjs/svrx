@@ -16,7 +16,8 @@
   },
   "files": [
     "lib",
-    "resource"
+    "resource",
+    "npm-shrinkwrap.json"
   ],
   "repository": {
     "type": "git",

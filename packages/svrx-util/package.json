@@ -9,7 +9,8 @@
     "lib": "lib"
   },
   "files": [
-    "lib"
+    "lib",
+    "npm-shrinkwrap.json"
   ],
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha __tests__/spec",
