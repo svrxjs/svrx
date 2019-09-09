@@ -46,7 +46,7 @@ class IO {
     });
   }
 
-  // deprecated
+  // @deprecated
   registService(name, handler) {
     this[SERVICE_CACHE].set(name, handler);
   }
