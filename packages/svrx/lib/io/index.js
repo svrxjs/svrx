@@ -51,7 +51,7 @@ class IO {
     this[SERVICE_CACHE].set(name, handler);
   }
 
-  regist(name, handler) {
+  register(name, handler) {
     this[SERVICE_CACHE].set(name, handler);
   }
 
