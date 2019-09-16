@@ -160,6 +160,15 @@ describe('CLI Config', () => {
       expect(testPlugin).not.to.be(undefined);
     });
 
+    it('add scoped plugin with special scope name', () => {
+      // --plugin @scope-foo/test
+      const server = createServer({}, {
+        plugin: '@scope-foo/test',
+      });
+      const testPlugin = server.config.getPlugin('@scope-foo/test');
+      expect(testPlugin).not.to.be(undefined);
+    });
+
     it('add scoped plugin with version', () => {
       // --plugin @scope/test@1.0.0
       const server = createServer({}, {
@@ -189,6 +198,14 @@ describe('CLI Config', () => {
       });
       const wrongPlugin = server.config.getPlugin('wrong');
       expect(wrongPlugin).to.be(undefined);
+    });
+
+    it('add plugin with dashed name', () => {
+      const server = createServer({}, {
+        plugin: 'hello-world',
+      });
+      const testPlugin = server.config.getPlugin('hello-world');
+      expect(testPlugin).not.to.be(undefined);
     });
   });
 
