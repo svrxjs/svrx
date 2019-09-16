@@ -38,6 +38,7 @@ describe('npm', () => {
 
   it('load module: local install', (done) => {
     npm.install({
+      nameReal: 'svrx-plugin-test',
       name: TEST_PLUGIN_PATH,
       localInstall: true,
       path: MODULE_PATH,
