@@ -29,9 +29,11 @@ describe('Svrx Utility', () => {
       const name1 = normalizePluginName('world');
       const name2 = normalizePluginName('hello-world');
       const name3 = normalizePluginName('@orpheus/world');
+      const name4 = normalizePluginName('@orpheus-foo/world');
       expect(name1).to.equal('svrx-plugin-world');
       expect(name2).to.equal('svrx-plugin-hello-world');
       expect(name3).to.equal('@orpheus/svrx-plugin-world');
+      expect(name4).to.equal('@orpheus-foo/svrx-plugin-world');
     });
 
     it('npCall', (done) => {
