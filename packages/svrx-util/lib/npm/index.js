@@ -44,14 +44,18 @@ const install = (options) => {
     npmi(options, (err, result) => {
       if (err) return reject(err);
       if (!result) return resolve(result);
-      const len = result.length;
-      const [, name, version] = /(\S+)@(\S+)/.exec(result[len - 1][0]);
-      let path = result[len - 1][1];
-      // @FIX npmi error
-      if (!libPath.isAbsolute(path)) {
-        path = libPath.join(root, path);
-      }
-      return resolve({ version, name, path });
+      const packName = (() => {
+        const { localInstall, nameReal, name } = options;
+        return localInstall ? nameReal : name;
+      })();
+      const pack = result.map((r) => {
+        const [, name, version] = /(\S+)@(\S+)/.exec(r[0]);
+
+        const path = !libPath.isAbsolute(r[1]) ? libPath.join(root, r[1]) : r[1];
+        return { version, name, path };
+      }).find((r) => r.name === packName);
+
+      return resolve(pack);
     });
   });
 };
