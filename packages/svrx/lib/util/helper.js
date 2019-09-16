@@ -32,7 +32,7 @@ function normalizePluginName(name) {
   const isScoped = name.indexOf('/') >= 0;
 
   if (isScoped) {
-    const matches = /^@(\w+)\/(.*)$/.exec(name);
+    const matches = /^@([a-zA-Z0-9_-]+)\/(.*)$/.exec(name);
     if (matches.length === 3) {
       const scope = matches[1];
       const realName = matches[2];
