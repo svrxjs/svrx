@@ -1,6 +1,6 @@
 {
   "name": "svrx",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "svrx server live-reload mock ",
   "keywords": [
     "svrx",
@@ -16,7 +16,8 @@
   },
   "files": [
     "lib",
-    "resource"
+    "resource",
+    "npm-shrinkwrap.json"
   ],
   "repository": {
     "type": "git",
@@ -51,7 +52,7 @@
     "serve-index": "^1.9.1",
     "socket.io": "^2.2.0",
     "super-ajv": "^1.1.6",
-    "svrx-util": "^0.0.7"
+    "svrx-util": "^0.0.9"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
