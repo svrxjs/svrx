@@ -160,6 +160,15 @@ describe('CLI Config', () => {
       expect(testPlugin).not.to.be(undefined);
     });
 
+    it('add scoped plugin with special scope name', () => {
+      // --plugin @scope-foo/test
+      const server = createServer({}, {
+        plugin: '@scope-foo/test',
+      });
+      const testPlugin = server.config.getPlugin('@scope-foo/test');
+      expect(testPlugin).not.to.be(undefined);
+    });
+
     it('add scoped plugin with version', () => {
       // --plugin @scope/test@1.0.0
       const server = createServer({}, {
