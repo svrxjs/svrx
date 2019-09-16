@@ -46,7 +46,12 @@ class IO {
     });
   }
 
+  // @deprecated
   registService(name, handler) {
+    this[SERVICE_CACHE].set(name, handler);
+  }
+
+  register(name, handler) {
     this[SERVICE_CACHE].set(name, handler);
   }
 
