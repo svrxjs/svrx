@@ -2,7 +2,7 @@ const Svrx = require('./lib/svrx');
 
 function mapSvrxToExports(ctx) {
   function reload() {
-    return ctx.events.emit('file:change', {}, true);
+    return ctx.io.emit('file:change', {}, true);
   }
 
   function start() {

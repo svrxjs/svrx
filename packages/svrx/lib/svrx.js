@@ -58,8 +58,10 @@ class Svrx {
     this.loader.on('error', (payload) => logger.error(payload));
     this.loader.on('update', (payload) => logger.notify(`[routing update] ${payload}`));
 
+    this.router = exportsToPlugin(this.loader);
+
     this.system = new PluginSystem({
-      router: exportsToPlugin(this.loader),
+      router: this.router,
       middleware,
       injector,
       config,
@@ -141,6 +143,15 @@ class Svrx {
     return this.system
       .load(plugins)
       .then(() => this.system.build())
+      .then(() => this.events.emit('plugin', {
+        middleware: this.middleware,
+        injector: this.injector,
+        logger,
+        config: this.config,
+        events: this.events,
+        router: this.router,
+        io: this.io,
+      }))
       .then(() => {
         middleware.add('$router', {
           priority: PRIORITY.ROUTER,
@@ -203,7 +214,7 @@ ${'Local'.padStart(12)}: ${chalk.underline.blue(config.get('urls.local'))}
 
 ${'Plugins'.padStart(12)}: ${chalk.gray(this.system.getInstalledPluginNames().join(','))}
 `);
-    events.emit('ready');
+    events.emit('ready', port);
   }
 }
 
