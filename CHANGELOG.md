@@ -1,3 +1,19 @@
+## 0.0.10 (2019-09-18)
+
+#### :rocket: New Feature
+* `svrx`
+  * [#86](https://github.com/x-orpheus/svrx/pull/86) Add 'regist' as an alias to 'registService' ([@leeluolee](https://github.com/leeluolee))
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#84](https://github.com/x-orpheus/svrx/pull/84) Fix dashed plugin name parse error ([@xuchaoying](https://github.com/xuchaoying))
+* `svrx-util`, `svrx`
+  * [#83](https://github.com/x-orpheus/svrx/pull/83) Return the right package info after npmi ([@xuchaoying](https://github.com/xuchaoying))
+
+#### Committers: 2
+- C.Y.Xu ([@xuchaoying](https://github.com/xuchaoying))
+- ZhengHaibo ([@leeluolee](https://github.com/leeluolee))
+
 ## 0.0.9 (2019-09-04)
 
 ## 0.0.8 (2019-09-04)
