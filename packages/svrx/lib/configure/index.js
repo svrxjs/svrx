@@ -48,7 +48,7 @@ class Configure {
     });
 
     // pick plugins and plugin options from rcOption & cliOption
-    const builtinPlugins = BUILTIN_PLUGIN.map(p => ({ name: p }));
+    const builtinPlugins = BUILTIN_PLUGIN.map((p) => ({ name: p }));
     const cliPlugins = this._pickPluginsFromCli(cliOption);
     const rcPlugins = Configure._pickPluginsFromRc(rcOption);
     const userPlugins = Configure._mergePlugins(cliPlugins, rcPlugins);
@@ -104,7 +104,7 @@ class Configure {
    * @returns {*}
    */
   getPlugin(name) {
-    return this[PLUGINS].find(p => p.getInfo('name') === name);
+    return this[PLUGINS].find((p) => p.getInfo('name') === name);
   }
 
   getSchema() {
@@ -162,7 +162,7 @@ class Configure {
     traverse({ type: 'object', properties: this[BUILTIN_CONFIG] });
 
     allPathAndAlias
-      .filter(pair => raw[pair.alias] !== undefined)
+      .filter((pair) => raw[pair.alias] !== undefined)
       .forEach((pair) => {
         const value = raw[pair.alias];
         delete options[pair.alias];
@@ -216,7 +216,7 @@ class Configure {
       };
       Object.keys(ops).forEach((key) => {
         const value = ops[key];
-        if (/\d+/.test(value)) {
+        if (/^\d+$/.test(value)) {
           newOps[key] = parseInt(value, 10);
         } else if (value in keyMap) {
           newOps[key] = keyMap[value];
@@ -226,7 +226,7 @@ class Configure {
       });
       return newOps;
     };
-    const reg = /^((@\w+\/)?\w+)(@(\d+\.\d+\.\d+))?(\?(.*))?$/;
+    const reg = /^((@[a-zA-Z0-9_-]+\/)?[a-zA-Z0-9_-]+)(@(\d+\.\d+\.\d+))?(\?(.*))?$/;
     const getPlugin = (pluginString) => {
       const matches = reg.exec(pluginString);
       if (matches) {
@@ -339,7 +339,7 @@ class Configure {
       }
     });
 
-    return [...pluginMap.values()].filter(p => p._enable !== false);
+    return [...pluginMap.values()].filter((p) => p._enable !== false);
   }
 
   /**

@@ -160,6 +160,15 @@ describe('CLI Config', () => {
       expect(testPlugin).not.to.be(undefined);
     });
 
+    it('add scoped plugin with special scope name', () => {
+      // --plugin @scope-foo/test
+      const server = createServer({}, {
+        plugin: '@scope-foo/test',
+      });
+      const testPlugin = server.config.getPlugin('@scope-foo/test');
+      expect(testPlugin).not.to.be(undefined);
+    });
+
     it('add scoped plugin with version', () => {
       // --plugin @scope/test@1.0.0
       const server = createServer({}, {
@@ -189,6 +198,14 @@ describe('CLI Config', () => {
       });
       const wrongPlugin = server.config.getPlugin('wrong');
       expect(wrongPlugin).to.be(undefined);
+    });
+
+    it('add plugin with dashed name', () => {
+      const server = createServer({}, {
+        plugin: 'hello-world',
+      });
+      const testPlugin = server.config.getPlugin('hello-world');
+      expect(testPlugin).not.to.be(undefined);
     });
   });
 
@@ -243,6 +260,16 @@ describe('CLI Config', () => {
       const plugin = server.config.getPlugin('test');
       expect(plugin.get('foo')).to.eql('');
       expect(plugin.get('bar')).to.eql('foo');
+    });
+
+    it('should parse web url with number correctly', () => {
+      const server = createServer({}, {
+        plugin: [
+          'test?host=https://test.163.com',
+        ],
+      });
+      const plugin = server.config.getPlugin('test');
+      expect(plugin.get('host')).to.eql('https://test.163.com');
     });
   });
 
@@ -332,7 +359,7 @@ describe('Builtin Configs', () => {
     const server = createServer();
     const plugins = server.config.getPlugins();
     expect(plugins.length).to.eql(BUILTIN_PLUGIN.length);
-    expect(plugins.map(p => p.getInfo('name'))).to.eql(BUILTIN_PLUGIN);
+    expect(plugins.map((p) => p.getInfo('name'))).to.eql(BUILTIN_PLUGIN);
   });
 
   it('should concat array values from CLI and RC', () => {

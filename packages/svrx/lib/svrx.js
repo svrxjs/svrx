@@ -55,11 +55,13 @@ class Svrx {
 
     // @TODO
     this.loader = new Loader();
-    this.loader.on('error', payload => logger.error(payload));
-    this.loader.on('update', payload => logger.notify(`[routing update] ${payload}`));
+    this.loader.on('error', (payload) => logger.error(payload));
+    this.loader.on('update', (payload) => logger.notify(`[routing update] ${payload}`));
+
+    this.router = exportsToPlugin(this.loader);
 
     this.system = new PluginSystem({
-      router: exportsToPlugin(this.loader),
+      router: this.router,
       middleware,
       injector,
       config,
@@ -109,9 +111,9 @@ class Svrx {
       if (option.cli !== false) {
         const cmd = option.alias ? `-${option.alias}, --${name}` : `--${name}`;
         if (option.description) {
-          const desc = option.description.replace(/^(\w)/, a => a.toUpperCase());
+          const desc = option.description.replace(/^(\w)/, (a) => a.toUpperCase());
           const defaultHint = option.defaultHint ? ` (${option.defaultHint})` : '';
-          const hint = defaultHint.replace(/^(\w)/, a => a.toLowerCase());
+          const hint = defaultHint.replace(/^(\w)/, (a) => a.toLowerCase());
 
           const defaults = option.default ? ` (default: ${option.default})` : '';
           message += (
@@ -141,10 +143,19 @@ class Svrx {
     return this.system
       .load(plugins)
       .then(() => this.system.build())
+      .then(() => this.events.emit('plugin', {
+        middleware: this.middleware,
+        injector: this.injector,
+        logger,
+        config: this.config,
+        events: this.events,
+        router: this.router,
+        io: this.io,
+      }))
       .then(() => {
         middleware.add('$router', {
           priority: PRIORITY.ROUTER,
-          onCreate: () => loader.middleware(),
+          onRoute: loader.middleware(),
         });
         if (typeof route === 'string') {
           return loader.load(libPath.resolve(this.config.get('root'), route));
@@ -203,7 +214,7 @@ ${'Local'.padStart(12)}: ${chalk.underline.blue(config.get('urls.local'))}
 
 ${'Plugins'.padStart(12)}: ${chalk.gray(this.system.getInstalledPluginNames().join(','))}
 `);
-    events.emit('ready');
+    events.emit('ready', port);
   }
 }
 

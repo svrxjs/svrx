@@ -1,6 +1,6 @@
 {
   "name": "svrx",
-  "version": "0.0.6",
+  "version": "0.0.9",
   "description": "svrx server live-reload mock ",
   "keywords": [
     "svrx",
@@ -16,7 +16,8 @@
   },
   "files": [
     "lib",
-    "resource"
+    "resource",
+    "npm-shrinkwrap.json"
   ],
   "repository": {
     "type": "git",
@@ -36,7 +37,7 @@
     "chokidar": "^3.0.1",
     "co-request": "^1.0.0",
     "find-free-port": "^2.0.0",
-    "immer": "^2.1.2",
+    "immer": "^3.2.0",
     "koa": "^2.7.0",
     "koa-history-api-fallback": "^1.0.0",
     "koa-send": "^5.0.0",
@@ -51,7 +52,7 @@
     "serve-index": "^1.9.1",
     "socket.io": "^2.2.0",
     "super-ajv": "^1.1.6",
-    "svrx-util": "^0.0.6"
+    "svrx-util": "^0.0.9"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
@@ -65,6 +66,6 @@
     "webpack-cli": "^3.3.1"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=8.9.0"
   }
 }

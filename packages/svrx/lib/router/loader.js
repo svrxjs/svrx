@@ -42,7 +42,7 @@ class Loader {
     this._cachedMiddleware = compose(
       this._middlewares,
       null,
-      m => m.middleware,
+      (m) => m.middleware,
     );
 
     this.notify = debounce((type, evt) => this.emit(type, evt), NOTIFY_THROTTLE);

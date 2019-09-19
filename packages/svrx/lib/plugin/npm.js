@@ -16,7 +16,7 @@ async function getMatchedPkg(name, semverVersion) {
     registry: storage.registry,
   });
   if (versions) {
-    const packages = Object.keys(versions).map(v => ({
+    const packages = Object.keys(versions).map((v) => ({
       version: v,
       pattern: (versions[v].engines && versions[v].engines.svrx) || '*',
     }));
@@ -72,6 +72,7 @@ async function getInstallForTask({
   } else {
     // local install
     installOptions.name = path;
+    installOptions.nameReal = normalizePluginName(name);
     installOptions.localInstall = true;
   }
 

@@ -57,7 +57,7 @@ function addServeMiddleware(config, middleware, { root, index }) {
 
   middleware.add('$serve', {
     priority: PRIORITY.SERVE,
-    onCreate: () => async (ctx, next) => {
+    onRoute: async (ctx, next) => {
       await next();
 
       if (isFound(ctx) || serveConfig === false) return null;
@@ -83,7 +83,6 @@ module.exports = {
 
       addServeMiddleware(config, middleware, { root, index });
 
-
       // historyApiFallback
       // todo move out of serve
       const historyApiFallbackOptions = config.get('historyApiFallback');
@@ -93,7 +92,7 @@ module.exports = {
         );
         middleware.add('$history-api-fallback', {
           priority: PRIORITY.HISTORY_API_FALLBACK,
-          onCreate: () => async (ctx, next) => {
+          onRoute: async (ctx, next) => {
             if (ctx.status !== 404) {
               return next();
             }

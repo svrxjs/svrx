@@ -34,7 +34,7 @@ const im = {
     const len = pathes.length;
 
     if (!len) {
-      return !replace && (tType === 'object' && aType === 'object') ? Object.assign({}, target, val) : val;
+      return !replace && (tType === 'object' && aType === 'object') ? ({ ...target, ...val }) : val;
     }
 
     const nextPath = pathes.shift();

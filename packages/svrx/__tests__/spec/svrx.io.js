@@ -41,14 +41,14 @@ describe('IO', () => {
   });
 
   it('io.call', async () => {
-    io.registService('hello', async payload => `hi ${payload}`);
+    io.register('hello', async (payload) => `hi ${payload}`);
     expect(await io.call('hello', 'leeluolee')).to.equal('hi leeluolee');
   });
 
   it('io.call limit error', async () => {
     expect(() => {
       for (let i = 0; i < 1000; i += 1) {
-        io.registService(`hello${i}`, async payload => `hi ${i} ${payload}`);
+        io.register(`hello${i}`, async (payload) => `hi ${i} ${payload}`);
       }
     }).to.throwError(/max service size limit exceeded/);
   });
@@ -57,7 +57,7 @@ describe('IO', () => {
     const svrx = createServer({
       root: __dirname,
     });
-    svrx.io.registService('hello', async payload => `hi ${payload}`);
+    svrx.io.register('hello', async (payload) => `hi ${payload}`);
     await svrx.setup();
     return supertest(svrx.callback())
       .post(IO_PATH)
@@ -70,7 +70,7 @@ describe('IO', () => {
     const svrx = createServer({
       root: __dirname,
     });
-    svrx.io.registService('error', async (payload) => {
+    svrx.io.register('error', async (payload) => {
       throw Error(`hi ${payload}`);
     });
     await svrx.setup();

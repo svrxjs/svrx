@@ -1,3 +1,4 @@
+const ioClient = require('socket.io-client');
 const ffp = require('find-free-port');
 const request = require('supertest');
 const expect = require('expect.js');
@@ -6,12 +7,13 @@ const Koa = require('koa');
 const svrx = require('../../index');
 const Svrx = require('../../lib/svrx');
 const CONFIGS = require('../../lib/config-list');
+const { IO_PATH } = require('../../lib/shared/consts');
 
 const Middleware = require('../../lib/middleware');
 
 const { createServer } = require('../util');
 
-const getPort = number => new Promise((resolve) => {
+const getPort = (number) => new Promise((resolve) => {
   ffp(3000, 8000, '127.0.0.1', number || 1, (err, ...ports) => {
     resolve(ports);
   });
@@ -78,7 +80,68 @@ describe('Basic', () => {
 });
 
 describe('Middleware', () => {
-  it('onCreate Basic', (done) => {
+  it('onRoute Basic', (done) => {
+    const m = new Middleware();
+
+    m.add('two', {
+      priority: 2,
+      async onRoute(ctx, next) {
+        ctx.body += ' two';
+        await next();
+      },
+    });
+
+    m.add('one', async (ctx, next) => {
+      ctx.body = 'one';
+      await next();
+    });
+
+    const app = new Koa();
+    app.use(m.middleware());
+
+    request(app.callback())
+      .get('/')
+      .expect('one two', done);
+  });
+  it('del: dynamic updating', async () => {
+    const m = new Middleware();
+
+    m.add('two', {
+      priority: 2,
+      async onRoute(ctx, next) {
+        ctx.body += ' two';
+        await next();
+      },
+    });
+
+    m.add('one', async (ctx, next) => {
+      ctx.body = 'one';
+      await next();
+    });
+
+    const app = new Koa();
+    app.use(m.middleware());
+
+    await request(app.callback())
+      .get('/')
+      .expect('one two');
+
+    m.del('two');
+
+    await request(app.callback())
+      .get('/')
+      .expect('one');
+  });
+  it('add: invalid input', async () => {
+    const m = new Middleware();
+
+    expect(() => {
+      m.add('two', {
+        priority: 2,
+      });
+    }).to.throwError(/two should contains onRoute field/);
+  });
+  it('onCreate Basic: deprecated in future', (done) => {
     const m = new Middleware();
 
     m.add('one', {
@@ -206,18 +269,58 @@ describe('Public API', () => {
     expect(spy.calledOnce).to.equal(true);
   });
 
-  it('svrx.reload()', async () => {
-    const spy = sinon.spy();
-
+  it('events plugin', (done) => {
+    let called = false;
     const server = svrx({
       open: false,
       livereload: false,
     });
 
-    server.on('file:change', spy);
+    server.on('plugin', async ({
+      io, router, config, middleware, injector, logger, events,
+    }) => {
+      expect(io).to.not.equal(undefined);
+      expect(config).to.not.equal(undefined);
+      expect(router).to.not.equal(undefined);
+      expect(middleware).to.not.equal(undefined);
+      expect(injector).to.not.equal(undefined);
+      expect(logger).to.not.equal(undefined);
+      expect(events).to.not.equal(undefined);
+      called = true;
+    });
+    server.start().then(() => {
+      expect(called).to.equal(true);
+      server.close().then(done);
+    });
+  });
 
-    await server.reload();
+  it('svrx.reload()', (done) => {
+    const server = svrx({
+      open: false,
+      livereload: false,
+    });
 
-    expect(spy.calledOnce).to.equal(true);
+    server.start().then((port) => {
+      const socket = ioClient.connect(`http://localhost:${port}`, {
+        path: IO_PATH,
+      });
+      const handler = () => {
+        server.reload();
+      };
+
+      const { io } = server.__svrx;
+
+      io.on('svrx', (payload) => {
+        expect(payload).to.equal('hello');
+        socket.close();
+        io.off('svrx');
+        server.close().then(done);
+      });
+      io._io.on('connection', handler);
+      socket.on('$message', (evt) => {
+        expect(evt.type).to.equal('file:change');
+        socket.emit('$message', { type: 'svrx', payload: 'hello' });
+      });
+    });
   });
 });
