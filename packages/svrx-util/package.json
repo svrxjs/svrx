@@ -1,5 +1,5 @@
 {
-  "name": "svrx-util",
+  "name": "@svrx/svrx-util",
   "version": "0.0.9",
   "description": "util package of svrx",
   "homepage": "https://svrx.io/",
@@ -12,6 +12,9 @@
     "lib",
     "npm-shrinkwrap.json"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha __tests__/spec",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"

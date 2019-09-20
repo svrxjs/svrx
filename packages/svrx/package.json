@@ -1,5 +1,5 @@
 {
-  "name": "svrx",
+  "name": "@svrx/svrx",
   "version": "0.0.9",
   "description": "svrx server live-reload mock ",
   "keywords": [
@@ -8,6 +8,9 @@
     "live-reload",
     "mock"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://svrx.io/",
   "license": "MIT",
   "main": "index.js",
