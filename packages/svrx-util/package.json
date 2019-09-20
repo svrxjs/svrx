@@ -2,7 +2,7 @@
   "name": "svrx-util",
   "version": "0.0.9",
   "description": "util package of svrx",
-  "homepage": "https://github.com/x-orpheus/svrx#readme",
+  "homepage": "https://svrx.io/",
   "license": "MIT",
   "main": "lib/svrx-util.js",
   "directories": {
@@ -18,10 +18,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/x-orpheus/svrx.git"
+    "url": "git+https://github.com/svrxjs/svrx.git"
   },
   "bugs": {
-    "url": "https://github.com/x-orpheus/svrx/issues"
+    "url": "https://github.com/svrxjs/svrx/issues"
   },
   "dependencies": {
     "chalk": "^2.4.2",
