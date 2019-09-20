@@ -2,7 +2,7 @@ const request = require('co-request');
 const libUrl = require('url');
 const _ = require('lodash');
 const micromatch = require('micromatch');
-const { logger } = require('svrx-util');
+const { logger } = require('@svrx/svrx-util');
 const required = require('requires-port');
 const { gunzip } = require('../../util/gzip');
 const {

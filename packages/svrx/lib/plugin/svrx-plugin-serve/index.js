@@ -1,5 +1,5 @@
 const send = require('koa-send');
-const { c2k } = require('svrx-util');
+const { c2k } = require('@svrx/svrx-util');
 const serveIndex = require('serve-index');
 const historyApiFallback = require('koa-history-api-fallback');
 const libPath = require('path');
