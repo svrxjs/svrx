@@ -1,5 +1,5 @@
 {
-  "name": "svrx-util",
+  "name": "@svrx/svrx-util",
   "version": "0.0.9",
   "lockfileVersion": 1,
   "requires": true,

@@ -55,7 +55,7 @@
     "serve-index": "^1.9.1",
     "socket.io": "^2.2.0",
     "super-ajv": "^1.1.6",
-    "svrx-util": "^0.0.9"
+    "@svrx/svrx-util": "^0.0.9"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
