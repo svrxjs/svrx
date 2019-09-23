@@ -1,3 +1,3 @@
-const { logger } = require('svrx-util');
+const { logger } = require('@svrx/util');
 
 module.exports = logger;

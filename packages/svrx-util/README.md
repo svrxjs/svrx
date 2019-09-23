@@ -1,11 +1,8 @@
-# `svrx-util`
-
-> TODO: description
+# `@svrx/util`
 
 ## Usage
 
 ```
-const svrxUtil = require('svrx-util');
+const svrxUtil = require('@svrx/util');
 
-// TODO: DEMONSTRATE API
 ```

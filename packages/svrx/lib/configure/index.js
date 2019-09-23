@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 const querystring = require('querystring');
-const { logger } = require('svrx-util');
+const { logger } = require('@svrx/util');
 const CONFIG_LIST = require('../config-list');
 const BuiltinOption = require('./builtinOption');
 const Plugin = require('./plugin');
