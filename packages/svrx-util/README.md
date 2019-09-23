@@ -1,8 +1,8 @@
-# `@svrx/svrx-util`
+# `@svrx/util`
 
 ## Usage
 
 ```
-const svrxUtil = require('@svrx/svrx-util');
+const svrxUtil = require('@svrx/util');
 
 ```

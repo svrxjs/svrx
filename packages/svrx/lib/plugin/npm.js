@@ -1,4 +1,4 @@
-const { npm, logger } = require('@svrx/svrx-util');
+const { npm, logger } = require('@svrx/util');
 const semver = require('../util/semver');
 const { normalizePluginName } = require('../util/helper');
 const { VERSION } = require('../constant');

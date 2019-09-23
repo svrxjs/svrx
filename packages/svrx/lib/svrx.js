@@ -1,6 +1,6 @@
 /* eslint no-console: "off" */
 
-const { rcFileRead } = require('@svrx/svrx-util');
+const { rcFileRead } = require('@svrx/util');
 const ffp = require('find-free-port');
 const libPath = require('path');
 const chalk = require('chalk');

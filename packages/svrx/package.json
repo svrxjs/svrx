@@ -35,7 +35,7 @@
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "dependencies": {
-    "@svrx/svrx-util": "^1.0.0",
+    "@svrx/util": "^1.0.0",
     "ajv-errors": "^1.0.1",
     "chalk": "^2.4.2",
     "chokidar": "^3.0.1",

@@ -1,4 +1,4 @@
-const { logger } = require('@svrx/svrx-util');
+const { logger } = require('@svrx/util');
 const IModel = require('../model');
 
 class PluginInfo extends IModel {
