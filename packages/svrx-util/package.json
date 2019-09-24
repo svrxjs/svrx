@@ -33,7 +33,7 @@
     "npm": "^6.9.0",
     "npmi": "^2.0.1",
     "ora": "^3.4.0",
-    "rimraf": "^2.6.3"
+    "rimraf": "^3.0.0"
   },
   "devDependencies": {
     "expect.js": "^0.3.1"
