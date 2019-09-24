@@ -1,5 +1,5 @@
 const cosmiconfig = require('cosmiconfig');
-const userHome = require('user-home');
+const userHome = require('os').homedir();
 const path = require('path');
 const fs = require('fs');
 
