@@ -37,15 +37,16 @@ function npCall(callback, args, ctx) {
  */
 function normalizePluginName(name) {
   const combineName = (n) => (n.indexOf(PLUGIN_PREFIX) !== 0 ? PLUGIN_PREFIX + n : n);
-  const isScoped = name.indexOf('/') >= 0;
+  const isScoped = name.startsWith('@');
 
   if (isScoped) {
     const matches = scopeAndNameRegex.exec(name);
-    if (matches.length === 3) {
+    if (matches) {
       const scope = matches[1];
       const realName = matches[2];
       return `@${scope}/${combineName(realName)}`;
     }
+    return null;
   }
   return combineName(name);
 }
@@ -55,20 +56,20 @@ function normalizePluginName(name) {
  * @param packageName
  */
 function parsePluginName(packageName) {
-  const isScope = packageName.startsWith('@');
-  const removePrefix = (n) => n.slice(PLUGIN_PREFIX.length);
+  const isScoped = packageName.startsWith('@');
+  const removePrefix = (n) => (n.startsWith(PLUGIN_PREFIX) ? n.slice(PLUGIN_PREFIX.length) : null);
 
-  if (isScope) {
+  if (isScoped) {
     const matches = scopeAndNameRegex.exec(packageName);
-    if (matches.length === 3) {
+    if (matches) {
       const scope = matches[1];
       const realName = matches[2];
-      return `@${scope}/${removePrefix(realName)}`;
+      const formattedName = removePrefix(realName);
+      return formattedName ? `@${scope}/${formattedName}` : null;
     }
     return null;
   }
-  if (packageName.startsWith(PLUGIN_PREFIX)) return removePrefix(packageName);
-  return null; // not a legal plugin package name
+  return removePrefix(packageName);
 }
 
 function isReadableStream(test) {

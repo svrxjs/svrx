@@ -37,11 +37,15 @@ describe('Svrx Utility', () => {
       plugins.forEach((p) => {
         expect(normalizePluginName(p.pluginName)).to.equal(p.name);
       });
+      expect(normalizePluginName('@scope')).to.equal(null);
     });
     it('parsePluginName', () => {
       plugins.forEach((p) => {
         expect(parsePluginName(p.name)).to.equal(p.pluginName);
       });
+      expect(parsePluginName('svrx-not-a-legal-plugin')).to.equal(null);
+      expect(parsePluginName('@scope/svrx-not-a-legal-plugin')).to.equal(null);
+      expect(parsePluginName('@no_')).to.equal(null);
     });
 
     it('npCall', (done) => {
