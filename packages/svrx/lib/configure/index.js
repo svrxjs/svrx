@@ -1,11 +1,12 @@
 const _ = require('lodash');
-const path = require('path');
+const fs = require('fs');
 const querystring = require('querystring');
 const { logger } = require('@svrx/util');
 const CONFIG_LIST = require('../config-list');
 const BuiltinOption = require('./builtinOption');
 const Plugin = require('./plugin');
-const { PLUGIN_PREFIX, BUILTIN_PLUGIN } = require('../constant');
+const { BUILTIN_PLUGIN } = require('../constant');
+const { parsePluginName } = require('../util/helper');
 const defaults = require('../util/jsonSchemaDefaults');
 
 const BUILTIN_OPTION = Symbol('builtinOption');
@@ -350,13 +351,16 @@ class Configure {
    * @private
    */
   static _getLocalPluginName(plugin) {
+    /* eslint-disable global-require */
     if (plugin.path) {
-      const tmp = path.basename(plugin.path);
-      if (tmp.indexOf(PLUGIN_PREFIX) === 0) {
-        return tmp.replace(PLUGIN_PREFIX, '');
+      if (fs.existsSync(`${plugin.path}/package.json`)) {
+        const packageName = require(`${plugin.path}/package.json`).name;
+        return parsePluginName(packageName);
       }
+      return require(plugin.path).name;
     }
     return null;
+    /* eslint-enable global-require */
   }
 }
 

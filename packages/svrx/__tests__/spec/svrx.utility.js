@@ -9,7 +9,7 @@ const consts = require('../../lib/constant');
 const Imodel = require('../../lib/model');
 const im = require('../../lib/util/im');
 const {
-  formatDate, getBody, npCall, normalizePluginName,
+  formatDate, getBody, npCall, normalizePluginName, parsePluginName,
 } = require('../../lib/util/helper');
 
 const setImmediatePromise = util.promisify(setImmediate);
@@ -25,15 +25,23 @@ describe('Svrx Utility', () => {
       const body = await getBody({});
       expect(body).to.equal('');
     });
+
+    const plugins = [
+      { name: 'svrx-plugin-foo', pluginName: 'foo' },
+      { name: 'svrx-plugin-foo-bar', pluginName: 'foo-bar' },
+      { name: '@scope/svrx-plugin-foo', pluginName: '@scope/foo' },
+      { name: '@scope/svrx-plugin-foo-bar', pluginName: '@scope/foo-bar' },
+    ];
+
     it('normalizePluginName', () => {
-      const name1 = normalizePluginName('world');
-      const name2 = normalizePluginName('hello-world');
-      const name3 = normalizePluginName('@orpheus/world');
-      const name4 = normalizePluginName('@orpheus-foo/world');
-      expect(name1).to.equal('svrx-plugin-world');
-      expect(name2).to.equal('svrx-plugin-hello-world');
-      expect(name3).to.equal('@orpheus/svrx-plugin-world');
-      expect(name4).to.equal('@orpheus-foo/svrx-plugin-world');
+      plugins.forEach((p) => {
+        expect(normalizePluginName(p.pluginName)).to.equal(p.name);
+      });
+    });
+    it('parsePluginName', () => {
+      plugins.forEach((p) => {
+        expect(parsePluginName(p.name)).to.equal(p.pluginName);
+      });
     });
 
     it('npCall', (done) => {

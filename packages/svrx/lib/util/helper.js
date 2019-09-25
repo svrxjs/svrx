@@ -5,12 +5,12 @@ const libPath = require('path');
 const libFs = require('fs');
 const _ = require('lodash');
 const os = require('os');
-
 const CONST = require('../constant');
 
+const { PLUGIN_PREFIX } = CONST;
+const scopeAndNameRegex = /^@([a-zA-Z0-9_-]+)\/(.*)$/;
 const o2str = {}.toString;
 const { slice } = [];
-
 
 // return promise by callback node-callback-style handler
 function npCall(callback, args, ctx) {
@@ -26,13 +26,21 @@ function npCall(callback, args, ctx) {
   });
 }
 
-
+/**
+ * combine pluginName to packageName
+ * - foo -> svrx-plugin-foo
+ * - foo-bar -> svrx-plugin-foo-bar
+ * - @scope/foo -> @scope/svrx-plugin-foo
+ * - @scope/foo-bar -> @scope/svrx-plugin-foo-bar
+ * @param name
+ * @returns {string|*}
+ */
 function normalizePluginName(name) {
-  const combineName = (n) => (n.indexOf(CONST.PLUGIN_PREFIX) !== 0 ? CONST.PLUGIN_PREFIX + n : n);
+  const combineName = (n) => (n.indexOf(PLUGIN_PREFIX) !== 0 ? PLUGIN_PREFIX + n : n);
   const isScoped = name.indexOf('/') >= 0;
 
   if (isScoped) {
-    const matches = /^@([a-zA-Z0-9_-]+)\/(.*)$/.exec(name);
+    const matches = scopeAndNameRegex.exec(name);
     if (matches.length === 3) {
       const scope = matches[1];
       const realName = matches[2];
@@ -40,6 +48,27 @@ function normalizePluginName(name) {
     }
   }
   return combineName(name);
+}
+
+/**
+ * parse packageName to pluginName (revert normalizePluginName())
+ * @param packageName
+ */
+function parsePluginName(packageName) {
+  const isScope = packageName.startsWith('@');
+  const removePrefix = (n) => n.slice(PLUGIN_PREFIX.length);
+
+  if (isScope) {
+    const matches = scopeAndNameRegex.exec(packageName);
+    if (matches.length === 3) {
+      const scope = matches[1];
+      const realName = matches[2];
+      return `@${scope}/${removePrefix(realName)}`;
+    }
+    return null;
+  }
+  if (packageName.startsWith(PLUGIN_PREFIX)) return removePrefix(packageName);
+  return null; // not a legal plugin package name
 }
 
 function isReadableStream(test) {
@@ -165,6 +194,7 @@ function isFn(o) {
 
 
 exports.normalizePluginName = normalizePluginName;
+exports.parsePluginName = parsePluginName;
 exports.getExternalIp = _.memoize(getExternalIp);
 exports.isReadableStream = isReadableStream;
 exports.getCert = _.memoize(getCert);
