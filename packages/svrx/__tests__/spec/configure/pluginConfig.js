@@ -3,7 +3,7 @@ const libPath = require('path');
 const sinon = require('sinon');
 const { createServer } = require('../../util');
 
-const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
+const TEST_PLUGIN_PATH = libPath.join(__dirname, '../../fixture/plugin/svrx-plugin-test');
 
 function requireEnsure(path) {
   delete require.cache[path];
@@ -12,6 +12,70 @@ function requireEnsure(path) {
 }
 
 describe('Plugin Config', () => {
+  describe('functions', () => {
+    let testPlugin;
+    before(async () => {
+      const server = createServer({
+        plugins: [{
+          path: TEST_PLUGIN_PATH,
+        }],
+      });
+      await server.setup();
+      testPlugin = server.config.getPlugin('test');
+    });
+
+    it('should return value correctly when #get()', () => {
+      expect(testPlugin.get('none-exist')).to.equal(undefined);
+      expect(testPlugin.get('limit')).to.equal(100);
+      expect(testPlugin.get('$.port')).to.equal(8000); // builtin config
+    });
+
+    it('should set value correctly when #set()', () => {
+      testPlugin.set('foo', 'bar');
+      testPlugin.set('a.b', 'ab');
+      testPlugin.set('c.d', { obj: 'obj' });
+      expect(testPlugin.get('foo')).to.equal('bar');
+      expect(testPlugin.get('a.b')).to.equal('ab');
+      expect(testPlugin.get('c.d')).to.eql({ obj: 'obj' });
+    });
+
+    it('should not modify builtin configs by #set()', () => {
+      testPlugin.set('$.port', 3000);
+      expect(testPlugin.get('$.port')).to.not.equal(3000);
+    });
+
+    it('should keep #watch() on configs', async () => {
+      await new Promise((resolve) => {
+        testPlugin.watch('a.b.c', (evt) => {
+          expect(evt.affect('a.b.c')).to.equal(true);
+          expect(evt.affect('a')).to.equal(true);
+          expect(evt.affect('a.c')).to.equal(false);
+          resolve();
+        });
+        testPlugin.set('a.b.c', 'hello');
+      });
+    });
+
+    it('should delete a config after #del()', () => {
+      testPlugin.set('test.del.item', 'hello');
+      expect(testPlugin.get('test.del.item')).to.equal('hello');
+      testPlugin.del('test.del.item');
+      expect(testPlugin.get('test.del.item')).to.eql(undefined);
+
+      testPlugin.del('none.exists.config');
+      expect(testPlugin.get('none.exists.config')).to.eql(undefined);
+    });
+
+    it('should splice an array config after #splice()', () => {
+      testPlugin.set('test.splice.item', [1, 2, 3]);
+      const arr = testPlugin.splice('test.splice.item', 0, 1);
+      expect(arr).to.eql([1]);
+      expect(testPlugin.get('test.splice.item')).to.eql([2, 3]);
+
+      // todo what if splice a none-array config
+    });
+  });
+
   it('should return default values when get plugin(load from path) option', async () => {
     const server = createServer({
       plugins: [{
