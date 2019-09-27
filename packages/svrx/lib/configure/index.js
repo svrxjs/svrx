@@ -82,6 +82,19 @@ class Configure {
     this[BUILTIN_OPTION].set(builtinPathes, value);
   }
 
+  del(pathes) {
+    this[BUILTIN_OPTION].del(pathes);
+  }
+
+  splice(...args) {
+    this[BUILTIN_OPTION].splice(...args);
+    return this;
+  }
+
+  watch(pathes, callback) {
+    return this[BUILTIN_OPTION].watch(pathes, callback);
+  }
+
   /**
    * get all plugins
    * @returns {Array}

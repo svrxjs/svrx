@@ -14,6 +14,7 @@ function requireEnsure(path) {
 describe('Plugin Config', () => {
   describe('functions', () => {
     let testPlugin;
+    let builtinConfig;
     before(async () => {
       const server = createServer({
         plugins: [{
@@ -22,6 +23,8 @@ describe('Plugin Config', () => {
       });
       await server.setup();
       testPlugin = server.config.getPlugin('test');
+      testPlugin = server.config.getPlugin('test');
+      builtinConfig = server.config;
     });
 
     it('should return value correctly when #get()', () => {
@@ -46,6 +49,7 @@ describe('Plugin Config', () => {
 
     it('should keep #watch() on configs', (done) => {
       const release = testPlugin.watch((evt) => {
+        expect(evt.affect()).to.equal(true);
         expect(evt.affect('watch.b.c')).to.equal(true);
         expect(evt.affect('watch')).to.equal(true);
         expect(evt.affect('watch.c')).to.equal(false);
@@ -53,6 +57,34 @@ describe('Plugin Config', () => {
         done();
       });
       testPlugin.set('watch.b.c', 'world');
+    });
+
+    it('should keep #watch($.port) on builtin configs', (done) => {
+      const release = testPlugin.watch('$.port', (evt) => {
+        expect(evt.affect()).to.equal(true);
+        release();
+        done();
+      });
+      builtinConfig.set('port', 3000);
+    });
+
+    it('should keep #watch($) on builtin configs', (done) => {
+      const release = testPlugin.watch('$', (evt) => {
+        expect(evt.affect('port')).to.equal(true);
+        release();
+        done();
+      });
+      builtinConfig.set('port', 4000);
+    });
+
+    it('should keep #watch($.a) multi-level builtin configs', (done) => {
+      const release = testPlugin.watch('$.a', (evt) => {
+        expect(evt.affect('b.c')).to.equal(true);
+        expect(evt.affect('b.d')).to.equal(false);
+        release();
+        done();
+      });
+      builtinConfig.set('a.b.c', 3000);
     });
 
     it('should delete a config after #del()', () => {

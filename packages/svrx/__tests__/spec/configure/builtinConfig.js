@@ -130,6 +130,60 @@ describe('Config set', () => {
   });
 });
 
+describe('Functions', () => {
+  let builtinConfig;
+  before(async () => {
+    const server = createServer({
+      port: 3000,
+      plugins: [
+        {
+          name: 'test',
+          version: '0.0.1',
+          inplace: true,
+          configSchema: {
+            foo: {
+              type: 'string',
+              default: 'bar',
+            },
+          },
+          options: {
+            op: 123,
+          },
+        },
+      ],
+    });
+    builtinConfig = server.config;
+  });
+
+  it('should keep #watch() on configs', (done) => {
+    const release = builtinConfig.watch((evt) => {
+      expect(evt.affect()).to.equal(true);
+      expect(evt.affect('watch.b.c')).to.equal(true);
+      expect(evt.affect('watch')).to.equal(true);
+      expect(evt.affect('watch.c')).to.equal(false);
+      release();
+      done();
+    });
+    builtinConfig.set('watch.b.c', 'world');
+  });
+
+  it('should delete a config after #del()', () => {
+    builtinConfig.set('test.del.item', 'hello');
+    expect(builtinConfig.get('test.del.item')).to.equal('hello');
+    builtinConfig.del('test.del.item');
+    expect(builtinConfig.get('test.del.item')).to.eql(undefined);
+
+    builtinConfig.del('none.exists.config');
+    expect(builtinConfig.get('none.exists.config')).to.eql(undefined);
+  });
+
+  it('should splice an array config after #splice()', () => {
+    builtinConfig.set('test.splice.item', [1, 2, 3]);
+    builtinConfig.splice('test.splice.item', 0, 1);
+    expect(builtinConfig.get('test.splice.item')).to.eql([2, 3]);
+  });
+});
+
 describe('Config Validate', () => {
   it('should validate single type configs', () => {
     const option = new Option({
