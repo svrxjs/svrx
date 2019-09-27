@@ -56,6 +56,7 @@ class Plugin {
    */
   set(pluginPathes, value) {
     this[OPTION].set(pluginPathes, value);
+    return this;
   }
 
   /**
@@ -78,6 +79,19 @@ class Plugin {
       properties: configs,
     });
     this[OPTION].validate(configs);
+  }
+
+  watch(pathes, callback) {
+    return this[OPTION].watch(pathes, callback);
+  }
+
+  splice(...args) {
+    this[OPTION].splice(...args);
+    return this;
+  }
+
+  del(pathes) {
+    this[OPTION].del(pathes);
   }
 }
 

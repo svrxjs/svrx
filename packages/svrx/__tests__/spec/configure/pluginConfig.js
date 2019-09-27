@@ -44,16 +44,15 @@ describe('Plugin Config', () => {
       expect(testPlugin.get('$.port')).to.not.equal(3000);
     });
 
-    it('should keep #watch() on configs', async () => {
-      await new Promise((resolve) => {
-        testPlugin.watch('a.b.c', (evt) => {
-          expect(evt.affect('a.b.c')).to.equal(true);
-          expect(evt.affect('a')).to.equal(true);
-          expect(evt.affect('a.c')).to.equal(false);
-          resolve();
-        });
-        testPlugin.set('a.b.c', 'hello');
+    it('should keep #watch() on configs', (done) => {
+      const release = testPlugin.watch((evt) => {
+        expect(evt.affect('watch.b.c')).to.equal(true);
+        expect(evt.affect('watch')).to.equal(true);
+        expect(evt.affect('watch.c')).to.equal(false);
+        release();
+        done();
       });
+      testPlugin.set('watch.b.c', 'world');
     });
 
     it('should delete a config after #del()', () => {
@@ -68,11 +67,8 @@ describe('Plugin Config', () => {
 
     it('should splice an array config after #splice()', () => {
       testPlugin.set('test.splice.item', [1, 2, 3]);
-      const arr = testPlugin.splice('test.splice.item', 0, 1);
-      expect(arr).to.eql([1]);
+      testPlugin.splice('test.splice.item', 0, 1);
       expect(testPlugin.get('test.splice.item')).to.eql([2, 3]);
-
-      // todo what if splice a none-array config
     });
   });
 
