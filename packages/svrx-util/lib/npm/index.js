@@ -1,8 +1,8 @@
 const libPath = require('path');
 const nUtil = require('util');
-const npmi = require('npmi');
 const _ = require('lodash');
-const npm = require('npm');
+const npmi = require('npmi');
+const npm = require('global-npm');
 const npCall = require('../npCall');
 const DevNull = require('./devnull');
 
