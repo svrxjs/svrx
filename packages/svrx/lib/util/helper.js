@@ -36,7 +36,7 @@ function npCall(callback, args, ctx) {
  * @returns {string|*}
  */
 function normalizePluginName(name) {
-  const combineName = (n) => (n.indexOf(PLUGIN_PREFIX) !== 0 ? PLUGIN_PREFIX + n : n);
+  const combineName = (n) => (n.startsWith(PLUGIN_PREFIX) ? n : PLUGIN_PREFIX + n);
   const isScoped = name.startsWith('@');
 
   if (isScoped) {
