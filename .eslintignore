@@ -1,5 +1,4 @@
 node_modules
 packages/**/assets/**/*.js
 packages/**/dist/**/*.js
-packages/svrx-toolkit/**/*.js
 /**/fixture
