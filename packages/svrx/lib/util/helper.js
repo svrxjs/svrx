@@ -8,7 +8,7 @@ const os = require('os');
 const CONST = require('../constant');
 
 const { PLUGIN_PREFIX } = CONST;
-const scopeAndNameRegex = /^@([a-zA-Z0-9_-]+)\/(.*)$/;
+const scopeAndNameRegex = /^@([a-z\d][\w-.]+)\/([a-z\d][\w-.]*)/;
 const o2str = {}.toString;
 const { slice } = [];
 

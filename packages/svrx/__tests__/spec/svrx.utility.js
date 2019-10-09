@@ -38,6 +38,8 @@ describe('Svrx Utility', () => {
         expect(normalizePluginName(p.pluginName)).to.equal(p.name);
       });
       expect(normalizePluginName('@scope')).to.equal(null);
+      expect(normalizePluginName('@scope/')).to.equal(null);
+      expect(normalizePluginName('@SCOPE/bar')).to.equal(null);
     });
     it('parsePluginName', () => {
       plugins.forEach((p) => {
