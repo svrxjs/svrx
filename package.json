@@ -15,7 +15,7 @@
     "lerna:version": "lerna version",
     "lerna:publish": "lerna publish from-git --yes",
     "version": "lerna exec -- npm prune --production && lerna exec -- npm shrinkwrap",
-    "postinstall": "lerna exec -- npm install --no-package-lock",
+    "postinstall": "lerna exec -- npm install",
     "prepublish": "npm run build"
   },
   "devDependencies": {
