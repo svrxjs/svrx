@@ -1,4 +1,4 @@
-![](https://svrx.io/assets/images/twitter_header_photo_2.png)
+![](https://svrx.io/assets/images/banner.png)
 
 > A pluggable frontend server, it just works
 
