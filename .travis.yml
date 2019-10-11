@@ -23,6 +23,5 @@ deploy:
   skip_cleanup: true
   on:
     node: "10"
-    tags: true
     all_branches: true
     condition: ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} =~ ^release\/.*$
