@@ -10,7 +10,6 @@
     "test": "lerna run test",
     "clean": "run-s clean:*",
     "clean:dependency": "lerna clean -y && rimraf -rf node_modules",
-    "changelog": "lerna-changelog",
     "report-coverage": "lerna run report-coverage",
     "lerna:version": "lerna version",
     "lerna:publish": "lerna publish from-git --yes",
