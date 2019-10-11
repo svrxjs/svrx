@@ -6,6 +6,11 @@
       "rules": {
         "no-unused-vars": "off"
       }
+    }, {
+      "files": "packages/**/__tests__/**/*.js",
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
+      }
     }
   ]
 }

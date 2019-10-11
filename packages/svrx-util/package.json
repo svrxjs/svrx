@@ -33,8 +33,5 @@
     "lodash": "^4.17.11",
     "ora": "^4.0.1",
     "rimraf": "^3.0.0"
-  },
-  "devDependencies": {
-    "expect.js": "^0.3.1"
   }
 }
