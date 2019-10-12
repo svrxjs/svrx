@@ -108,7 +108,7 @@ class Loader {
     if (!this.watcher) {
       this.watcher = chokidar
         .watch(filename, {
-          interval: 200,
+          persistent: true,
         })
         .on('change', (path) => {
           this.build(path);
