@@ -167,4 +167,63 @@ describe('Injector', () => {
         .end(done);
     });
   });
+
+  describe('Insert case', () => {
+    const svrx = new Svrx({
+      port: 8001,
+      middlewares: [
+        {
+          async onRoute(ctx, next) {
+            switch (ctx.url) {
+              case '/doc-write-body':
+                ctx.set('Content-Type', 'text/html');
+                ctx.body = `<head>
+                  <script>document.wirte('<body></body>')</script>
+                  </head>
+                  <body>mark</body>`;
+                break;
+              case '/only-body':
+                ctx.set('Content-Type', 'text/html');
+                ctx.body = '<body></body>';
+                break;
+              case '/only-body-stream':
+                ctx.set('Content-Type', 'text/html');
+                ctx.body = bufferToStream(Buffer.from('<body></body>'));
+                break;
+              case '/none-of-both':
+                ctx.set('Content-Type', 'text/html');
+                ctx.body = bufferToStream(Buffer.from('Hello,World'));
+                break;
+              default:
+                next();
+            }
+          },
+        },
+      ],
+    });
+
+
+    it('only last body will be inject', (done) => {
+      request(svrx.callback())
+        .get('/doc-write-body')
+        .expect(new RegExp('mark<script'))
+        .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
+        .end(done);
+    });
+
+    it('missing head should inject style at body', (done) => {
+      request(svrx.callback())
+        .get('/only-body')
+        .expect(new RegExp(`src="${svrx.config.get('urls.script')}"`))
+        .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
+        .end(done);
+    });
+    it('stream:missing head should inject style at body', (done) => {
+      request(svrx.callback())
+        .get('/only-body-stream')
+        .expect(new RegExp(`src="${svrx.config.get('urls.script')}"`))
+        .expect(new RegExp(`href="${svrx.config.get('urls.style')}"`))
+        .end(done);
+    });
+  });
 });
