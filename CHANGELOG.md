@@ -1,3 +1,11 @@
+## v1.0.4 (2019-10-18)
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#112](https://github.com/svrxjs/svrx/pull/112) Fix css is not appended if there's no <head> tag ([@leeluolee](https://github.com/leeluolee))
+  * [#119](https://github.com/svrxjs/svrx/pull/119) Fix routing update not working ([@leeluolee](https://github.com/leeluolee))
+  * [#120](https://github.com/svrxjs/svrx/pull/120) Fix scripts injecting bug ([@leeluolee](https://github.com/leeluolee))
+
 ## v1.0.3 (2019-10-11)
 
 #### :rocket: New Feature
