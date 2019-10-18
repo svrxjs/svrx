@@ -137,15 +137,22 @@ module.exports = class Injector {
       `<script async src="${config.get('urls.script')}" charset="UTF-8"></script></body>`,
     ];
     const replaceStyle = [
-      '</head>',
-      `<link rel="stylesheet" type="text/css" href="${config.get('urls.style')}"/></head>`,
+      /<\/(head|body)>/,
+      `<link rel="stylesheet" type="text/css" href="${config.get('urls.style')}"/></$1>`,
     ];
 
     if (body instanceof Buffer) {
       body = body.toString('utf8');
     }
     if (typeof body === 'string') {
-      return this._replace(body.replace(...replaceScript).replace(...replaceStyle), 'string');
+      // fix: #120
+      const lastIndex = body.lastIndexOf(replaceScript[0]);
+      if (lastIndex > 0) {
+        body = body.slice(0, lastIndex)
+          + replaceScript[1]
+          + body.slice(replaceScript[0].length + lastIndex);
+      }
+      return this._replace(body.replace(...replaceStyle), 'string');
     }
     if (isReadableStream(body)) {
       return this._replace(
