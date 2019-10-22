@@ -36,6 +36,7 @@ module.exports = {
   },
   route: {
     description: 'the path of routing config file',
+    default: 'route.js',
     anyOf: [{ type: 'string' }, { type: 'array' }],
     group: GROUPS.CORE,
   },
