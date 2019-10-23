@@ -11,10 +11,10 @@ const readGlobal = () => {
   }
 
   const root = configRoot || path.resolve(userHome, '.svrx');
-  const fileName = RC_FILES.find((file) => fs.existsSync(`${root}/config/${file}`));
+  const fileName = RC_FILES.find((file) => fs.existsSync(path.join(root, 'config', file)));
 
   if (fileName) {
-    return require(`${root}/config/${fileName}`); // eslint-disable-line
+    return require(path.join(root, 'config', fileName)); // eslint-disable-line
   }
 
   return {};
