@@ -32,7 +32,7 @@ echo '<html><body>Hello svrx!</body></html>' > index.html
 svrx
 ```
 
-![](/assets/demo.png)
+![](https://svrx.io/assets/demo.png)
 
 ## Documentation
 
