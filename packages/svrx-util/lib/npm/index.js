@@ -15,6 +15,7 @@ const SILENT_SUGAR_NOT_NECESSARILY_WORKS = {
 const load = _.memoize(async (options) => nUtil.promisify(npm.load).bind(npm, {
   ...SILENT_SUGAR_NOT_NECESSARILY_WORKS,
   ...options,
+  save: false,
 })());
 
 const normalizeNpmCommand = (command) => async function callNpm(argsArr, options = {}, root) {
