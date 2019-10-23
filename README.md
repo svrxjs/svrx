@@ -25,10 +25,12 @@ svrx(server-x) is a platform built for efficient front-end development.
 
 ## Quick Start
 
- - `npm install -g @svrx/cli`
- - `mkdir example && cd example`
- - `echo '<html><body>Hello svrx!</body></html>' > index.html`
- - `svrx`
+```bash
+npm install -g @svrx/cli
+mkdir example && cd example
+echo '<html><body>Hello svrx!</body></html>' > index.html
+svrx
+```
 
 ![](/assets/demo.png)
 
@@ -51,5 +53,3 @@ Please see the [contributing guidelines](https://docs.svrx.io/en/contribution.ht
 For contributors planning to write a new plugin, please see the [plugin development guide](https://docs.svrx.io/en/plugin/contribution.html).
 
 [👉 See all plugins](https://svrx.io/plugin?query=svrx-plugin-)
-
-Please see our [website](https://svrx.io/) for more information.
