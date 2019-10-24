@@ -34,12 +34,12 @@ function create(options) {
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
+/* istanbul ignore if */
 if (process.platform === 'win32') {
   const rl = require('readline').createInterface({ // eslint-disable-line
     input: process.stdin,
     output: process.stdout,
   });
-
   rl.on('SIGINT', () => {
     process.emit('SIGINT');
   });
