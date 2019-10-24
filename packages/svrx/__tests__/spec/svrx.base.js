@@ -324,3 +324,36 @@ describe('Public API', () => {
     });
   });
 });
+
+describe('Signal handling', () => {
+  after(() => {
+    process.removeAllListeners('SIGTERM');
+    process.removeAllListeners('SIGINT');
+  });
+
+  describe('Signal handling', () => {
+    ['SIGINT', 'SIGTERM'].forEach((SIGNAL) => {
+      describe(`${SIGNAL}`, () => {
+        let sandbox;
+        let exitStub;
+
+        beforeEach(() => {
+          sandbox = sinon.createSandbox({ useFakeTimers: true });
+          exitStub = sandbox.stub(process, 'exit');
+        });
+
+        afterEach(() => {
+          sandbox.restore();
+        });
+
+        it(`should call 'process.exit()' when receiving a ${SIGNAL}`, (done) => {
+          process.once(SIGNAL, () => {
+            sinon.assert.calledOnce(exitStub);
+            done();
+          });
+          process.kill(process.pid, SIGNAL);
+        });
+      });
+    });
+  });
+});
