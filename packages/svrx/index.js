@@ -32,6 +32,29 @@ function create(options) {
   return mapSvrxToExports(new Svrx(options));
 }
 
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
+/* istanbul ignore if */
+if (process.platform === 'win32') {
+  const rl = require('readline').createInterface({ // eslint-disable-line
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rl.on('SIGINT', () => {
+    process.emit('SIGINT');
+  });
+  rl.on('SIGTERM', () => {
+    process.emit('SIGTERM');
+  });
+}
+
+process.on('SIGINT', () => {
+  process.exit();
+});
+process.on('SIGTERM', () => {
+  process.exit();
+});
+
 module.exports = create;
 
 create.create = create;
