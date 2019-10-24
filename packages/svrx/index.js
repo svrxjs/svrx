@@ -32,6 +32,8 @@ function create(options) {
   return mapSvrxToExports(new Svrx(options));
 }
 
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
 module.exports = create;
 
 create.create = create;
