@@ -135,8 +135,7 @@ LEVELS.forEach((level) => {
 });
 
 function getPluginLogger(name) {
-  const categoryName = `plugin-${name}`;
-  return new Logger(categoryName);
+  return new Logger(name);
 }
 
 const logger = new Logger();
