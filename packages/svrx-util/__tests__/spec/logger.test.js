@@ -89,4 +89,9 @@ describe('logger', () => {
       });
     });
   });
+
+  it('should change category throught #getPluginLogger()', () => {
+    const pluginLogger = logger.getPluginLogger('test-plugin');
+    expect(pluginLogger.category).to.eql('test-plugin');
+  });
 });
