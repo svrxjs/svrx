@@ -25,8 +25,9 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+ - Node: [e.g. 10.0.0, 12.0.0]
+ - Browser: [e.g. chrome, safari]
+ - Version: [e.g. 22]
 
 **Additional context**
 Add any other context about the problem here.
