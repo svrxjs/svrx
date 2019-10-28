@@ -1,6 +1,6 @@
 {
   "name": "@svrx/util",
-  "version": "1.0.4",
+  "version": "1.0.5-beta.0",
   "description": "util package of svrx",
   "homepage": "https://svrx.io/",
   "license": "MIT",
