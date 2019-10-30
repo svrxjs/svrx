@@ -59,6 +59,11 @@ class Plugin {
     const { isBuiltin, pathes: parsedPathes } = Plugin._parsePathes(pathes);
 
     if (isBuiltin) {
+      if (pathes.length === 1) { // get('$')
+        // get all builtin options and the defaults
+        return { ...this[BUILTIN_DEFAULTS], ...this[BUILTIN_OPTION].get() };
+      }
+
       // get from builtin option
       const userOption = this[BUILTIN_OPTION].get(parsedPathes);
       if (userOption === undefined) return _.get(this[BUILTIN_DEFAULTS], parsedPathes);

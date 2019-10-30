@@ -143,4 +143,14 @@ describe('Plugin Config', () => {
     });
     expect(server.config.getPlugin('test').getSchema()).to.eql(CONFIGS);
   });
+
+  it('should return all builtin options when get(\'$\')', () => {
+    const server = createServer({
+      plugins: ['test'],
+    });
+    const { config } = server;
+    expect(config.getPlugin('test').get('$')).to.eql(
+      config.get(),
+    );
+  });
 });
