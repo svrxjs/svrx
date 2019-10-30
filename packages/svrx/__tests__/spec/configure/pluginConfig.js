@@ -145,4 +145,15 @@ describe('Plugin Config', () => {
       config.get(),
     );
   });
+
+  it('should return plugin schema using getSchema()', async () => {
+    const server = createServer({
+      plugins: [{
+        path: TEST_PLUGIN_PATH,
+      }],
+    });
+    await server.setup();
+    const { config } = server;
+    expect(config.getPlugin('test').getSchema()).to.eql({ limit: { type: 'number', default: 100 } });
+  });
 });

@@ -99,13 +99,17 @@ class Plugin {
    * set config after plugin loaded
    * @param configs
    */
-  setConfigs(configs = {}) {
+  setSchema(configs = {}) {
     this[CONFIG] = configs;
     this[DEFAULTS] = defaults({
       type: 'object',
       properties: configs,
     });
     this[OPTION].validate(configs);
+  }
+
+  getSchema() {
+    return this[CONFIG];
   }
 
   watch(pathes, callback) {
