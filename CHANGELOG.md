@@ -1,3 +1,14 @@
+## v1.0.5 (2019-10-29)
+
+#### :bug: Bug Fix
+* `svrx-util`, `svrx`
+  * [#135](https://github.com/svrxjs/svrx/pull/135) Fix not working on Windows ([@xuchaoying](https://github.com/xuchaoying))
+* `svrx-util`
+  * [#134](https://github.com/svrxjs/svrx/pull/134) Fix wrong log display for scoped plugin ([@int64ago](https://github.com/int64ago))
+  * [#129](https://github.com/svrxjs/svrx/pull/129) Prevent modify package.json when plugin installation ([@xuchaoying](https://github.com/xuchaoying))
+* `svrx`
+  * [#132](https://github.com/svrxjs/svrx/pull/132) Fix process exit not working on Windows ([@xuchaoying](https://github.com/xuchaoying))
+
 ## v1.0.4 (2019-10-18)
 
 #### :bug: Bug Fix
