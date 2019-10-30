@@ -95,6 +95,10 @@ describe('Config get', () => {
   it('should return schema correctly', () => {
     expect(config.getSchema()).to.eql(CONFIGS);
   });
+
+  it('should return all external plugins when getExternalPlugins()', () => {
+    expect(config.getExternalPlugins().map((p) => p.getInfo('name'))).to.eql(['test']);
+  });
 });
 
 describe('Config set', () => {

@@ -2,7 +2,6 @@ const expect = require('expect.js');
 const libPath = require('path');
 const sinon = require('sinon');
 const { createServer } = require('../../util');
-const CONFIGS = require('../../../lib/config-list');
 
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../../fixture/plugin/svrx-plugin-test');
 
@@ -135,13 +134,6 @@ describe('Plugin Config', () => {
     expect(testPlugin.get('limit')).to.equal(100);
     expect(testPlugin.get('$.port')).to.equal(8000);
     sinon.restore();
-  });
-
-  it('should return schema correctly', () => {
-    const server = createServer({
-      plugins: ['test'],
-    });
-    expect(server.config.getPlugin('test').getSchema()).to.eql(CONFIGS);
   });
 
   it('should return all builtin options when get(\'$\')', () => {

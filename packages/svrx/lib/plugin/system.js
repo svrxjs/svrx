@@ -152,7 +152,7 @@ class PluginSystem {
     } = module;
     const { onRoute, onCreate /* onOptionChange */ } = hooks;
 
-    const isBuiltin = BUILTIN_PLUGIN.includes(name);
+    const isBuiltin = BUILTIN_PLUGIN.includes(name) || name === 'ui';
     const config = isBuiltin ? this.config : pluginConfig;
     // todo all variables below should be a new instance init with 'config'
     const {

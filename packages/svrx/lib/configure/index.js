@@ -115,6 +115,14 @@ class Configure {
     return this[PLUGINS].find((p) => p.getInfo('name') === name);
   }
 
+  /**
+   * get builtin plugins
+   * @returns {Array}
+   */
+  getExternalPlugins() {
+    return this[PLUGINS].filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+  }
+
   getSchema() {
     return this[BUILTIN_CONFIG];
   }
