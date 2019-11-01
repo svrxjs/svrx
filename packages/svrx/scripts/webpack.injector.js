@@ -5,11 +5,11 @@ const INJECTOR_PATH = path.join(__dirname, '../lib/injector');
 
 const config = {
 
-  entry: `${INJECTOR_PATH}/client/index.js`,
+  entry: path.join(INJECTOR_PATH, 'client/index.js'),
   output: {
     filename: 'client.js',
     library: '__svrx__',
-    path: `${INJECTOR_PATH}/dist/`,
+    path: path.join(INJECTOR_PATH, 'dist'),
     libraryTarget: 'umd',
   },
   externals: { __svrx__: '__svrx__' },

@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const fs = require('fs');
+const path = require('path');
 const querystring = require('querystring');
 const { logger } = require('@svrx/util');
 const CONFIG_LIST = require('../config-list');
@@ -353,8 +354,9 @@ class Configure {
   static _getLocalPluginName(plugin) {
     /* eslint-disable global-require */
     if (plugin.path) {
-      if (fs.existsSync(`${plugin.path}/package.json`)) {
-        const packageName = require(`${plugin.path}/package.json`).name;
+      const jsonPath = path.join(plugin.path, 'package.json');
+      if (fs.existsSync(jsonPath)) {
+        const packageName = require(jsonPath).name;
         return parsePluginName(packageName);
       }
       return require(plugin.path).name;
