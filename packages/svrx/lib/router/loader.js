@@ -12,7 +12,11 @@ const methods = require('./methods');
 const read = util.promisify(libFs.readFile);
 
 const NOTIFY_THROTTLE = 100;
-const ROUTE_MODULE_PATH = libPath.join(__dirname, 'router.js');
+let ROUTE_MODULE_PATH = libPath.join(__dirname, 'router.js');
+/* istanbul ignore if */
+if (process.platform === 'win32') {
+  ROUTE_MODULE_PATH = ROUTE_MODULE_PATH.replace(/\\/g, '\\\\');
+}
 const PREFIX = `void function({route, ${methods.join(',')}}){`;
 const POSTFIX = `}((()=>{
     const Router = require('${ROUTE_MODULE_PATH}') 
