@@ -18,7 +18,7 @@ void (function(svrx) {
         const updateStyle = function(stylePathName) {
             for (var i = stylesheets.length; i--; ) {
                 var href = stylesheets[i].getAttribute('href');
-                stylesheets[i].setAttribute('href', cacheBuster(href));
+                if(typeof href === 'string') stylesheets[i].setAttribute('href', cacheBuster(href));
             }
             return true;
         };
