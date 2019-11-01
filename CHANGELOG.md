@@ -1,3 +1,10 @@
+## v1.0.6 (2019-11-01)
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#145](https://github.com/svrxjs/svrx/pull/145) Fix windows path parse error ([@int64ago](https://github.com/int64ago))
+  * [#143](https://github.com/svrxjs/svrx/pull/143) Fix livereload client error ([@leeluolee](https://github.com/leeluolee))
+
 ## v1.0.5 (2019-10-29)
 
 #### :bug: Bug Fix
