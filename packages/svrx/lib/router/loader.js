@@ -13,6 +13,7 @@ const read = util.promisify(libFs.readFile);
 
 const NOTIFY_THROTTLE = 100;
 let ROUTE_MODULE_PATH = libPath.join(__dirname, 'router.js');
+/* istanbul ignore if */
 if (process.platform === 'win32') {
   ROUTE_MODULE_PATH = ROUTE_MODULE_PATH.replace(/\\/g, '\\\\');
 }
