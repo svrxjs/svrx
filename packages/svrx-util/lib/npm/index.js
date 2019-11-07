@@ -39,9 +39,11 @@ const install = (options) => {
     const name = options.localInstall ? '' : options.name;
     const version = options.localInstall ? options.name : options.version;
     const pkgName = options.localInstall ? options.nameReal : options.name;
-
-    npminstall({
+    const installMethod = options.global ? npminstall.installGlobal : npminstall;
+    installMethod({
       root: installPath,
+      // global install only
+      targetDir: options.global ? installPath : undefined,
       pkgs: [
         { name, version },
       ],
