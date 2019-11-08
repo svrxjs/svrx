@@ -1,3 +1,9 @@
+## v1.0.7 (2019-11-08)
+
+#### :bug: Bug Fix
+* `svrx-util`
+  * [#148](https://github.com/svrxjs/svrx/pull/148) Replace global-npm.install with npminstall ([@xuchaoying](https://github.com/xuchaoying))
+  
 ## v1.0.6 (2019-11-01)
 
 #### :bug: Bug Fix
