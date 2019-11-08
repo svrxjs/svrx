@@ -30,8 +30,27 @@ describe('npm', () => {
     }).then((result) => {
       expect(result.version).to.equal('3.0.0');
       const expectModulePath = libPath.join(MODULE_PATH, '/node_modules/lodash.noop');
+      const expectModuleRealPath = libPath.join(MODULE_PATH, '/node_modules/_lodash.noop@3.0.0@lodash.noop');
       expect(result.path).to.equal(expectModulePath);
       expect(libFs.statSync(expectModulePath).isDirectory()).to.equal(true);
+      expect(libFs.existsSync(expectModuleRealPath)).to.equal(true);
+      done();
+    });
+  }).timeout(10000);
+
+  it('CLI: global install', (done) => {
+    npm.install({
+      global: true,
+      path: MODULE_PATH,
+      name: 'lodash.noop',
+      version: '3.0.0',
+    }).then((result) => {
+      expect(result.version).to.equal('3.0.0');
+      const expectModulePath = libPath.join(MODULE_PATH, '/node_modules/lodash.noop');
+      const expectModuleRealPath = libPath.join(MODULE_PATH, '/node_modules/_lodash.noop@3.0.0@lodash.noop');
+      expect(result.path).to.equal(expectModulePath);
+      expect(libFs.statSync(expectModulePath).isDirectory()).to.equal(true);
+      expect(libFs.existsSync(expectModuleRealPath)).to.equal(false);
       done();
     });
   }).timeout(10000);
@@ -51,6 +70,7 @@ describe('npm', () => {
       done();
     });
   }).timeout(10000);
+
   it('npm view version', (done) => {
     npm.view(['svrx-plugin-demo@*', 'engines']).then((ret) => {
       Object.keys(ret).forEach((i) => {
