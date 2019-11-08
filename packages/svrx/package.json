@@ -1,6 +1,6 @@
 {
   "name": "@svrx/svrx",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "svrx server live-reload mock ",
   "keywords": [
     "svrx",
