@@ -31,7 +31,6 @@
     "cosmiconfig": "^5.2.1",
     "global-npm": "^0.4.0",
     "lodash": "^4.17.11",
-    "npminstall": "^4.3.0",
     "ora": "^4.0.1",
     "rimraf": "^3.0.0"
   }
