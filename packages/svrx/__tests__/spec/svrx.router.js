@@ -288,6 +288,54 @@ describe('Router ', () => {
           });
       });
     });
+    it('loader.load specified', async () => {
+      const loader = getLoader();
+      // monkey patch
+      const filePath = libPath.join(ROUTER_PATH, 'load.specified.tmp.js');
+      await write(
+        filePath,
+        `
+        all('/blog/:id').send({title: 'svrx is awesome!'})
+      `,
+      );
+      await loader.load(filePath);
+      const agent = request(loader);
+      return new Promise((resolve, reject) => {
+        agent
+          .post('/blog/name')
+          .expect('Content-Type', /json/)
+          .expect({ title: 'svrx is awesome!' })
+          .expect(200)
+          .end((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+      });
+    });
+    it('loader.load route', async () => {
+      const loader = getLoader();
+      // monkey patch
+      const filePath = libPath.join(ROUTER_PATH, 'load.route.tmp.js');
+      await write(
+        filePath,
+        `
+        route('/blog/:id', 'delete').send({title: 'svrx is awesome!'})
+      `,
+      );
+      await loader.load(filePath);
+      const agent = request(loader);
+      return new Promise((resolve, reject) => {
+        agent
+          .delete('/blog/name')
+          .expect('Content-Type', /json/)
+          .expect({ title: 'svrx is awesome!' })
+          .expect(200)
+          .end((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+      });
+    });
     it('watch + filechange', (done) => {
       const loader = getLoader();
       expect(loader._middlewares.length).to.equal(0);

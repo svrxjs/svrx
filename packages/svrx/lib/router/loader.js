@@ -17,7 +17,7 @@ let ROUTE_MODULE_PATH = libPath.join(__dirname, 'router.js');
 if (process.platform === 'win32') {
   ROUTE_MODULE_PATH = ROUTE_MODULE_PATH.replace(/\\/g, '\\\\');
 }
-const PREFIX = `void function({route, ${methods.join(',')}}){`;
+const PREFIX = `void function({route, all, ${methods.join(',')}}){`;
 const POSTFIX = `}((()=>{
     const Router = require('${ROUTE_MODULE_PATH}') 
     const router = new Router();
