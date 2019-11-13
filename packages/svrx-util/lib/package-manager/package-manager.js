@@ -71,7 +71,7 @@ class PackageManager {
 
   async load() {
     const {
-      root, path, packageName, version, name,
+      root, path, version, name,
     } = this;
     const readPackage = (dir) => {
       const jsonPath = libPath.join(dir, 'package.json');
@@ -81,7 +81,7 @@ class PackageManager {
       const pkgJson = requireEnsure(jsonPath);
       const pkg = requireEnsure(dir);
       return {
-        name: packageName,
+        name,
         path: dir,
         version: pkgJson.version,
         module: pkg,

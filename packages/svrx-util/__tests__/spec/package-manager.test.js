@@ -32,7 +32,7 @@ describe('Package Manager', () => {
         path: TEST_PLUGIN_PATH,
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-test');
+      expect(plugin.name).to.eql('test');
       expect(plugin.version).to.eql('0.0.1');
       expect(plugin.path).to.eql(TEST_PLUGIN_PATH);
     });
@@ -43,7 +43,7 @@ describe('Package Manager', () => {
         coreVersion: '0.0.3',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-error-no-version');
+      expect(plugin.name).to.eql('error-no-version');
       expect(plugin.version).to.eql(undefined);
       expect(plugin.path).to.eql(ERROR_NO_VERSION_PLUGIN_PATH);
     });
@@ -54,7 +54,7 @@ describe('Package Manager', () => {
         version: '1.0.1',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-hello');
+      expect(plugin.name).to.eql('hello');
       expect(plugin.version).to.eql('1.0.1');
       expect(plugin.path).to.eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
     });
@@ -69,7 +69,7 @@ describe('Package Manager', () => {
         version: '1.0.2',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-demo');
+      expect(plugin.name).to.eql('demo');
       expect(plugin.version).to.eql('1.0.2');
       expect(plugin.path).to.eql(storePath);
     }).timeout(10000);
@@ -79,7 +79,7 @@ describe('Package Manager', () => {
         coreVersion: '0.0.2',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-hello');
+      expect(plugin.name).to.eql('hello');
       expect(plugin.version).to.eql('0.0.5');
       expect(plugin.path).to.eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/0.0.5'));
     });
@@ -93,7 +93,7 @@ describe('Package Manager', () => {
         coreVersion: '0.0.3',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-demo');
+      expect(plugin.name).to.eql('demo');
       expect(plugin.version).to.eql('1.0.3');
       expect(plugin.path).to.eql(storePath);
     }).timeout(10000);
