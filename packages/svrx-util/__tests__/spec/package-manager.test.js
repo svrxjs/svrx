@@ -6,7 +6,6 @@ const PackageManagerCreator = require('../../lib/package-manager');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
 const ERROR_NO_VERSION_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-error-no-version');
 const ERROR_NO_PACKAGE_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-no-package');
-const DEPEND_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-depend');
 const TEST_SVRX_DIR = libPath.join(__dirname, '../fixture/.svrx');
 
 const cleanModule = (path) => new Promise((resolve) => rimraf(path, resolve));
@@ -26,22 +25,6 @@ describe('Package Manager', () => {
 
   describe('load PLUGIN package', () => {
     /* loads */
-    it('should work fine when load with a local path and localInstall is set to true', async () => {
-      const storePath = libPath.join(TEST_SVRX_DIR, 'plugins/test/0.0.1');
-      after(async () => {
-        await cleanModule(storePath);
-      });
-      const pm = PackageManagerCreator({
-        plugin: 'test',
-        coreVersion: '1.0.0',
-        path: TEST_PLUGIN_PATH,
-        localInstall: true,
-      });
-      const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-test');
-      expect(plugin.version).to.eql('0.0.1');
-      expect(plugin.path).to.eql(storePath);
-    });
     it('should work fine when load with a local path', async () => {
       const pm = PackageManagerCreator({
         plugin: 'test',
@@ -53,19 +36,17 @@ describe('Package Manager', () => {
       expect(plugin.version).to.eql('0.0.1');
       expect(plugin.path).to.eql(TEST_PLUGIN_PATH);
     });
-    // todo
-    it('should work fine when load a local package with dependency', async () => {
+    it('should work fine when load a local package without version', async () => {
       const pm = PackageManagerCreator({
-        plugin: 'depend',
-        path: DEPEND_PLUGIN_PATH,
+        plugin: 'error-no-version',
+        path: ERROR_NO_VERSION_PLUGIN_PATH,
         coreVersion: '0.0.3',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('svrx-plugin-depend');
-      expect(plugin.version).to.eql('0.0.1');
-      expect(plugin.path).to.eql(DEPEND_PLUGIN_PATH);
-      // expect(libPath.join(plugin.path, 'node_modules')).to.exists();
-    }).timeout(10000);
+      expect(plugin.name).to.eql('svrx-plugin-error-no-version');
+      expect(plugin.version).to.eql(undefined);
+      expect(plugin.path).to.eql(ERROR_NO_VERSION_PLUGIN_PATH);
+    });
     it('should work fine when load with a local version', async () => {
       const pm = PackageManagerCreator({
         plugin: 'hello',
@@ -177,19 +158,6 @@ describe('Package Manager', () => {
         expect(e).to.match(/version of plugin 'demo' is not matched to current version of svrx/);
       }
     }).timeout(10000);
-    it('should specify the version of localInstall plugin', async () => {
-      const pm = PackageManagerCreator({
-        plugin: 'error-no-version',
-        path: ERROR_NO_VERSION_PLUGIN_PATH,
-        localInstall: true,
-        coreVersion: '1.0.0',
-      });
-      try {
-        await pm.load();
-      } catch (e) {
-        expect(e).to.match(/you should specify the version of your local plugin/);
-      }
-    });
     it('should report error when no version match for current svrx', async () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',

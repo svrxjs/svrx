@@ -26,14 +26,13 @@ const getLatestVersion = (versionList) => {
 class PackageManager {
   constructor(options) {
     const {
-      name, path, version, coreVersion, registry, localInstall,
+      name, path, version, coreVersion, registry,
     } = options;
     this.name = name; // plugin name: foo, foo-bar, @scope/foo
     this.version = version; // plugin version. undefined for core
     this.coreVersion = coreVersion; // core version currently used
     this.path = path; // path for local loaded plugin
     this.registry = registry;
-    this.localInstall = localInstall;
 
     // default params for core
     this.packageName = '@svrx/svrx';
@@ -72,7 +71,7 @@ class PackageManager {
 
   async load() {
     const {
-      root, path, packageName, version, name, localInstall,
+      root, path, packageName, version, name,
     } = this;
     const readPackage = (dir) => {
       const jsonPath = libPath.join(dir, 'package.json');
@@ -88,16 +87,6 @@ class PackageManager {
         module: pkg,
       };
     };
-
-    // 0. load with path & local install (install a local package into root dir
-    if (localInstall) {
-      const pkgJson = requireEnsure(libPath.join(path, 'package.json'));
-      if (pkgJson.version) {
-        await this.install();
-        return readPackage(libPath.join(root, pkgJson.version));
-      }
-      throw new Error('you should specify the version of your local plugin');
-    }
 
     // 1. load with path ( without installing
     if (path) {
@@ -131,7 +120,7 @@ class PackageManager {
    */
   async install(version) {
     const {
-      packageName, registry, root, localInstall, path,
+      packageName, registry, root, path,
     } = this;
     const task = fork(libPath.join(__dirname, './task.js'), {
       silent: true,
@@ -145,7 +134,7 @@ class PackageManager {
           else resolve(ret);
         });
         task.send({
-          packageName, version, registry, root, localInstall, path,
+          packageName, version, registry, root, path,
         });
       });
     } catch (e) {
@@ -213,17 +202,16 @@ class PackageManager {
 }
 
 PackageManager.getInstallTask = async ({
-  localInstall, path, packageName, version, root, registry,
+  packageName, version, root, registry,
 }) => {
   const tmpPath = tmp.dirSync().name;
 
   const options = {
-    name: localInstall ? path : packageName,
+    name: packageName,
     nameReal: packageName,
     version,
     path: tmpPath,
     registry,
-    localInstall,
     global: true,
     // npmLoad: { todo
     //   loaded: false,
