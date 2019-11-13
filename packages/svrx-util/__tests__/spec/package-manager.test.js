@@ -209,7 +209,7 @@ describe('Package Manager', () => {
       try {
         await pm.load();
       } catch (e) {
-        expect(e).to.match(/'svrx-plugin-not-exist-plugin' is not in the npm registry/);
+        expect(e).to.match(/svrx-plugin-not-exist-plugin/);
       }
     }).timeout(10000);
   });

@@ -48,5 +48,7 @@ const parsePluginName = (packageName) => {
   return removePrefix(packageName);
 };
 
-exports.normalizePluginName = normalizePluginName;
-exports.parsePluginName = parsePluginName;
+module.exports = {
+  normalizePluginName,
+  parsePluginName,
+};

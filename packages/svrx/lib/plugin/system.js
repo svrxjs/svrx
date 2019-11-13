@@ -1,14 +1,15 @@
+const { nameFormatter } = require('@svrx/util');
 const nodeResolve = require('resolve');
 const libPath = require('path');
 const chalk = require('chalk');
 
 const { getLoader } = require('./loader');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
-const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
 const { setRegistry } = require('./npm');
 
+const { normalizePluginName } = nameFormatter;
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
 class PluginSystem {

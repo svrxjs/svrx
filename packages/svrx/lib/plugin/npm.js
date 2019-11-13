@@ -1,8 +1,8 @@
-const { npm, logger } = require('@svrx/util');
+const { npm, logger, nameFormatter } = require('@svrx/util');
 const semver = require('../util/semver');
-const { normalizePluginName } = require('../util/helper');
 const { VERSION } = require('../constant');
 
+const { normalizePluginName } = nameFormatter;
 const storage = {};
 
 function setRegistry(registry) {
