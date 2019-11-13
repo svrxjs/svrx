@@ -29,7 +29,7 @@ class PluginSystem {
     // regist builtin Service
     this.initService();
 
-    // set npm registry
+    // set npm registry todo 1113
     const registry = config.get('registry');
     setRegistry(registry);
   }
@@ -102,9 +102,7 @@ class PluginSystem {
     } else {
       const load = getLoader(pluginConfig);
 
-      const pluginModule = await load(pluginConfig, config);
-
-      pluginMap[name] = pluginModule;
+      pluginMap[name] = await load(pluginConfig, config);
     }
 
     return pluginMap[name];

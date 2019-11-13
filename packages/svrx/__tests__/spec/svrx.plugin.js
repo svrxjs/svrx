@@ -274,7 +274,7 @@ describe('Plugin System', () => {
       system
         .load(plugins)
         .catch((e) => {
-          expect(e).to.match(/unmatched plugin not-exsits-error/);
+          expect(e).to.match(/install error: package 'svrx-plugin-not-exsits-error' not found/);
           done();
         });
     }).timeout(4000);

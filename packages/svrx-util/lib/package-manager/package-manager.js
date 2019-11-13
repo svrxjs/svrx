@@ -73,17 +73,25 @@ class PackageManager {
     const {
       root, path, version, name,
     } = this;
+    const noSatistiedVersionError = new Error(
+      `there's no satisfied version of plugin ${name} for the svrx currently using`,
+    );
     const readPackage = (dir) => {
       const jsonPath = libPath.join(dir, 'package.json');
-      if (!fs.existsSync(jsonPath)) {
-        throw new Error(`no package.json: ${jsonPath} is not exist`);
+      const json = fs.existsSync(jsonPath) ? requireEnsure(jsonPath) : null;
+      const jsonVersion = json ? json.version : undefined;
+      const jsonPattern = json && json.engines ? json.engines.svrx : '*';
+
+      // validate version match only when load from local and remote
+      if (!path && !this.versionMatch({ pattern: jsonPattern })) {
+        throw noSatistiedVersionError;
       }
-      const pkgJson = requireEnsure(jsonPath);
+
       const pkg = requireEnsure(dir);
       return {
         name,
         path: dir,
-        version: pkgJson.version,
+        version: jsonVersion,
         module: pkg,
       };
     };
@@ -100,7 +108,7 @@ class PackageManager {
       if (localBestfit) return localBestfit;
       const remoteBestfit = await this.getRemoteBestfit();
       if (remoteBestfit) return remoteBestfit;
-      throw new Error(`there's no satisfied version of plugin ${name} for the svrx currently using`);
+      throw noSatistiedVersionError;
     })();
 
     // 2. load from local
@@ -178,16 +186,20 @@ class PackageManager {
 
   async getRemotePackages() {
     const { packageName, registry } = this;
-    const viewResult = await npm.view([
-      `${packageName}@*`,
-      'engines',
-    ], {
-      registry,
-    });
-    return Object.keys(viewResult).map((v) => ({
-      version: v,
-      pattern: (viewResult[v].engines && viewResult[v].engines.svrx) || '*',
-    }));
+    try {
+      const viewResult = await npm.view([
+        `${packageName}@*`,
+        'engines',
+      ], {
+        registry,
+      });
+      return Object.keys(viewResult).map((v) => ({
+        version: v,
+        pattern: (viewResult[v].engines && viewResult[v].engines.svrx) || '*',
+      }));
+    } catch (e) {
+      throw new Error(`install error: package '${packageName}' not found: ${e.message}`);
+    }
   }
 
   /**

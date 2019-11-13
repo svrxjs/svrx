@@ -1,8 +1,7 @@
-const { fork } = require('child_process');
+const { PackageManagerCreator } = require('@svrx/util');
 const libPath = require('path');
 
 const { BUILTIN_PLUGIN, VERSION } = require('../constant');
-
 
 function requireEnsure(path) {
   delete require.cache[path];
@@ -23,7 +22,7 @@ const loaders = [
       return {
         name,
         path,
-        module: require(path),
+        module: requireEnsure(path),
         version: VERSION,
         pluginConfig,
       };
@@ -50,21 +49,16 @@ const loaders = [
       return !!pluginConfig.getInfo('path') && !pluginConfig.getInfo('install');
     },
     async load(pluginConfig) {
-      const path = pluginConfig.getInfo('path');
-      const name = pluginConfig.getInfo('name');
-      let pkg;
+      const pm = PackageManagerCreator({
+        plugin: pluginConfig.getInfo('name'),
+        path: pluginConfig.getInfo('path'),
+        version: pluginConfig.getInfo('version'),
+        coreVersion: VERSION,
+      });
+      const pkg = await pm.load();
 
-      try {
-        /* eslint-disable global-require, import/no-dynamic-require */
-        pkg = require(libPath.join(path, 'package.json'));
-      } catch (e) {
-        pkg = {};
-      }
       return {
-        name,
-        path,
-        module: require(path),
-        version: pkg.version,
+        ...pkg,
         pluginConfig,
       };
     },
@@ -75,41 +69,17 @@ const loaders = [
       return !!pluginConfig.getInfo('name');
     },
     async load(pluginConfig, config) {
-      const name = pluginConfig.getInfo('name');
-      const root = config.get('root');
-      const version = pluginConfig.getInfo('version');
-      const path = pluginConfig.getInfo('path');
-      const registry = config.get('registry');
-
-
-      const task = fork(libPath.join(__dirname, './task.js'), {
-        silent: true,
+      const pm = PackageManagerCreator({
+        plugin: pluginConfig.getInfo('name'),
+        path: pluginConfig.getInfo('path'),
+        version: pluginConfig.getInfo('version'),
+        coreVersion: VERSION,
+        registry: config.get('registry'),
       });
+      const pkg = await pm.load();
 
-
-      const installRet = await new Promise((resolve, reject) => {
-        task.on('error', reject);
-        task.on('message', (ret) => {
-          if (ret.error) reject(new Error(ret.error));
-          else resolve(ret);
-        });
-        task.send({
-          path, name, root, version, registry,
-        });
-      });
-
-      let pkg;
-      const requirePath = libPath.join(path || installRet.path, 'package.json');
-      try {
-        pkg = requireEnsure(requirePath);
-      } catch (e) {
-        pkg = {};
-      }
       return {
-        name,
-        path: path || installRet.path,
-        module: requireEnsure(path || installRet.path),
-        version: pkg.version,
+        ...pkg,
         pluginConfig,
       };
     },
