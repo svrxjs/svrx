@@ -22,7 +22,6 @@ const getLatestVersion = (versionList) => {
   return versionList.length > 0 ? versionList[0] : null;
 };
 
-// todo options.version 支持 semver ？
 class PackageManager {
   constructor(options) {
     const {

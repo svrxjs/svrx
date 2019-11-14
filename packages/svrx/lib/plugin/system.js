@@ -7,7 +7,6 @@ const { getLoader } = require('./loader');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
-const { setRegistry } = require('./npm');
 
 const { normalizePluginName } = nameFormatter;
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
@@ -28,10 +27,6 @@ class PluginSystem {
     this[PLUGIN_MAP] = {};
     // regist builtin Service
     this.initService();
-
-    // set npm registry todo 1113
-    const registry = config.get('registry');
-    setRegistry(registry);
   }
 
   get(name) {
