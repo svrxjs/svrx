@@ -1,4 +1,4 @@
-const PackageManager = require('./package-manager');
+const PackageManager = require('../package-manager');
 
 function sendAfterClose(ret) {
   process.send(ret);
@@ -6,7 +6,7 @@ function sendAfterClose(ret) {
 }
 
 process.on('message', (param) => {
-  PackageManager.getInstallTask(param)
+  PackageManager.getViewTask(param)
     .then((ret) => {
       sendAfterClose(ret);
     })

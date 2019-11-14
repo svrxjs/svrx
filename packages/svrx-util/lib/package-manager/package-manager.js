@@ -130,7 +130,7 @@ class PackageManager {
     const {
       packageName, registry, root, path,
     } = this;
-    const task = fork(libPath.join(__dirname, './task.js'), {
+    const task = fork(libPath.join(__dirname, './tasks/install.js'), {
       silent: true,
     });
 
@@ -186,17 +186,21 @@ class PackageManager {
 
   async getRemotePackages() {
     const { packageName, registry } = this;
+    const task = fork(libPath.join(__dirname, './tasks/view.js'), {
+      silent: true,
+    });
+
     try {
-      const viewResult = await npm.view([
-        `${packageName}@*`,
-        'engines',
-      ], {
-        registry,
+      return new Promise((resolve, reject) => {
+        task.on('error', reject);
+        task.on('message', (ret) => {
+          if (ret.error) reject(new Error(`install error: package '${packageName}' not found: ${ret.error}`));
+          else resolve(ret);
+        });
+        task.send({
+          packageName, registry,
+        });
       });
-      return Object.keys(viewResult).map((v) => ({
-        version: v,
-        pattern: (viewResult[v].engines && viewResult[v].engines.svrx) || '*',
-      }));
     } catch (e) {
       throw new Error(`install error: package '${packageName}' not found: ${e.message}`);
     }
@@ -231,22 +235,36 @@ PackageManager.getInstallTask = async ({
   const tmpFolder = libPath.join(tmpPath, 'node_modules', packageName);
   const destFolder = libPath.join(root, result.version);
 
-  return new Promise((resolve) => {
-    fs.copySync(tmpFolder, destFolder, {
-      dereference: true, // ensure linked folder is copied too
-    });
-
-    // if (autoClean) { todo
-    //   fs.writeFileSync(path.resolve(destFolder, '.autoclean'), '');
-    //   // auto clean old packages with .autoclean label
-    //   local.cleanOlds(installVersion, current, versionsRoot).then(() => {
-    //     resolve(installVersion);
-    //   });
-    // } else {
-    //   resolve(installVersion);
-    // }
-    resolve(result.version);
+  fs.copySync(tmpFolder, destFolder, {
+    dereference: true, // ensure linked folder is copied too
   });
+
+  // if (autoClean) { todo
+  //   fs.writeFileSync(path.resolve(destFolder, '.autoclean'), '');
+  //   // auto clean old packages with .autoclean label
+  //   local.cleanOlds(installVersion, current, versionsRoot).then(() => {
+  //     resolve(installVersion);
+  //   });
+  // } else {
+  //   resolve(installVersion);
+  // }
+
+  return result.version;
+};
+
+PackageManager.getViewTask = async ({
+  packageName, registry,
+}) => {
+  const viewResult = await npm.view([
+    `${packageName}@*`,
+    'engines',
+  ], {
+    registry,
+  });
+  return Object.keys(viewResult).map((v) => ({
+    version: v,
+    pattern: (viewResult[v].engines && viewResult[v].engines.svrx) || '*',
+  }));
 };
 
 module.exports = PackageManager;
