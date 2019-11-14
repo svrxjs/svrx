@@ -94,6 +94,18 @@ class PackageManager {
       };
     };
 
+    // auto download the latest version
+    if (!path) {
+      try {
+        const latestVersion = await this.getRemoteLatest();
+        if (!this.exists(latestVersion)) {
+          await this.install(latestVersion);
+        }
+      } catch (e) {
+        // nevermind if auto download failed
+      }
+    }
+
     // 1. load with path ( without installing
     if (path) {
       return readPackage(path);
@@ -211,6 +223,16 @@ class PackageManager {
    */
   async getRemoteBestfit() {
     const packageList = (await this.getRemotePackages()).filter((pkg) => this.versionMatch(pkg));
+    const versionList = packageList.map((p) => p.version);
+
+    return getLatestVersion(versionList);
+  }
+
+  /**
+   * @returns {null|string} the latest version
+   */
+  async getRemoteLatest() {
+    const packageList = await this.getRemotePackages();
     const versionList = packageList.map((p) => p.version);
 
     return getLatestVersion(versionList);

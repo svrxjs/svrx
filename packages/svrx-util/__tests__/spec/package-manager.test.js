@@ -1,6 +1,7 @@
 const expect = require('expect.js');
 const libPath = require('path');
 const rimraf = require('rimraf');
+const fs = require('fs-extra');
 const PackageManagerCreator = require('../../lib/package-manager');
 
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
@@ -58,10 +59,12 @@ describe('Package Manager', () => {
       expect(plugin.version).to.eql('1.0.1');
       expect(plugin.path).to.eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
     });
-    it('should work fine when load with a remote version', async () => {
+    it('should work fine when load with a remote version and auto load a latest version', async () => {
       const storePath = libPath.join(TEST_SVRX_DIR, 'plugins/demo/1.0.2');
+      const storePathLatest = libPath.join(TEST_SVRX_DIR, 'plugins/demo/1.0.3');
       after(async () => {
         await cleanModule(storePath);
+        await cleanModule(storePathLatest);
       });
       const pm = PackageManagerCreator({
         plugin: 'demo',
@@ -72,6 +75,7 @@ describe('Package Manager', () => {
       expect(plugin.name).to.eql('demo');
       expect(plugin.version).to.eql('1.0.2');
       expect(plugin.path).to.eql(storePath);
+      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js'))).to.eql(true);
     }).timeout(10000);
     it('should work fine when load without a specific version(local)', async () => {
       const pm = PackageManagerCreator({
