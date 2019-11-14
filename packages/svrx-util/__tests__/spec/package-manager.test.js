@@ -106,9 +106,6 @@ describe('Package Manager', () => {
       const result = await pm.load();
       expect(result.version).to.eql(undefined);
     });
-    // it('should auto install dependencies for remote loaded plugin', () => {
-    //
-    // }).timeout(10000);
 
     /* funcs */
     it('should return file status through #exists()', () => {
@@ -132,17 +129,17 @@ describe('Package Manager', () => {
       });
       expect(pm2.getLocalBestfit()).to.eql('0.0.5');
     });
-    it('should return the best fit version through #getRemoteBestfit()', () => {
+    it('should return the best fit version through #getRemoteBestfit()', async () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '0.0.2',
       });
-      expect(pm.getLocalBestfit()).to.eql('1.0.2');
+      expect(await pm.getRemoteBestfit()).to.eql('1.0.2');
       const pm2 = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '0.0.3',
       });
-      expect(pm2.getLocalBestfit()).to.eql('1.0.3');
+      expect(await pm2.getRemoteBestfit()).to.eql('1.0.3');
     });
 
     /* errors */
