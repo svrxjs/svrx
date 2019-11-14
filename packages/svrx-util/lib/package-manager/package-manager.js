@@ -73,9 +73,6 @@ class PackageManager {
     const {
       root, path, version, name,
     } = this;
-    const noSatistiedVersionError = new Error(
-      `there's no satisfied version of plugin ${name} for the svrx currently using`,
-    );
     const readPackage = (dir) => {
       const jsonPath = libPath.join(dir, 'package.json');
       const json = fs.existsSync(jsonPath) ? requireEnsure(jsonPath) : null;
@@ -84,7 +81,9 @@ class PackageManager {
 
       // validate version match only when load from local and remote
       if (!path && !this.versionMatch({ pattern: jsonPattern })) {
-        throw noSatistiedVersionError;
+        throw new Error(
+          `the version of plugin '${name}' is not matched to the svrx currently using`,
+        );
       }
 
       const pkg = requireEnsure(dir);
@@ -108,7 +107,9 @@ class PackageManager {
       if (localBestfit) return localBestfit;
       const remoteBestfit = await this.getRemoteBestfit();
       if (remoteBestfit) return remoteBestfit;
-      throw noSatistiedVersionError;
+      throw new Error(
+        `there's no satisfied version of plugin ${name} for the svrx currently using`,
+      );
     })();
 
     // 2. load from local
@@ -225,11 +226,6 @@ PackageManager.getInstallTask = async ({
     path: tmpPath,
     registry,
     global: true,
-    // npmLoad: { todo
-    //   loaded: false,
-    //   prefix: tmpPath,
-    // },
-    // forceInstall: true,
   };
 
   const result = await npm.install(options);

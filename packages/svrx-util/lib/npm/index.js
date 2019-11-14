@@ -34,10 +34,7 @@ const install = (options) => {
 
   return new Promise((resolve, reject) => {
     const installName = options.version ? `${options.name}@${options.version}` : options.name;
-    npmInstall([installName], {
-      registry: options.registry,
-      ...options.npmLoad,
-    }, installPath).then((result) => {
+    npmInstall([installName], options, installPath).then((result) => {
       if (!result) return resolve(result);
       const packName = (() => {
         const { localInstall, nameReal, name } = options;

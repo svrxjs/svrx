@@ -106,6 +106,9 @@ describe('Package Manager', () => {
       const result = await pm.load();
       expect(result.version).to.eql(undefined);
     });
+    // it('should auto install dependencies for remote loaded plugin', () => {
+    //
+    // }).timeout(10000);
 
     /* funcs */
     it('should return file status through #exists()', () => {
@@ -150,7 +153,7 @@ describe('Package Manager', () => {
         version: '1.0.2',
       });
       pm.load().catch((e) => {
-        expect(e).to.match(/there's no satisfied version of plugin demo for the svrx currently using/);
+        expect(e).to.match(/the version of plugin 'demo' is not matched to the svrx currently using/);
         done();
       });
     }).timeout(10000);
