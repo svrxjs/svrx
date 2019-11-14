@@ -144,7 +144,7 @@ describe('Package Manager', () => {
         coreVersion: '0.0.3',
       });
       expect(await pm2.getRemoteBestfit()).to.eql('1.0.3');
-    });
+    }).timeout(10000);
 
     /* errors */
     it('should report error when unmatched version', (done) => {
@@ -167,7 +167,7 @@ describe('Package Manager', () => {
         expect(e).to.match(/there's no satisfied version of plugin demo for the svrx currently using/);
         done();
       });
-    });
+    }).timeout(10000);
     it('should report error when no remote packages found', (done) => {
       const pm = PackageManagerCreator({
         plugin: 'not-exist-plugin',
