@@ -1,4 +1,4 @@
-const cosmiconfig = require('cosmiconfig');
+const { cosmiconfigSync } = require('cosmiconfig');
 const userHome = require('os').homedir();
 const path = require('path');
 const fs = require('fs');
@@ -21,10 +21,10 @@ const readGlobal = () => {
 };
 
 const readScope = () => {
-  const explorer = cosmiconfig('svrx', {
+  const explorer = cosmiconfigSync('svrx', {
     searchPlaces: RC_FILES,
   });
-  const result = explorer.searchSync();
+  const result = explorer.search();
   if (result && !result.isEmpty) {
     return result.config;
   }
