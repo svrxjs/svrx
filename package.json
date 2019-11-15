@@ -12,7 +12,7 @@
     "clean:dependency": "lerna clean -y && rimraf -rf node_modules",
     "report-coverage": "lerna run report-coverage",
     "lerna:version": "lerna version",
-    "lerna:publish": "lerna publish from-git --yes",
+    "lerna:publish": "lerna publish from-git --dist-tag beta --yes",
     "postinstall": "lerna exec -- npm install",
     "prepare": "npm run build",
     "prepublishOnly": "lerna exec -- npm prune --production && lerna exec -- npm shrinkwrap"
