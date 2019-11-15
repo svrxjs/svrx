@@ -1,4 +1,4 @@
-const pathToRegexp = require('path-to-regexp');
+const { pathToRegexp } = require('path-to-regexp');
 const compose = require('../util/compose');
 const actionCache = require('./actions');
 

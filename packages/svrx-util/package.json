@@ -27,8 +27,8 @@
     "url": "https://github.com/svrxjs/svrx/issues"
   },
   "dependencies": {
-    "chalk": "^2.4.2",
-    "cosmiconfig": "^5.2.1",
+    "chalk": "^3.0.0",
+    "cosmiconfig": "^6.0.0",
     "fs-extra": "^8.1.0",
     "global-npm": "^0.4.0",
     "lodash": "^4.17.11",
