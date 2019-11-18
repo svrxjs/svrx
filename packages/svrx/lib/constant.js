@@ -19,6 +19,7 @@ module.exports = {
     MOCK: 30,
     TRANSFORM: 100,
     INJECTOR: 101,
+    IO: 200,
   },
 
   ASSET_FIELDS: ['script', 'style'],

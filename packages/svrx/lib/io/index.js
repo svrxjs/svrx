@@ -5,6 +5,7 @@ const { IO_PATH } = require('../shared/consts');
 const { getBody } = require('../util/helper');
 const events = require('../shared/events');
 const cache = require('../shared/cache');
+const { PRIORITY } = require('../constant');
 
 const SERVICE_CACHE = Symbol('service');
 const MAX_LIMIT_SERVICES = 500;
@@ -18,6 +19,7 @@ class IO {
 
     // add $call middleware
     middleware.add('$call', {
+      priority: PRIORITY.IO,
       onRoute: async (ctx, next) => {
         if (ctx.path === IO_PATH) {
           let body = await getBody(ctx);
