@@ -2,13 +2,14 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const querystring = require('querystring');
-const { logger } = require('@svrx/util');
+const { logger, nameFormatter } = require('@svrx/util');
 const CONFIG_LIST = require('../config-list');
 const BuiltinOption = require('./builtinOption');
 const Plugin = require('./plugin');
 const { BUILTIN_PLUGIN } = require('../constant');
-const { parsePluginName } = require('../util/helper');
 const defaults = require('../util/jsonSchemaDefaults');
+
+const { parsePluginName } = nameFormatter;
 
 const BUILTIN_OPTION = Symbol('builtinOption');
 const BUILTIN_CONFIG = Symbol('builtinConfig');
