@@ -36,10 +36,7 @@ const install = (options) => {
     const installName = options.version ? `${options.name}@${options.version}` : options.name;
     npmInstall([installName], options, installPath).then((result) => {
       if (!result) return resolve(result);
-      const packName = (() => {
-        const { localInstall, nameReal, name } = options;
-        return localInstall ? nameReal : name;
-      })();
+      const packName = options.localInstall ? options.nameReal : options.name;
       const pack = result.map((r) => {
         const [, name, version] = /(\S+)@(\S+)/.exec(r[0]);
 
