@@ -348,7 +348,11 @@ describe('Signal handling', () => {
 
         it(`should call 'process.exit()' when receiving a ${SIGNAL}`, (done) => {
           process.once(SIGNAL, () => {
-            sinon.assert.calledOnce(exitStub);
+            if (SIGNAL === 'SIGINT') {
+              sinon.assert.calledTwice(exitStub); // one for 'tmp'
+            } else {
+              sinon.assert.calledOnce(exitStub); // one for 'tmp'
+            }
             done();
           });
           process.kill(process.pid, SIGNAL);

@@ -9,7 +9,7 @@ const consts = require('../../lib/constant');
 const Imodel = require('../../lib/model');
 const im = require('../../lib/util/im');
 const {
-  formatDate, getBody, npCall, normalizePluginName, parsePluginName,
+  formatDate, getBody, npCall,
 } = require('../../lib/util/helper');
 
 const setImmediatePromise = util.promisify(setImmediate);
@@ -24,30 +24,6 @@ describe('Svrx Utility', () => {
     it('getBody wont throw Error', async () => {
       const body = await getBody({});
       expect(body).to.equal('');
-    });
-
-    const plugins = [
-      { name: 'svrx-plugin-foo', pluginName: 'foo' },
-      { name: 'svrx-plugin-foo-bar', pluginName: 'foo-bar' },
-      { name: '@scope/svrx-plugin-foo', pluginName: '@scope/foo' },
-      { name: '@scope/svrx-plugin-foo-bar', pluginName: '@scope/foo-bar' },
-    ];
-
-    it('normalizePluginName', () => {
-      plugins.forEach((p) => {
-        expect(normalizePluginName(p.pluginName)).to.equal(p.name);
-      });
-      expect(normalizePluginName('@scope')).to.equal(null);
-      expect(normalizePluginName('@scope/')).to.equal(null);
-      expect(normalizePluginName('@SCOPE/bar')).to.equal(null);
-    });
-    it('parsePluginName', () => {
-      plugins.forEach((p) => {
-        expect(parsePluginName(p.name)).to.equal(p.pluginName);
-      });
-      expect(parsePluginName('svrx-not-a-legal-plugin')).to.equal(null);
-      expect(parsePluginName('@scope/svrx-not-a-legal-plugin')).to.equal(null);
-      expect(parsePluginName('@no_')).to.equal(null);
     });
 
     it('npCall', (done) => {

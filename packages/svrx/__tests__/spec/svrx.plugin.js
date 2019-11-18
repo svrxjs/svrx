@@ -9,20 +9,10 @@ const { createServer } = require('../util');
 const System = require('../../lib/plugin/system');
 const Configure = require('../../lib/configure');
 const constants = require('../../lib/constant');
-const npm = require('../../lib/plugin/npm');
 const logger = require('../../lib/util/logger');
 
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
-const { getInstallForTask } = npm;
-
-function changeVersion(version) {
-  const PRE_VERSION = constants.VERSION;
-  constants.VERSION = version;
-  return () => {
-    constants.VERSION = PRE_VERSION;
-  };
-}
 
 const { BUILTIN_PLUGIN } = constants;
 
@@ -32,60 +22,6 @@ describe('Plugin System', () => {
       rimraf(libPath.join(MODULE_PATH, 'packag*.json'), done);
     });
   }
-
-  describe('npm', () => {
-    before((done) => {
-      cleanModule(done);
-      // runs before all tests in this block
-    });
-
-    afterEach((done) => {
-      cleanModule(done);
-    });
-
-    it('npm load satisfied version', (done) => {
-      const revert = changeVersion('0.0.2');
-      npm
-        .getSatisfiedVersion('demo')
-        .then((ret) => {
-          expect(ret).to.equal('1.0.2');
-          changeVersion('0.0.3');
-          return npm.getSatisfiedVersion('demo').then((ret1) => {
-            expect(ret1).to.equal('1.0.3');
-            revert();
-            done();
-            // Restore VERSION
-          });
-        })
-        .catch(done);
-    }).timeout(10000);
-    it('npm getInstallRetForTask', (done) => {
-      const restore = changeVersion('0.0.2');
-      getInstallForTask({
-        name: 'demo',
-        version: '1.0.2',
-        root: MODULE_PATH,
-      }).then((ret) => {
-        expect(ret.name).to.equal('svrx-plugin-demo');
-        expect(ret.version).to.equal('1.0.2');
-        restore();
-        done();
-      });
-    }).timeout(10000);
-
-    it('npm unmatched version', (done) => {
-      const revert = changeVersion('0.0.3');
-      getInstallForTask({
-        name: 'demo',
-        version: '1.0.10',
-        root: MODULE_PATH,
-      }).catch((err) => {
-        expect(err).to.match(/unmatched plugin demo version/);
-        revert();
-        done();
-      });
-    });
-  });
 
   describe('System', () => {
     before((done) => {
@@ -274,7 +210,7 @@ describe('Plugin System', () => {
       system
         .load(plugins)
         .catch((e) => {
-          expect(e).to.match(/unmatched plugin not-exsits-error/);
+          expect(e).to.match(/install error: package 'svrx-plugin-not-exsits-error' not found/);
           done();
         });
     }).timeout(4000);

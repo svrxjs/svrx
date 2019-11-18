@@ -1,14 +1,14 @@
+const { nameFormatter } = require('@svrx/util');
 const nodeResolve = require('resolve');
 const libPath = require('path');
 const chalk = require('chalk');
 
 const { getLoader } = require('./loader');
 const { ASSET_FIELDS, BUILTIN_PLUGIN } = require('../constant');
-const { normalizePluginName } = require('../util/helper');
 const logger = require('../util/logger');
 const semver = require('../util/semver');
-const { setRegistry } = require('./npm');
 
+const { normalizePluginName } = nameFormatter;
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
 class PluginSystem {
@@ -27,10 +27,6 @@ class PluginSystem {
     this[PLUGIN_MAP] = {};
     // regist builtin Service
     this.initService();
-
-    // set npm registry
-    const registry = config.get('registry');
-    setRegistry(registry);
   }
 
   get(name) {
@@ -101,9 +97,7 @@ class PluginSystem {
     } else {
       const load = getLoader(pluginConfig);
 
-      const pluginModule = await load(pluginConfig, config);
-
-      pluginMap[name] = pluginModule;
+      pluginMap[name] = await load(pluginConfig, config);
     }
 
     return pluginMap[name];

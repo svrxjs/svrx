@@ -1,6 +1,4 @@
-// multiple process install
-
-const { getInstallForTask } = require('./npm');
+const PackageManager = require('../package-manager');
 
 function sendAfterClose(ret) {
   process.send(ret);
@@ -8,7 +6,7 @@ function sendAfterClose(ret) {
 }
 
 process.on('message', (param) => {
-  getInstallForTask(param)
+  PackageManager.getViewTask(param)
     .then((ret) => {
       sendAfterClose(ret);
     })
