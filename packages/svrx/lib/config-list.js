@@ -42,13 +42,29 @@ module.exports = {
   },
   route: {
     description: 'the path of routing config file',
-    anyOf: [{ type: 'string' }, { type: 'array' }],
+    anyOf: [{
+      title: 'one file',
+      type: 'string',
+    }, {
+      title: 'several files',
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+    }],
     group: GROUPS.CORE,
   },
   historyApiFallback: {
     group: GROUPS.CORE,
     description: 'Enable historyApiFallback middleware',
-    anyOf: [{ type: 'boolean' }, { type: 'object' }],
+    anyOf: [{
+      title: 'enable historyApiFallback',
+      type: 'boolean',
+    }, {
+      title: 'more configs of historyApiFallback(in object)',
+      type: 'object',
+      additionalProperties: { type: 'string' },
+    }],
     default: false,
   },
   plugin: {
@@ -63,38 +79,30 @@ module.exports = {
   },
   urls: {
     type: 'object',
+    cli: false,
+    ui: false,
     properties: {
       style: {
         type: 'string',
         default: '/svrx/svrx-client.css',
         group: GROUPS.CORE,
-        cli: false,
-        ui: false,
       },
       script: {
         type: 'string',
         default: '/svrx/svrx-client.js',
         group: GROUPS.CORE,
-        cli: false,
-        ui: false,
       },
       external: {
         type: 'string',
         group: GROUPS.CORE,
-        cli: false,
-        ui: false,
       },
       local: {
         type: 'string',
         group: GROUPS.CORE,
-        cli: false,
-        ui: false,
       },
       ui: {
         type: 'string',
         group: GROUPS.CORE,
-        cli: false,
-        ui: false,
       },
     },
   },
@@ -118,9 +126,11 @@ module.exports = {
     default: true,
     anyOf: [
       {
+        title: 'enable dev server',
         type: 'boolean',
       },
       {
+        title: 'more configs of dev server',
         type: 'object',
         properties: {
           base: {
@@ -146,13 +156,21 @@ module.exports = {
     group: GROUPS.COMMON,
     anyOf: [
       {
+        title: 'enable proxy',
         type: 'boolean',
       },
       {
+        title: 'more configs of proxy(in object)',
         type: 'object',
+        additionalProperties: { type: 'string' },
       },
       {
+        title: 'more configs of proxy(in array of object)',
         type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     ],
   },
@@ -163,16 +181,18 @@ module.exports = {
     default: true,
     anyOf: [
       {
+        title: 'enable livereload',
         type: 'boolean',
       },
       {
+        title: 'more configs of livereload',
         type: 'object',
         properties: {
           exclude: {
             description: 'specify patterns to exclude from file watchlist',
             anyOf: [
-              { type: 'string' },
-              { type: 'array', items: { type: 'string' } },
+              { title: 'one pattern', type: 'string' },
+              { title: 'several pattern', type: 'array', items: { type: 'string' } },
             ],
           },
         },
@@ -186,10 +206,13 @@ module.exports = {
     default: true,
     anyOf: [
       {
+        title: 'enable cors',
         type: 'boolean',
       },
       {
+        title: 'more configs of cors(in object)',
         type: 'object',
+        additionalProperties: { type: 'string' },
       },
     ],
   },
@@ -199,9 +222,11 @@ module.exports = {
     default: 'local',
     anyOf: [
       {
+        title: 'enable auto browser opening',
         type: 'boolean',
       },
       {
+        title: 'open \'local\', \'external\' or other file name',
         type: 'string',
       },
     ],
@@ -213,6 +238,13 @@ module.exports = {
     properties: {
       level: {
         type: 'string',
+        enum: [
+          'silent',
+          'notify',
+          'error',
+          'warn',
+          'debug',
+        ],
         default: 'warn',
         description: 'set log level, predefined values: \'silent\',\'notify\',\'error\',\'warn\', \'debug\'',
       },
