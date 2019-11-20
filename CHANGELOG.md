@@ -1,3 +1,16 @@
+## v1.1.0 (2019-11-18)
+
+#### :rocket: New Feature
+* `svrx-util`, `svrx`
+  * [#152](https://github.com/svrxjs/svrx/pull/152) Change plugin install strategy to global install ([@xuchaoying](https://github.com/xuchaoying))
+  
+  Now the default path for plugin packages is changed from local `node_modules` in your project to `~/.svrx/plugins`.
+  svrx still supports local plugin install, you can use `npm install --save-dev svrx-plugin-name` to save a plugin to your working directory.
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#151](https://github.com/svrxjs/svrx/pull/151) Upgrade the priority of built-in api ([@leeluolee](https://github.com/leeluolee))
+
 ## v1.0.7 (2019-11-08)
 
 #### :bug: Bug Fix
