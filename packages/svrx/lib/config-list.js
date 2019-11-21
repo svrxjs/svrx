@@ -33,12 +33,14 @@ module.exports = {
     default: 8000,
     description: 'Specify a port number to listen for requests on',
     group: GROUPS.CORE,
+    ui: false,
   },
   https: {
     description: 'enable https',
     type: 'boolean',
     default: false,
     group: GROUPS.CORE,
+    ui: false,
   },
   route: {
     description: 'the path of routing config file',
