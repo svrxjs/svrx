@@ -27,6 +27,7 @@ module.exports = {
     type: 'string',
     description: 'the registry of npm',
     group: GROUPS.CORE,
+    pattern: '^https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)',
   },
   port: {
     type: 'number',
@@ -44,16 +45,7 @@ module.exports = {
   },
   route: {
     description: 'the path of routing config file',
-    anyOf: [{
-      title: 'one file',
-      type: 'string',
-    }, {
-      title: 'several files',
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-    }],
+    type: 'string',
     group: GROUPS.CORE,
   },
   historyApiFallback: {
@@ -65,7 +57,6 @@ module.exports = {
     }, {
       title: 'more configs of historyApiFallback(in object)',
       type: 'object',
-      additionalProperties: { type: 'string' },
     }],
     default: false,
   },
@@ -164,14 +155,12 @@ module.exports = {
       {
         title: 'more configs of proxy(in object)',
         type: 'object',
-        additionalProperties: { type: 'string' },
       },
       {
         title: 'more configs of proxy(in array of object)',
         type: 'array',
         items: {
           type: 'object',
-          additionalProperties: { type: 'string' },
         },
       },
     ],
@@ -214,7 +203,6 @@ module.exports = {
       {
         title: 'more configs of cors(in object)',
         type: 'object',
-        additionalProperties: { type: 'string' },
       },
     ],
   },
@@ -235,7 +223,7 @@ module.exports = {
   },
   logger: {
     description: 'global logger setting',
-    group: GROUPS.COMMON,
+    group: GROUPS.CORE,
     type: 'object',
     properties: {
       level: {
