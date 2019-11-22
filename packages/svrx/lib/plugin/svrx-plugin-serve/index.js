@@ -1,10 +1,8 @@
 const send = require('koa-send');
 const { c2k } = require('@svrx/util');
 const serveIndex = require('serve-index');
-const historyApiFallback = require('koa-history-api-fallback');
 const libPath = require('path');
 const { simpleRender } = require('../../util/helper');
-
 const { PRIORITY } = require('../../constant');
 
 const ACCEPT_METHOD = /^(?:GET|HEAD)$/i;
@@ -82,24 +80,6 @@ module.exports = {
       addServeAction(config, router.action, { root, index });
 
       addServeMiddleware(config, middleware, { root, index });
-
-      // historyApiFallback
-      // todo move out of serve
-      const historyApiFallbackOptions = config.get('historyApiFallback');
-      if (historyApiFallbackOptions) {
-        const historyApiFallbackMiddleware = historyApiFallback(
-          historyApiFallbackOptions === true ? {} : historyApiFallbackOptions,
-        );
-        middleware.add('$history-api-fallback', {
-          priority: PRIORITY.HISTORY_API_FALLBACK,
-          onRoute: async (ctx, next) => {
-            if (ctx.status !== 404) {
-              return next();
-            }
-            return historyApiFallbackMiddleware(ctx, next);
-          },
-        });
-      }
     },
   },
 };
