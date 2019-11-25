@@ -98,6 +98,22 @@ class Configure {
     return this[BUILTIN_OPTION].watch(pathes, callback);
   }
 
+  // for ui
+  builtinsSet(settings = {}) {
+    Object.keys(settings).forEach((key) => {
+      this.set(key, settings[key]);
+    });
+    // todo 部分 内置项 热重启
+  }
+
+  // for ui
+  pluginsSet(settings = {}) { // eslint-disable-line
+    // todo 发送事件，交给插件自行处理
+    // todo 提供插件热重启方法
+    console.log('pluginsSet');
+    console.log(settings); // { qrcode: { cli: false, ui: true, console: false } }
+  }
+
   /**
    * get all plugins
    * @returns {Array}
