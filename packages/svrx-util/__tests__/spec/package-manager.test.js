@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const PackageManagerCreator = require('../../lib/package-manager');
 
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
+const TEST_CORE_PATH = libPath.join(__dirname, '../../../svrx');
 const ERROR_NO_VERSION_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-error-no-version');
 const ERROR_NO_PACKAGE_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-no-package');
 const TEST_SVRX_DIR = libPath.join(__dirname, '../fixture/.svrx');
@@ -21,7 +22,73 @@ describe('Package Manager', () => {
   });
 
   describe('load CORE package', () => {
-    // todo
+    /* loads */
+    it('should work fine when load with a local path', async () => {
+      const pm = PackageManagerCreator({
+        path: TEST_CORE_PATH,
+      });
+      const core = await pm.load();
+      expect(core.name).to.eql('svrx');
+      expect(core.path).to.eql(TEST_CORE_PATH);
+      expect(core.version).to.eql((require(libPath.join(TEST_CORE_PATH, 'package.json'))).version); // eslint-disable-line
+    });
+    it('should work fine when load without a specific version(local)', async () => {
+      const pm = PackageManagerCreator({
+        version: '1.0.6',
+      });
+      const core = await pm.load();
+      expect(core.name).to.eql('svrx');
+      expect(core.version).to.eql('1.0.6');
+      expect(core.path).to.eql(libPath.join(TEST_SVRX_DIR, 'versions/1.0.6'));
+    }).timeout(100000);
+    it('should work fine when load without a specific version(remote)', async () => {
+      let storePath;
+      after(async () => {
+        await cleanModule(storePath);
+      });
+      const pm = PackageManagerCreator();
+      const core = await pm.load();
+      const LATEST_CORE_VERSION = await pm.getRemoteLatest();
+      storePath = core.path;
+      expect(core.name).to.eql('svrx');
+      expect(core.version).to.eql(LATEST_CORE_VERSION);
+    }).timeout(100000);
+    it('should work fine when load with a remote version and auto load a latest version', async () => {
+      const storePath = libPath.join(TEST_SVRX_DIR, 'versions/1.0.2');
+      let storePathLatest;
+      after(async () => {
+        await cleanModule(storePath);
+        await cleanModule(storePathLatest);
+      });
+      const pm = PackageManagerCreator({
+        version: '1.0.2',
+      });
+      const core = await pm.load();
+      const LATEST_CORE_VERSION = await pm.getRemoteLatest();
+      storePathLatest = libPath.join(TEST_SVRX_DIR, 'versions', LATEST_CORE_VERSION);
+      expect(core.name).to.eql('svrx');
+      expect(core.version).to.eql('1.0.2');
+      expect(core.path).to.eql(storePath);
+      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js'))).to.eql(true);
+    }).timeout(100000);
+
+    /* funcs */
+    it('should return file status through #exists()', async () => {
+      const pm = PackageManagerCreator();
+      expect(pm.exists('1.0.6')).to.eql(true);
+      expect(pm.exists('1.0.1')).to.eql(false);
+    });
+
+    /* errors */
+    it('should report error when unmatched version', (done) => {
+      const pm = PackageManagerCreator({
+        version: '10.0.0',
+      });
+      pm.load().catch((e) => {
+        expect(e).to.match(/No matching version found for @svrx\/svrx@10\.0\.0/);
+        done();
+      });
+    }).timeout(100000);
   });
 
   describe('load PLUGIN package', () => {
