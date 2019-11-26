@@ -275,17 +275,20 @@ class PackageManager {
     const { SVRX_ROOT, CORE_ROOT } = this;
     const pluginsRoot = libPath.join(SVRX_ROOT, 'plugins');
 
+    /* istanbul ignore if */
     if (packageToRemove === 'ALL') {
       await rimrafPromise(CORE_ROOT);
       await rimrafPromise(pluginsRoot);
       return true;
     }
 
+    /* istanbul ignore if */
     if (packageToRemove === 'CORE') {
       await rimrafPromise(CORE_ROOT);
       return true;
     }
 
+    /* istanbul ignore if */
     if (packageToRemove === 'PLUGIN') {
       await rimrafPromise(pluginsRoot);
       return true;
