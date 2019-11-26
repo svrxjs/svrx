@@ -1,1 +1,4 @@
-module.exports = {};
+module.exports = {
+  https: true,
+  open: false,
+};
