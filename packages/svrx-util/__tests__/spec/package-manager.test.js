@@ -27,7 +27,9 @@ describe('Package Manager', () => {
       const core = await pm.load();
       expect(core.name).to.eql('svrx');
       expect(core.path).to.eql(TEST_CORE_PATH);
-      expect(core.version).to.eql((require(libPath.join(TEST_CORE_PATH, 'package.json'))).version); // eslint-disable-line
+      expect(core.version)
+        .to
+        .eql((require(libPath.join(TEST_CORE_PATH, 'package.json'))).version); // eslint-disable-line
     });
     it('should work fine when load without a specific version(local)', async () => {
       const pm = PackageManagerCreator({
@@ -65,7 +67,9 @@ describe('Package Manager', () => {
       expect(core.name).to.eql('svrx');
       expect(core.version).to.eql('1.0.2');
       expect(core.path).to.eql(storePath);
-      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js'))).to.eql(true);
+      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js')))
+        .to
+        .eql(true);
     }).timeout(100000);
 
     /* funcs */
@@ -74,6 +78,13 @@ describe('Package Manager', () => {
       expect(pm.exists('1.0.6')).to.eql(true);
       expect(pm.exists('1.0.1')).to.eql(false);
     });
+    it('should return all local plugins through #getLocalPlugins()', () => {
+      const pm = PackageManagerCreator();
+      expect(pm.getLocalPlugins()).to.eql([{
+        name: 'hello',
+        versions: ['0.0.5', '1.0.0', '1.0.1'],
+      }]);
+    });
 
     /* errors */
     it('should report error when unmatched version', (done) => {
@@ -81,7 +92,9 @@ describe('Package Manager', () => {
         version: '10.0.0',
       });
       pm.load().catch((e) => {
-        expect(e).to.match(/No matching version found for @svrx\/svrx@10\.0\.0/);
+        expect(e)
+          .to
+          .match(/No matching version found for @svrx\/svrx@10\.0\.0/);
         done();
       });
     }).timeout(100000);
@@ -120,7 +133,9 @@ describe('Package Manager', () => {
       const plugin = await pm.load();
       expect(plugin.name).to.eql('hello');
       expect(plugin.version).to.eql('1.0.1');
-      expect(plugin.path).to.eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
+      expect(plugin.path)
+        .to
+        .eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
     });
     it('should work fine when load with a remote version and auto load a latest version', async () => {
       const pm = PackageManagerCreator({
@@ -140,7 +155,9 @@ describe('Package Manager', () => {
       expect(plugin.name).to.eql('demo');
       expect(plugin.version).to.eql('1.0.2');
       expect(plugin.path).to.eql(storePath);
-      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js'))).to.eql(true);
+      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js')))
+        .to
+        .eql(true);
     }).timeout(10000);
     it('should work fine when load without a specific version(local)', async () => {
       const pm = PackageManagerCreator({
@@ -150,7 +167,9 @@ describe('Package Manager', () => {
       const plugin = await pm.load();
       expect(plugin.name).to.eql('hello');
       expect(plugin.version).to.eql('0.0.5');
-      expect(plugin.path).to.eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/0.0.5'));
+      expect(plugin.path)
+        .to
+        .eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/0.0.5'));
     });
     it('should work fine when load without a specific version(remote)', async () => {
       const pm = PackageManagerCreator({
@@ -220,7 +239,9 @@ describe('Package Manager', () => {
         version: '1.0.2',
       });
       pm.load().catch((e) => {
-        expect(e).to.match(/the version of plugin 'demo' is not matched to the svrx currently using/);
+        expect(e)
+          .to
+          .match(/the version of plugin 'demo' is not matched to the svrx currently using/);
         done();
       });
     }).timeout(10000);
@@ -230,7 +251,9 @@ describe('Package Manager', () => {
         coreVersion: '2.0.0',
       });
       pm.load().catch((e) => {
-        expect(e).to.match(/there's no satisfied version of plugin demo for the svrx currently using/);
+        expect(e)
+          .to
+          .match(/there's no satisfied version of plugin demo for the svrx currently using/);
         done();
       });
     }).timeout(10000);
@@ -240,7 +263,9 @@ describe('Package Manager', () => {
         coreVersion: '1.0.0',
       });
       pm.load().catch((e) => {
-        expect(e).to.match(/install error: package 'svrx-plugin-not-exist-plugin' not found/);
+        expect(e)
+          .to
+          .match(/install error: package 'svrx-plugin-not-exist-plugin' not found/);
         done();
       });
     }).timeout(10000);
