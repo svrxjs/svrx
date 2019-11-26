@@ -5,6 +5,7 @@ const tmp = require('tmp');
 const libPath = require('path');
 const { fork } = require('child_process');
 const semver = require('semver');
+const rimraf = require('rimraf');
 const npm = require('../npm');
 
 const requireEnsure = (path) => {
@@ -12,7 +13,6 @@ const requireEnsure = (path) => {
   /* eslint-disable global-require, import/no-dynamic-require */
   return require(path);
 };
-
 const getLatestVersion = (versionList) => {
   // stable versions is always in higher priority than beta versions
   versionList.sort((v1, v2) => (semver.lt(v1, v2) ? 1 : -1));
@@ -20,6 +20,14 @@ const getLatestVersion = (versionList) => {
   const stableVersions = versionList.filter((v) => v.indexOf('-') === -1);
   if (stableVersions.length > 0) return stableVersions[0];
   return versionList.length > 0 ? versionList[0] : null;
+};
+const getDirectories = (source, filter) => {
+  const { lstatSync, readdirSync } = fs;
+  const isDirectory = (name) => lstatSync(libPath.join(source, name)).isDirectory();
+
+  return readdirSync(source)
+    .filter(isDirectory)
+    .filter(filter || (() => true));
 };
 
 class PackageManager {
@@ -37,6 +45,10 @@ class PackageManager {
     this.packageName = '@svrx/svrx';
 
     this.createDirs();
+  }
+
+  set(key, value) {
+    this[key] = value;
   }
 
   getRoot() {
@@ -85,7 +97,9 @@ class PackageManager {
         );
       }
 
-      const pkg = requireEnsure(dir);
+      const pkg = name === 'svrx'
+        ? requireEnsure(libPath.join(dir, 'lib/svrx')) // require svrx core instead of the open api
+        : requireEnsure(dir);
       return {
         name,
         path: dir,
@@ -169,14 +183,8 @@ class PackageManager {
 
   getLocalPackages() {
     const { root } = this;
-    const { lstatSync, readdirSync } = fs;
     const isValidVersion = (name) => (!!semver.valid(name));
-    const isDirectory = (name) => lstatSync(libPath.join(root, name)).isDirectory();
-    const getDirectories = (source) => readdirSync(source)
-      .filter(isValidVersion)
-      .filter(isDirectory);
-
-    const versions = (fs.existsSync(root) && getDirectories(root)) || [];
+    const versions = (fs.existsSync(root) && getDirectories(root, isValidVersion)) || [];
     return versions.map((v) => {
       const pkg = require(libPath.join(root, v, 'package.json'));
       return {
@@ -236,6 +244,66 @@ class PackageManager {
     const versionList = packageList.map((p) => p.version);
 
     return getLatestVersion(versionList);
+  }
+
+  /**
+   * get all local installed plugins and versions
+   * @returns {{versions: (*|Array), name: *}[]}
+   */
+  getLocalPlugins() {
+    const { SVRX_ROOT } = this;
+    const pluginsRoot = libPath.resolve(SVRX_ROOT, 'plugins');
+    const plugins = (fs.existsSync(pluginsRoot) && getDirectories(pluginsRoot)) || [];
+    const isValidVersion = (name) => (!!semver.valid(name));
+
+    return plugins.map((name) => {
+      const pluginRoot = libPath.resolve(pluginsRoot, name);
+      return {
+        name,
+        versions: (fs.existsSync(pluginRoot) && getDirectories(pluginRoot, isValidVersion)) || [],
+      };
+    }).filter((p) => p.versions.length > 0);
+  }
+
+  /**
+   * remove dirs
+   * @param packageToRemove  1.0.2, webpack, webpack/1.0.0, ALL, CORE, PLUGIN
+   * @returns {Promise<boolean>} isSuccess
+   */
+  async remove(packageToRemove) {
+    const rimrafPromise = (path) => new Promise((resolve) => rimraf(path, resolve));
+    const { SVRX_ROOT, CORE_ROOT } = this;
+    const pluginsRoot = libPath.join(SVRX_ROOT, 'plugins');
+
+    if (packageToRemove === 'ALL') {
+      await rimrafPromise(CORE_ROOT);
+      await rimrafPromise(pluginsRoot);
+      return true;
+    }
+
+    if (packageToRemove === 'CORE') {
+      await rimrafPromise(CORE_ROOT);
+      return true;
+    }
+
+    if (packageToRemove === 'PLUGIN') {
+      await rimrafPromise(pluginsRoot);
+      return true;
+    }
+
+    const versionPath = libPath.join(CORE_ROOT, packageToRemove);
+    if (fs.existsSync(versionPath)) {
+      await rimrafPromise(versionPath);
+      return true;
+    }
+
+    const pluginPath = libPath.join(pluginsRoot, packageToRemove);
+    if (fs.existsSync(pluginPath)) {
+      await rimrafPromise(pluginPath);
+      return true;
+    }
+
+    return false;
   }
 }
 
