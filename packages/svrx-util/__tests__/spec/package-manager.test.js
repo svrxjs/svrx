@@ -31,17 +31,28 @@ describe('Package Manager', () => {
         .to
         .equal((require(libPath.join(TEST_CORE_PATH, 'package.json'))).version); // eslint-disable-line
     });
-    it('should work fine when load without a specific version(local)', async () => {
+    it('should work fine when load without a specific version(local) and auto load a latest version', async () => {
       const pm = PackageManagerCreator({
         version: '1.0.6',
       });
+      const LATEST_CORE_VERSION = await pm.getRemoteLatest();
+
+      after(async () => {
+        await pm.remove(LATEST_CORE_VERSION);
+      });
+
       const core = await pm.load();
       expect(core.name).to.equal('svrx');
       expect(core.version).to.equal('1.0.6');
       expect(core.path).to.equal(libPath.join(TEST_SVRX_DIR, 'versions/1.0.6'));
+      expect(fs.existsSync(libPath.join(TEST_SVRX_DIR, 'versions', LATEST_CORE_VERSION)))
+        .to
+        .equal(true);
     }).timeout(100000);
     it('should work fine when load without a specific version(remote)', async () => {
-      const pm = PackageManagerCreator();
+      const pm = PackageManagerCreator({
+        autoClean: false,
+      });
       const LATEST_CORE_VERSION = await pm.getRemoteLatest();
       after(async () => {
         await pm.remove(LATEST_CORE_VERSION);
@@ -54,6 +65,7 @@ describe('Package Manager', () => {
       const storePath = libPath.join(TEST_SVRX_DIR, 'versions/1.0.2');
       const pm = PackageManagerCreator({
         version: '1.0.2',
+        autoClean: false,
       });
       const LATEST_CORE_VERSION = await pm.getRemoteLatest();
 
@@ -100,6 +112,7 @@ describe('Package Manager', () => {
     it('should report error when unmatched version', (done) => {
       const pm = PackageManagerCreator({
         version: '10.0.0',
+        autoClean: false,
       });
       pm.load().catch((e) => {
         expect(e)
@@ -146,12 +159,13 @@ describe('Package Manager', () => {
       expect(plugin.path)
         .to
         .equal(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
-    });
+    }).timeout(10000);
     it('should work fine when load with a remote version and auto load a latest version', async () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '0.0.2',
         version: '1.0.2',
+        autoClean: false,
       });
 
       const storePath = libPath.join(TEST_SVRX_DIR, 'plugins/demo/1.0.2');
@@ -185,6 +199,7 @@ describe('Package Manager', () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '0.0.3',
+        autoClean: false,
       });
       const storePath = libPath.join(TEST_SVRX_DIR, 'plugins/demo/1.0.3');
       after(async () => {
@@ -247,6 +262,7 @@ describe('Package Manager', () => {
         plugin: 'demo',
         coreVersion: '0.0.3',
         version: '1.0.2',
+        autoClean: false,
       });
       pm.load().catch((e) => {
         expect(e)
@@ -259,6 +275,7 @@ describe('Package Manager', () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '2.0.0',
+        autoClean: false,
       });
       pm.load().catch((e) => {
         expect(e)
@@ -271,6 +288,7 @@ describe('Package Manager', () => {
       const pm = PackageManagerCreator({
         plugin: 'not-exist-plugin',
         coreVersion: '1.0.0',
+        autoClean: false,
       });
       pm.load().catch((e) => {
         expect(e)
