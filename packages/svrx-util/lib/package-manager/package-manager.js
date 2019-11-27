@@ -277,8 +277,7 @@ class PackageManager {
 
     /* istanbul ignore if */
     if (packageToRemove === 'ALL') {
-      await rimrafPromise(CORE_ROOT);
-      await rimrafPromise(pluginsRoot);
+      await rimrafPromise(SVRX_ROOT);
       return true;
     }
 
