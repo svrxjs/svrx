@@ -25,20 +25,20 @@ describe('Package Manager', () => {
         path: TEST_CORE_PATH,
       });
       const core = await pm.load();
-      expect(core.name).to.eql('svrx');
-      expect(core.path).to.eql(TEST_CORE_PATH);
+      expect(core.name).to.equal('svrx');
+      expect(core.path).to.equal(TEST_CORE_PATH);
       expect(core.version)
         .to
-        .eql((require(libPath.join(TEST_CORE_PATH, 'package.json'))).version); // eslint-disable-line
+        .equal((require(libPath.join(TEST_CORE_PATH, 'package.json'))).version); // eslint-disable-line
     });
     it('should work fine when load without a specific version(local)', async () => {
       const pm = PackageManagerCreator({
         version: '1.0.6',
       });
       const core = await pm.load();
-      expect(core.name).to.eql('svrx');
-      expect(core.version).to.eql('1.0.6');
-      expect(core.path).to.eql(libPath.join(TEST_SVRX_DIR, 'versions/1.0.6'));
+      expect(core.name).to.equal('svrx');
+      expect(core.version).to.equal('1.0.6');
+      expect(core.path).to.equal(libPath.join(TEST_SVRX_DIR, 'versions/1.0.6'));
     }).timeout(100000);
     it('should work fine when load without a specific version(remote)', async () => {
       const pm = PackageManagerCreator();
@@ -47,8 +47,8 @@ describe('Package Manager', () => {
         await pm.remove(LATEST_CORE_VERSION);
       });
       const core = await pm.load();
-      expect(core.name).to.eql('svrx');
-      expect(core.version).to.eql(LATEST_CORE_VERSION);
+      expect(core.name).to.equal('svrx');
+      expect(core.version).to.equal(LATEST_CORE_VERSION);
     }).timeout(100000);
     it('should work fine when load with a remote version and auto load a latest version', async () => {
       const storePath = libPath.join(TEST_SVRX_DIR, 'versions/1.0.2');
@@ -64,19 +64,19 @@ describe('Package Manager', () => {
 
       const core = await pm.load();
       const storePathLatest = libPath.join(TEST_SVRX_DIR, 'versions', LATEST_CORE_VERSION);
-      expect(core.name).to.eql('svrx');
-      expect(core.version).to.eql('1.0.2');
-      expect(core.path).to.eql(storePath);
+      expect(core.name).to.equal('svrx');
+      expect(core.version).to.equal('1.0.2');
+      expect(core.path).to.equal(storePath);
       expect(fs.existsSync(libPath.join(storePathLatest, 'index.js')))
         .to
-        .eql(true);
+        .equal(true);
     }).timeout(100000);
 
     /* funcs */
     it('should return file status through #exists()', async () => {
       const pm = PackageManagerCreator();
-      expect(pm.exists('1.0.6')).to.eql(true);
-      expect(pm.exists('1.0.1')).to.eql(false);
+      expect(pm.exists('1.0.6')).to.equal(true);
+      expect(pm.exists('1.0.1')).to.equal(false);
     });
     it('should return all local plugins through #getLocalPlugins()', () => {
       const pm = PackageManagerCreator();
@@ -109,9 +109,9 @@ describe('Package Manager', () => {
         path: TEST_PLUGIN_PATH,
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('test');
-      expect(plugin.version).to.eql('0.0.1');
-      expect(plugin.path).to.eql(TEST_PLUGIN_PATH);
+      expect(plugin.name).to.equal('test');
+      expect(plugin.version).to.equal('0.0.1');
+      expect(plugin.path).to.equal(TEST_PLUGIN_PATH);
     });
     it('should work fine when load a local package without version', async () => {
       const pm = PackageManagerCreator({
@@ -120,9 +120,9 @@ describe('Package Manager', () => {
         coreVersion: '0.0.1',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('error-no-version');
-      expect(plugin.version).to.eql(undefined);
-      expect(plugin.path).to.eql(ERROR_NO_VERSION_PLUGIN_PATH);
+      expect(plugin.name).to.equal('error-no-version');
+      expect(plugin.version).to.equal(undefined);
+      expect(plugin.path).to.equal(ERROR_NO_VERSION_PLUGIN_PATH);
     });
     it('should work fine when load with a local version', async () => {
       const pm = PackageManagerCreator({
@@ -131,11 +131,11 @@ describe('Package Manager', () => {
         version: '1.0.1',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('hello');
-      expect(plugin.version).to.eql('1.0.1');
+      expect(plugin.name).to.equal('hello');
+      expect(plugin.version).to.equal('1.0.1');
       expect(plugin.path)
         .to
-        .eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
+        .equal(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
     });
     it('should work fine when load with a remote version and auto load a latest version', async () => {
       const pm = PackageManagerCreator({
@@ -152,12 +152,12 @@ describe('Package Manager', () => {
       });
 
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('demo');
-      expect(plugin.version).to.eql('1.0.2');
-      expect(plugin.path).to.eql(storePath);
+      expect(plugin.name).to.equal('demo');
+      expect(plugin.version).to.equal('1.0.2');
+      expect(plugin.path).to.equal(storePath);
       expect(fs.existsSync(libPath.join(storePathLatest, 'index.js')))
         .to
-        .eql(true);
+        .equal(true);
     }).timeout(10000);
     it('should work fine when load without a specific version(local)', async () => {
       const pm = PackageManagerCreator({
@@ -165,11 +165,11 @@ describe('Package Manager', () => {
         coreVersion: '0.0.2',
       });
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('hello');
-      expect(plugin.version).to.eql('0.0.5');
+      expect(plugin.name).to.equal('hello');
+      expect(plugin.version).to.equal('0.0.5');
       expect(plugin.path)
         .to
-        .eql(libPath.join(TEST_SVRX_DIR, 'plugins/hello/0.0.5'));
+        .equal(libPath.join(TEST_SVRX_DIR, 'plugins/hello/0.0.5'));
     });
     it('should work fine when load without a specific version(remote)', async () => {
       const pm = PackageManagerCreator({
@@ -182,9 +182,9 @@ describe('Package Manager', () => {
       });
 
       const plugin = await pm.load();
-      expect(plugin.name).to.eql('demo');
-      expect(plugin.version).to.eql('1.0.3');
-      expect(plugin.path).to.eql(storePath);
+      expect(plugin.name).to.equal('demo');
+      expect(plugin.version).to.equal('1.0.3');
+      expect(plugin.path).to.equal(storePath);
     }).timeout(10000);
     it('should return undefined for version when no package.json exist in local package', async () => {
       const pm = PackageManagerCreator({
@@ -193,7 +193,7 @@ describe('Package Manager', () => {
         coreVersion: '0.0.3',
       });
       const result = await pm.load();
-      expect(result.version).to.eql(undefined);
+      expect(result.version).to.equal(undefined);
     });
 
     /* funcs */
@@ -202,33 +202,33 @@ describe('Package Manager', () => {
         plugin: 'hello',
         coreVersion: '1.0.0',
       });
-      expect(pm.exists('0.0.5')).to.eql(true);
-      expect(pm.exists('1.0.0')).to.eql(true);
-      expect(pm.exists('1.0.2')).to.eql(false);
+      expect(pm.exists('0.0.5')).to.equal(true);
+      expect(pm.exists('1.0.0')).to.equal(true);
+      expect(pm.exists('1.0.2')).to.equal(false);
     });
     it('should return the best fit version through #getLocalBestfit()', () => {
       const pm = PackageManagerCreator({
         plugin: 'hello',
         coreVersion: '1.0.0',
       });
-      expect(pm.getLocalBestfit()).to.eql('1.0.1');
+      expect(pm.getLocalBestfit()).to.equal('1.0.1');
       const pm2 = PackageManagerCreator({
         plugin: 'hello',
         coreVersion: '0.0.1',
       });
-      expect(pm2.getLocalBestfit()).to.eql('0.0.5');
+      expect(pm2.getLocalBestfit()).to.equal('0.0.5');
     });
     it('should return the best fit version through #getRemoteBestfit()', async () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '0.0.2',
       });
-      expect(await pm.getRemoteBestfit()).to.eql('1.0.2');
+      expect(await pm.getRemoteBestfit()).to.equal('1.0.2');
       const pm2 = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '0.0.3',
       });
-      expect(await pm2.getRemoteBestfit()).to.eql('1.0.3');
+      expect(await pm2.getRemoteBestfit()).to.equal('1.0.3');
     }).timeout(10000);
 
     /* errors */
