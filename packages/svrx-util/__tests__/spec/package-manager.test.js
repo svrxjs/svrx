@@ -85,6 +85,16 @@ describe('Package Manager', () => {
         versions: ['0.0.5', '1.0.0', '1.0.1'],
       }]);
     });
+    it('should clean old packages through #autoclean()', async () => {
+      const pm = PackageManagerCreator({
+        version: '1.0.6',
+      });
+      const tempPackPath = libPath.join(TEST_SVRX_DIR, 'versions', '1.0.5');
+      fs.mkdirSync(tempPackPath);
+      expect(fs.existsSync(tempPackPath)).to.eql(true);
+      await pm.autoclean();
+      expect(fs.existsSync(tempPackPath)).to.eql(false);
+    });
 
     /* errors */
     it('should report error when unmatched version', (done) => {
