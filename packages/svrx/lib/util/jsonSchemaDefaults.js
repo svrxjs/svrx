@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /**
  * copy from https://github.com/trilogy-group/ignite-chute-opensource-json-schema-defaults
  * modified for custom json-schema type: function

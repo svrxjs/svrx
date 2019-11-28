@@ -17,6 +17,12 @@ module.exports = {
     group: GROUPS.CORE,
     ui: false,
   },
+  path: {
+    type: 'string',
+    description: 'the path of local svrx core package(for development)',
+    group: GROUPS.CORE,
+    ui: false,
+  },
   registry: {
     type: 'string',
     description: 'the registry of npm',
