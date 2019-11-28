@@ -29,17 +29,19 @@ const getDirectories = (source, filter) => {
     .filter(isDirectory)
     .filter(filter || (() => true));
 };
+const rimrafPromise = (path) => new Promise((resolve) => rimraf(path, resolve));
 
 class PackageManager {
   constructor(options) {
     const {
-      name, path, version, coreVersion, registry,
+      name, path, version, coreVersion, registry, autoClean = true,
     } = options;
     this.name = name; // plugin name: foo, foo-bar, @scope/foo
     this.version = version; // plugin version. undefined for core
     this.coreVersion = coreVersion; // core version currently used
     this.path = path; // path for local loaded plugin
     this.registry = registry;
+    this.autoClean = autoClean; // auto remove old packages
 
     // default params for core
     this.packageName = '@svrx/svrx';
@@ -144,6 +146,7 @@ class PackageManager {
 
     // 3. load from remote
     await this.install(targetVerison);
+    this.autoclean(); // auto clean on remote install
     return readPackage(libPath.join(root, targetVerison));
   }
 
@@ -271,14 +274,12 @@ class PackageManager {
    * @returns {Promise<boolean>} isSuccess
    */
   async remove(packageToRemove) {
-    const rimrafPromise = (path) => new Promise((resolve) => rimraf(path, resolve));
     const { SVRX_ROOT, CORE_ROOT } = this;
     const pluginsRoot = libPath.join(SVRX_ROOT, 'plugins');
 
     /* istanbul ignore if */
     if (packageToRemove === 'ALL') {
-      await rimrafPromise(CORE_ROOT);
-      await rimrafPromise(pluginsRoot);
+      await rimrafPromise(SVRX_ROOT);
       return true;
     }
 
@@ -308,6 +309,23 @@ class PackageManager {
 
     return false;
   }
+
+  async autoclean() {
+    const { autoClean, root, version } = this;
+    if (!autoClean) return;
+
+    // clean inside root, exclude this.version & latest version
+    const isValidVersion = (name) => (!!semver.valid(name));
+
+    const versions = getDirectories(root, isValidVersion);
+    const latestVersion = getLatestVersion(versions);
+
+    const promises = versions
+      .filter((v) => v !== latestVersion && v !== version)
+      .map((v) => rimrafPromise(libPath.join(root, v)));
+
+    await Promise.all(promises);
+  }
 }
 
 PackageManager.getInstallTask = async ({
@@ -331,16 +349,6 @@ PackageManager.getInstallTask = async ({
   fs.copySync(tmpFolder, destFolder, {
     dereference: true, // ensure linked folder is copied too
   });
-
-  // if (autoClean) { todo
-  //   fs.writeFileSync(path.resolve(destFolder, '.autoclean'), '');
-  //   // auto clean old packages with .autoclean label
-  //   local.cleanOlds(installVersion, current, versionsRoot).then(() => {
-  //     resolve(installVersion);
-  //   });
-  // } else {
-  //   resolve(installVersion);
-  // }
 
   return result.version;
 };
