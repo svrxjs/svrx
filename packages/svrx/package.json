@@ -48,7 +48,7 @@
     "koa2-cors": "^2.0.6",
     "lodash": "^4.17.11",
     "micromatch": "^4.0.2",
-    "path-to-regexp": "^5.0.0",
+    "path-to-regexp": "^6.1.0",
     "raw-body": "^2.4.0",
     "requires-port": "^1.0.0",
     "resolve": "^1.10.0",
