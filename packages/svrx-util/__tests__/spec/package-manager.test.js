@@ -296,6 +296,6 @@ describe('Package Manager', () => {
           .match(/install error: package 'svrx-plugin-not-exist-plugin' not found/);
         done();
       });
-    }).timeout(10000);
+    }).timeout(100000);
   });
 });
