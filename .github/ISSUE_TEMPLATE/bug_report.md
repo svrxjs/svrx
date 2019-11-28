@@ -24,10 +24,12 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
+<!--or you can just paste the output of 'svrx -v' -->
+
  - OS: [e.g. iOS]
  - Node: [e.g. 10.0.0, 12.0.0]
  - Browser: [e.g. chrome, safari]
  - Version: [e.g. 22]
-
+ 
 **Additional context**
 Add any other context about the problem here.
