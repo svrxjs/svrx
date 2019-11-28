@@ -194,7 +194,7 @@ describe('Package Manager', () => {
       expect(plugin.path)
         .to
         .equal(libPath.join(TEST_SVRX_DIR, 'plugins/hello/0.0.5'));
-    });
+    }).timeout(10000);
     it('should work fine when load without a specific version(remote)', async () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',
