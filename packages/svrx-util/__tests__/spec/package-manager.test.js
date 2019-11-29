@@ -152,6 +152,7 @@ describe('Package Manager', () => {
         plugin: 'hello',
         coreVersion: '1.0.0',
         version: '1.0.1',
+        autoClean: false,
       });
       const plugin = await pm.load();
       expect(plugin.name).to.equal('hello');
@@ -186,6 +187,7 @@ describe('Package Manager', () => {
     it('should work fine when load without a specific version(local)', async () => {
       const pm = PackageManagerCreator({
         plugin: 'hello',
+        autoClean: false,
         coreVersion: '0.0.2',
       });
       const plugin = await pm.load();
