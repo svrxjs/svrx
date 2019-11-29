@@ -1,3 +1,9 @@
+## v1.1.1 (2019-11-28)
+
+#### :rocket: New Feature
+* `svrx-util`
+  * [#159](https://github.com/svrxjs/svrx/pull/159) Add autoclean to package-manager ([@xuchaoying](https://github.com/xuchaoying))
+
 ## v1.1.0 (2019-11-18)
 
 #### :rocket: New Feature
