@@ -141,12 +141,12 @@ class PackageManager {
 
     // 2. load from local
     if (this.exists(targetVerison)) {
+      await this.autoclean(targetVerison); // auto clean on remote install
       return readPackage(libPath.join(root, targetVerison));
     }
 
     // 3. load from remote
     await this.install(targetVerison);
-    this.autoclean(); // auto clean on remote install
     return readPackage(libPath.join(root, targetVerison));
   }
 
@@ -310,7 +310,7 @@ class PackageManager {
     return false;
   }
 
-  async autoclean() {
+  async autoclean(targetVerison) {
     const { autoClean, root, version } = this;
     if (!autoClean) return;
 
@@ -321,7 +321,7 @@ class PackageManager {
     const latestVersion = getLatestVersion(versions);
 
     const promises = versions
-      .filter((v) => v !== latestVersion && v !== version)
+      .filter((v) => v !== latestVersion && v !== version && v !== targetVerison)
       .map((v) => rimrafPromise(libPath.join(root, v)));
 
     await Promise.all(promises);
