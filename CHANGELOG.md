@@ -1,3 +1,9 @@
+## v1.1.3 (2019-12-02)
+
+#### :bug: Bug Fix
+* `svrx-util`
+  * [#165](https://github.com/svrxjs/svrx/pull/165) Fix `Error: Cannot find module 'npm'` when starting svrx core from npm scripts ([@xuchaoying](https://github.com/xuchaoying))
+
 ## v1.1.2 (2019-12-02)
 
 ## v1.1.1 (2019-11-28)
