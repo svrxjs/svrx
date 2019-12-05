@@ -48,18 +48,6 @@ module.exports = {
     type: 'string',
     group: GROUPS.CORE,
   },
-  historyApiFallback: {
-    group: GROUPS.CORE,
-    description: 'Enable historyApiFallback middleware',
-    anyOf: [{
-      title: 'enable historyApiFallback',
-      type: 'boolean',
-    }, {
-      title: 'more configs of historyApiFallback(in object)',
-      type: 'object',
-    }],
-    default: false,
-  },
   plugin: {
     group: GROUPS.CORE,
     alias: 'p',
@@ -113,6 +101,18 @@ module.exports = {
   },
 
   // built plugin configs
+  historyApiFallback: {
+    group: GROUPS.COMMON,
+    description: 'Enable historyApiFallback middleware',
+    anyOf: [{
+      title: 'enable historyApiFallback',
+      type: 'boolean',
+    }, {
+      title: 'more configs of historyApiFallback(in object)',
+      type: 'object',
+    }],
+    default: false,
+  },
   serve: {
     description: 'dev server configs',
     group: GROUPS.COMMON,
@@ -183,7 +183,11 @@ module.exports = {
             description: 'specify patterns to exclude from file watchlist',
             anyOf: [
               { title: 'one pattern', type: 'string' },
-              { title: 'several pattern', type: 'array', items: { type: 'string' } },
+              {
+                title: 'several pattern',
+                type: 'array',
+                items: { type: 'string' },
+              },
             ],
           },
         },
@@ -220,6 +224,7 @@ module.exports = {
         type: 'string',
       },
     ],
+    ui: false,
   },
   logger: {
     description: 'global logger setting',

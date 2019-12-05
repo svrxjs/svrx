@@ -75,9 +75,17 @@ class Svrx {
 
   _prepareConfig() {
     const { config } = this;
+    // logger
     if (config.get('logger.level')) {
       logger.setLevel(config.get('logger.level'));
     }
+    config.watch('logger.level', () => {
+      if (config.get('logger.level')) {
+        logger.setLevel(config.get('logger.level'));
+      }
+    });
+
+    // root
     const root = config.get('root');
     if (!libPath.isAbsolute(root)) {
       config.set('root', libPath.join(process.cwd(), root));
