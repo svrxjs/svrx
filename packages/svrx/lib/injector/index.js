@@ -133,8 +133,8 @@ module.exports = class Injector {
   _transform(body) {
     const { config } = this;
     const replaceScript = [
-      '<head>',
-      `<head><script src="${config.get('urls.script')}" charset="UTF-8"></script>`,
+      '</body>',
+      `<script async src="${config.get('urls.script')}" charset="UTF-8"></script></body>`,
     ];
     const replaceStyle = [
       /<\/(head|body)>/,
