@@ -47,6 +47,7 @@ module.exports = {
     description: 'the path of routing config file',
     type: 'string',
     group: GROUPS.CORE,
+    ui: false,
   },
   plugin: {
     group: GROUPS.CORE,
@@ -170,6 +171,7 @@ module.exports = {
     description: 'enable auto live reload',
     group: GROUPS.COMMON,
     default: true,
+    ui: false,
     anyOf: [
       {
         title: 'enable livereload',
