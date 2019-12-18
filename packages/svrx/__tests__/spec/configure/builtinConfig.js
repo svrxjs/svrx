@@ -31,11 +31,11 @@ describe('Builtin Configs', () => {
 
   it('should concat array values from CLI and RC', () => {
     const server = createServer({
-      proxy: ['a'],
+      proxy: [{ a: 'a' }],
     }, {
-      proxy: ['b'],
+      proxy: [{ b: 'b' }],
     });
-    expect(server.config.get('proxy')).to.eql(['a', 'b']);
+    expect(server.config.get('proxy')).to.eql([{ a: 'a' }, { b: 'b' }]);
   });
 });
 
