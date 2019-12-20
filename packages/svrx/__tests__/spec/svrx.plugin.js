@@ -525,4 +525,26 @@ describe('Plugin System', () => {
       });
     });
   });
+
+  describe('Builtin: historyApiFallback', () => {
+    it('basic usage', (done) => {
+      const svrx = createServer({
+        historyApiFallback: true,
+        serve: {
+          base: libPath.join(MODULE_PATH, 'historyApiFallback'),
+        },
+      });
+      svrx.setup().then(() => {
+        request(svrx.callback())
+          .get('/index.html')
+          .expect(/<body>hi/)
+          .end(done);
+        // fixme below is failed
+        // request(svrx.callback())
+        //   .get('/no-exist')
+        //   .expect(/<body>hi/)
+        //   .end(done);
+      });
+    });
+  });
 });

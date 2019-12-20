@@ -11,6 +11,7 @@ module.exports = {
       const historyApiFallbackMiddleware = historyApiFallback(
         historyApiFallbackOptions === true ? {} : historyApiFallbackOptions,
       );
+
       if (ctx.status !== 404) {
         return next();
       }
