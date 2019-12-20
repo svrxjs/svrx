@@ -33,6 +33,7 @@ class Svrx {
       cli: cliOptions,
       rc: rcOptions,
     });
+    this.logger = logger;
     const { config } = this;
 
     this._prepareConfig(config);
