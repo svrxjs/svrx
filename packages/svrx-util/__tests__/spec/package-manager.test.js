@@ -1,5 +1,6 @@
 const expect = require('expect.js');
 const libPath = require('path');
+const sinon = require('sinon');
 const fs = require('fs-extra');
 const PackageManagerCreator = require('../../lib/package-manager');
 
@@ -35,53 +36,43 @@ describe('Package Manager', () => {
       const pm = PackageManagerCreator({
         version: '1.0.6',
       });
-      const LATEST_CORE_VERSION = await pm.getRemoteLatest();
-
-      after(async () => {
-        await pm.remove(LATEST_CORE_VERSION);
-      });
-
+      const autoUpdateStub = sinon.stub(pm, 'autoUpdate');
+      autoUpdateStub.callsFake(() => {});
       const core = await pm.load();
       expect(core.name).to.equal('svrx');
       expect(core.version).to.equal('1.0.6');
       expect(core.path).to.equal(libPath.join(TEST_SVRX_DIR, 'versions/1.0.6'));
-      expect(fs.existsSync(libPath.join(TEST_SVRX_DIR, 'versions', LATEST_CORE_VERSION)))
-        .to
-        .equal(true);
-    }).timeout(100000);
-    it('should work fine when load without a specific version(remote)', async () => {
+      expect(autoUpdateStub.calledOnce).to.equal(true);
+    }).timeout(10000);
+    it('should load from local when load without a specific version and auto load a latest version', async () => {
       const pm = PackageManagerCreator({
         autoClean: false,
       });
-      const LATEST_CORE_VERSION = await pm.getRemoteLatest();
-      after(async () => {
-        await pm.remove(LATEST_CORE_VERSION);
-      });
+      const autoUpdateStub = sinon.stub(pm, 'autoUpdate');
+      autoUpdateStub.callsFake(() => {});
       const core = await pm.load();
       expect(core.name).to.equal('svrx');
-      expect(core.version).to.equal(LATEST_CORE_VERSION);
-    }).timeout(100000);
-    it('should work fine when load with a remote version and auto load a latest version', async () => {
+      expect(core.version).to.equal('1.0.6');
+      expect(autoUpdateStub.calledOnce).to.equal(true);
+    }).timeout(10000);
+    it('should work fine when load with a remote version and NOT auto load a latest version', async () => {
       const storePath = libPath.join(TEST_SVRX_DIR, 'versions/1.0.2');
       const pm = PackageManagerCreator({
         version: '1.0.2',
         autoClean: false,
       });
-      const LATEST_CORE_VERSION = await pm.getRemoteLatest();
 
       after(async () => {
         await pm.remove('1.0.2');
-        await pm.remove(LATEST_CORE_VERSION);
       });
 
+      const autoUpdateStub = sinon.stub(pm, 'autoUpdate');
+      autoUpdateStub.callsFake(() => {});
       const core = await pm.load();
-      const storePathLatest = libPath.join(TEST_SVRX_DIR, 'versions', LATEST_CORE_VERSION);
       expect(core.name).to.equal('svrx');
       expect(core.version).to.equal('1.0.2');
       expect(core.path).to.equal(storePath);
-      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js')))
-        .to
-        .equal(true);
+      expect(autoUpdateStub.calledOnce).to.equal(false);
     }).timeout(100000);
 
     /* funcs */
@@ -107,6 +98,17 @@ describe('Package Manager', () => {
       await pm.autoclean();
       expect(fs.existsSync(tempPackPath)).to.eql(false);
     });
+    it('should download a latest version when run autoUpdate()', async () => {
+      const pm = PackageManagerCreator();
+      const LATEST_VERISON = await pm.getRemoteLatest();
+      after(async () => {
+        await pm.remove(LATEST_VERISON);
+      });
+      await pm.autoUpdate();
+      expect(fs.existsSync(libPath.join(TEST_SVRX_DIR, 'versions', LATEST_VERISON)))
+        .to
+        .equal(true);
+    }).timeout(100000);
 
     /* errors */
     it('should report error when unmatched version', (done) => {
@@ -161,7 +163,7 @@ describe('Package Manager', () => {
         .to
         .equal(libPath.join(TEST_SVRX_DIR, 'plugins/hello/1.0.1'));
     }).timeout(10000);
-    it('should work fine when load with a remote version and auto load a latest version', async () => {
+    it('should work fine when load with a remote version and NOT auto load a latest version', async () => {
       const pm = PackageManagerCreator({
         plugin: 'demo',
         coreVersion: '0.0.2',
@@ -170,19 +172,17 @@ describe('Package Manager', () => {
       });
 
       const storePath = libPath.join(TEST_SVRX_DIR, 'plugins/demo/1.0.2');
-      const storePathLatest = libPath.join(TEST_SVRX_DIR, 'plugins/demo/1.0.3');
+      const autoUpdateStub = sinon.stub(pm, 'autoUpdate');
+      autoUpdateStub.callsFake(() => {});
       after(async () => {
         await pm.remove('demo/1.0.2');
-        await pm.remove('demo/1.0.3');
       });
 
       const plugin = await pm.load();
       expect(plugin.name).to.equal('demo');
       expect(plugin.version).to.equal('1.0.2');
       expect(plugin.path).to.equal(storePath);
-      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js')))
-        .to
-        .equal(true);
+      expect(autoUpdateStub.calledOnce).to.equal(false);
     }).timeout(10000);
     it('should work fine when load without a specific version(local)', async () => {
       const pm = PackageManagerCreator({
@@ -257,6 +257,20 @@ describe('Package Manager', () => {
       });
       expect(await pm2.getRemoteBestfit()).to.equal('1.0.3');
     }).timeout(10000);
+    it('should download a latest version when run autoUpdate()', async () => {
+      const pm = PackageManagerCreator({
+        plugin: 'demo',
+        coreVersion: '0.0.3',
+      });
+      const storePathLatest = libPath.join(TEST_SVRX_DIR, 'plugins/demo/1.0.3');
+      after(async () => {
+        await pm.remove('demo/1.0.3');
+      });
+      await pm.autoUpdate();
+      expect(fs.existsSync(libPath.join(storePathLatest, 'index.js')))
+        .to
+        .equal(true);
+    }).timeout(100000);
 
     /* errors */
     it('should report error when unmatched version', (done) => {
