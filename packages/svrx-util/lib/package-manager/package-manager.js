@@ -110,18 +110,6 @@ class PackageManager {
       };
     };
 
-    // auto download the latest version
-    if (!path) {
-      try {
-        const latestVersion = await this.getRemoteLatest();
-        if (!this.exists(latestVersion)) {
-          await this.install(latestVersion);
-        }
-      } catch (e) {
-        // nevermind if auto download failed
-      }
-    }
-
     // 1. load with path ( without installing
     if (path) {
       return readPackage(path);
@@ -142,6 +130,8 @@ class PackageManager {
     // 2. load from local
     if (this.exists(targetVerison)) {
       await this.autoclean(targetVerison); // auto clean on remote install
+      // auto update package
+      this.autoUpdate();
       return readPackage(libPath.join(root, targetVerison));
     }
 
@@ -308,6 +298,17 @@ class PackageManager {
     }
 
     return false;
+  }
+
+  async autoUpdate() {
+    try {
+      const latestVersion = await this.getRemoteLatest();
+      if (!this.exists(latestVersion)) {
+        await this.install(latestVersion);
+      }
+    } catch (e) {
+      // nevermind if auto download failed
+    }
   }
 
   async autoclean(targetVerison) {
