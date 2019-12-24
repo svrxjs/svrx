@@ -97,7 +97,7 @@ describe('Package Manager', () => {
       expect(fs.existsSync(tempPackPath)).to.eql(true);
       await pm.autoclean();
       expect(fs.existsSync(tempPackPath)).to.eql(false);
-    });
+    }).timeout(10000);
     it('should download a latest version when run autoUpdate()', async () => {
       const pm = PackageManagerCreator();
       const LATEST_VERISON = await pm.getRemoteLatest();
