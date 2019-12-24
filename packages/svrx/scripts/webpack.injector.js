@@ -10,7 +10,7 @@ const config = {
     filename: 'client.js',
     library: '__svrx__',
     path: path.join(INJECTOR_PATH, 'dist'),
-    libraryTarget: 'umd',
+    libraryTarget: 'window',
   },
   externals: { __svrx__: '__svrx__' },
   mode: 'production',
