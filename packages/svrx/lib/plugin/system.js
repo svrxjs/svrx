@@ -12,9 +12,6 @@ const { normalizePluginName } = nameFormatter;
 const PLUGIN_MAP = Symbol('PLUGIN_MAP');
 
 class PluginSystem {
-  /**
-   * @param {Array} pluginlist
-   */
   constructor({
     events, config, middleware, injector, io, router,
   }) {
@@ -152,7 +149,7 @@ class PluginSystem {
     } = module;
     const { onRoute, onCreate /* onOptionChange */ } = hooks;
 
-    const isBuiltin = BUILTIN_PLUGIN.includes(name);
+    const isBuiltin = BUILTIN_PLUGIN.includes(name) || name === 'ui';
     const config = isBuiltin ? this.config : pluginConfig;
     // todo all variables below should be a new instance init with 'config'
     const {
@@ -202,10 +199,10 @@ class PluginSystem {
 
     // set plugin configs
     if (!isBuiltin && configSchema) {
-      config.setConfigs(configSchema);
+      config.setSchema(configSchema);
     }
 
-    // regist service
+    // register service
     if (services) {
       Object.keys(services).forEach((i) => {
         io.registService(i, services[i]);

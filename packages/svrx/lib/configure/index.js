@@ -98,6 +98,21 @@ class Configure {
     return this[BUILTIN_OPTION].watch(pathes, callback);
   }
 
+  // for ui
+  builtinsSet(settings = {}) {
+    Object.keys(settings).forEach((key) => {
+      this.set(key, settings[key]);
+    });
+  }
+
+  // for ui
+  pluginsSet(settings = {}) { // eslint-disable-line
+    // todo 发送事件，交给插件自行处理
+    // todo 提供插件热重启方法
+    // console.log('pluginsSet');
+    // console.log(settings); // { qrcode: { cli: false, ui: true, console: false } }
+  }
+
   /**
    * get all plugins
    * @returns {Array}
@@ -113,6 +128,18 @@ class Configure {
    */
   getPlugin(name) {
     return this[PLUGINS].find((p) => p.getInfo('name') === name);
+  }
+
+  /**
+   * get builtin plugins
+   * @returns {Array}
+   */
+  getExternalPlugins() {
+    return this[PLUGINS].filter((p) => !BUILTIN_PLUGIN.includes(p.getInfo('name')));
+  }
+
+  getSchema() {
+    return this[BUILTIN_CONFIG];
   }
 
   _parseCliOption(raw = {}) {

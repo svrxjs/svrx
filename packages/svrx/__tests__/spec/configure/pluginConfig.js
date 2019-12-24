@@ -135,4 +135,25 @@ describe('Plugin Config', () => {
     expect(testPlugin.get('$.port')).to.equal(8000);
     sinon.restore();
   });
+
+  it('should return all builtin options when get(\'$\')', () => {
+    const server = createServer({
+      plugins: ['test'],
+    });
+    const { config } = server;
+    expect(config.getPlugin('test').get('$')).to.eql(
+      config.get(),
+    );
+  });
+
+  it('should return plugin schema using getSchema()', async () => {
+    const server = createServer({
+      plugins: [{
+        path: TEST_PLUGIN_PATH,
+      }],
+    });
+    await server.setup();
+    const { config } = server;
+    expect(config.getPlugin('test').getSchema()).to.eql({ limit: { type: 'number', default: 100 } });
+  });
 });

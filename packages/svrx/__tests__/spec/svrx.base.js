@@ -8,9 +8,7 @@ const svrx = require('../../index');
 const Svrx = require('../../lib/svrx');
 const CONFIGS = require('../../lib/config-list');
 const { IO_PATH } = require('../../lib/shared/consts');
-
 const Middleware = require('../../lib/middleware');
-
 const { createServer } = require('../util');
 
 const getPort = (number) => new Promise((resolve) => {
@@ -18,6 +16,7 @@ const getPort = (number) => new Promise((resolve) => {
     resolve(ports);
   });
 });
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('Basic', () => {
   it('#Callback', (done) => {
@@ -74,6 +73,7 @@ describe('Basic', () => {
   it('getCurrentVersion', () => {
     expect(Svrx.getCurrentVersion()).to.equal(require('../../package.json').version);  // eslint-disable-line
   });
+
   it('printHelper', () => {
     expect(Svrx.printBuiltinOptionsHelp()).to.match(new RegExp(Object.keys(CONFIGS).join('|')));
   });
@@ -359,5 +359,15 @@ describe('Signal handling', () => {
         });
       });
     });
+  });
+});
+
+describe('Config change', () => {
+  it('Change logger.level', async () => {
+    const server = new Svrx();
+    const { config, logger } = server;
+    config.set('logger.level', 'error');
+    await sleep(10);
+    expect(logger.Logger.levelIndex).to.equal(10);
   });
 });

@@ -31,11 +31,11 @@ describe('Builtin Configs', () => {
 
   it('should concat array values from CLI and RC', () => {
     const server = createServer({
-      proxy: ['a'],
+      proxy: [{ a: 'a' }],
     }, {
-      proxy: ['b'],
+      proxy: [{ b: 'b' }],
     });
-    expect(server.config.get('proxy')).to.eql(['a', 'b']);
+    expect(server.config.get('proxy')).to.eql([{ a: 'a' }, { b: 'b' }]);
   });
 });
 
@@ -91,6 +91,14 @@ describe('Config get', () => {
       foo: 'bar', // defaults
     });
   });
+
+  it('should return schema correctly', () => {
+    expect(config.getSchema()).to.eql(CONFIGS);
+  });
+
+  it('should return all external plugins when getExternalPlugins()', () => {
+    expect(config.getExternalPlugins().map((p) => p.getInfo('name'))).to.eql(['test']);
+  });
 });
 
 describe('Config set', () => {
@@ -116,17 +124,30 @@ describe('Config set', () => {
   const { config } = server;
   const testPlugin = config.getPlugin('test');
 
-  it('should set builtin value corrently', () => {
+  it('should set builtin value correctly', () => {
     config.set('port', 4000);
     expect(config.get('port')).to.equal(4000);
     config.set('port', 3000);
   });
 
-  it('should set plugin option corrently', () => {
+  it('should set plugin option correctly', () => {
     testPlugin.set('op', 321);
     testPlugin.set('other', 'other info');
     expect(testPlugin.get('op')).to.equal(321);
     expect(testPlugin.get('other')).to.equal('other info');
+  });
+
+  it('should set builtin values in object correctly', () => {
+    config.builtinsSet({
+      port: 4000,
+      https: true,
+    });
+    expect(config.get('port')).to.equal(4000);
+    expect(config.get('https')).to.equal(true);
+    config.builtinsSet({
+      port: 3000,
+      https: false,
+    });
   });
 });
 

@@ -8,6 +8,7 @@ const CONFIG = Symbol('config');
 const DEFAULTS = Symbol('defaults');
 const BUILTIN_OPTION = Symbol('builtinOption');
 const BUILTIN_DEFAULTS = Symbol('builtinDefaults');
+
 const defaults = require('../util/jsonSchemaDefaults');
 
 class Plugin {
@@ -55,6 +56,11 @@ class Plugin {
     const { isBuiltin, pathes: parsedPathes } = Plugin._parsePathes(pathes);
 
     if (isBuiltin) {
+      if (pathes.length === 1) { // get('$')
+        // get all builtin options and the defaults
+        return { ...this[BUILTIN_DEFAULTS], ...this[BUILTIN_OPTION].get() };
+      }
+
       // get from builtin option
       const userOption = this[BUILTIN_OPTION].get(parsedPathes);
       if (userOption === undefined) return _.get(this[BUILTIN_DEFAULTS], parsedPathes);
@@ -93,13 +99,17 @@ class Plugin {
    * set config after plugin loaded
    * @param configs
    */
-  setConfigs(configs = {}) {
+  setSchema(configs = {}) {
     this[CONFIG] = configs;
     this[DEFAULTS] = defaults({
       type: 'object',
       properties: configs,
     });
     this[OPTION].validate(configs);
+  }
+
+  getSchema() {
+    return this[CONFIG];
   }
 
   watch(pathes, callback) {

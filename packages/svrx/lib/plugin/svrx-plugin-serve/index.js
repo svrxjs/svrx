@@ -1,10 +1,8 @@
 const send = require('koa-send');
 const { c2k } = require('@svrx/util');
 const serveIndex = require('serve-index');
-const historyApiFallback = require('koa-history-api-fallback');
 const libPath = require('path');
 const { simpleRender } = require('../../util/helper');
-
 const { PRIORITY } = require('../../constant');
 
 const ACCEPT_METHOD = /^(?:GET|HEAD)$/i;
@@ -47,17 +45,27 @@ function addServeAction(config, action, { root }) {
   });
 }
 
-function addServeMiddleware(config, middleware, { root, index }) {
-  const serveConfig = config.get('serve');
-  const directoryOptions = config.get('serve.directory');
-
-  const serveIndexMiddleware = c2k(serveIndex(root, { icons: true }), {
-    bubble: true,
-  });
-
-  middleware.add('$serve', {
+module.exports = {
+  priority: PRIORITY.SERVE,
+  hooks: {
     priority: PRIORITY.SERVE,
-    onRoute: async (ctx, next) => {
+    async onCreate({ config, router }) {
+      const root = config.get('serve.base') || config.get('root');
+      const index = config.get('serve.index') || 'index.html';
+
+      addServeAction(config, router.action, { root, index });
+    },
+
+    async onRoute(ctx, next, { config }) {
+      const serveConfig = config.get('serve');
+      const directoryOptions = config.get('serve.directory');
+      const root = config.get('serve.base') || config.get('root');
+      const index = config.get('serve.index') || 'index.html';
+
+      const serveIndexMiddleware = c2k(serveIndex(root, { icons: true }), {
+        bubble: true,
+      });
+
       await next();
 
       if (isFound(ctx) || serveConfig === false) return null;
@@ -68,38 +76,6 @@ function addServeMiddleware(config, middleware, { root, index }) {
         return serveIndexMiddleware(ctx, () => null);
       }
       return null;
-    },
-  });
-}
-
-module.exports = {
-  priority: PRIORITY.SERVE,
-  hooks: {
-    async onCreate({ middleware, config, router }) {
-      const root = config.get('serve.base') || config.get('root');
-      const index = config.get('serve.index') || 'index.html';
-
-      addServeAction(config, router.action, { root, index });
-
-      addServeMiddleware(config, middleware, { root, index });
-
-      // historyApiFallback
-      // todo move out of serve
-      const historyApiFallbackOptions = config.get('historyApiFallback');
-      if (historyApiFallbackOptions) {
-        const historyApiFallbackMiddleware = historyApiFallback(
-          historyApiFallbackOptions === true ? {} : historyApiFallbackOptions,
-        );
-        middleware.add('$history-api-fallback', {
-          priority: PRIORITY.HISTORY_API_FALLBACK,
-          onRoute: async (ctx, next) => {
-            if (ctx.status !== 404) {
-              return next();
-            }
-            return historyApiFallbackMiddleware(ctx, next);
-          },
-        });
-      }
     },
   },
 };
