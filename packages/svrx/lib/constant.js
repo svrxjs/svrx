@@ -20,6 +20,7 @@ module.exports = {
     TRANSFORM: 100,
     INJECTOR: 101,
     IO: 200,
+    CORS: 300,
   },
 
   ASSET_FIELDS: ['script', 'style'],
