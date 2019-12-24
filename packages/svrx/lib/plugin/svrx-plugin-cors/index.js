@@ -1,6 +1,8 @@
 const cors = require('koa2-cors');
+const { PRIORITY } = require('../../constant');
 
 module.exports = {
+  priority: PRIORITY.CORS,
   hooks: {
     async onRoute(ctx, next, { config }) {
       const corsConfig = config.get('cors');

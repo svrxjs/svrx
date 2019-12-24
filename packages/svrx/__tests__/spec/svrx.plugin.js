@@ -13,6 +13,7 @@ const logger = require('../../lib/util/logger');
 
 const MODULE_PATH = libPath.join(__dirname, '../fixture/plugin');
 const TEST_PLUGIN_PATH = libPath.join(__dirname, '../fixture/plugin/svrx-plugin-test');
+const ROUTER_PATH = libPath.join(__dirname, '../fixture/router');
 
 const { BUILTIN_PLUGIN } = constants;
 
@@ -486,6 +487,41 @@ describe('Plugin System', () => {
         );
         stub.restore();
         svrx.close(done);
+      });
+    });
+  });
+
+  describe('Builtin:cors', () => {
+    it('should return cors headers', (done) => {
+      const svrx = createServer({
+        port: 3000,
+        serve: {
+          base: libPath.join(MODULE_PATH, 'serve'),
+        },
+      });
+
+      svrx.setup().then(() => {
+        request(svrx.callback())
+          .get('/demo.js')
+          .expect('Access-Control-Allow-Origin', '*')
+          .end(done);
+      });
+    });
+
+    it('should return cors headers with router', (done) => {
+      const svrx = createServer({
+        port: 3000,
+        route: libPath.join(ROUTER_PATH, 'rule.normal.js'),
+      });
+
+      svrx.setup().then(() => {
+        request(svrx.callback())
+          .get('/normal/name')
+          .expect('Access-Control-Allow-Origin', '*')
+          .end((err) => {
+            done(err);
+            svrx.close();
+          });
       });
     });
   });
