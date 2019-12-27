@@ -282,5 +282,23 @@ describe('CLI Config', () => {
       expect(testPlugin).not.to.be(undefined);
       expect(testPlugin2).not.to.be(undefined);
     });
+
+    it('should parse dashed plugin correctly', () => {
+      // svrx --hello-world
+      const server = createServer({}, {
+        'hello-world': true,
+        helloWorld: true,
+        'dash-plugin': false,
+        dashPlugin: false,
+      });
+      const dash = server.config.getPlugin('hello-world');
+      const camel = server.config.getPlugin('helloWorld');
+      const dashFalse = server.config.getPlugin('dash-plugin');
+      const camelFalse = server.config.getPlugin('dashPlugin');
+      expect(dash).not.to.be(undefined);
+      expect(camel).to.be(undefined);
+      expect(dashFalse).to.be(undefined);
+      expect(camelFalse).to.be(camelFalse);
+    });
   });
 });
