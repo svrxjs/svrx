@@ -31,7 +31,7 @@ describe('Package Manager', () => {
       expect(core.version)
         .to
         .equal((require(libPath.join(TEST_CORE_PATH, 'package.json'))).version); // eslint-disable-line
-    });
+    }).timeout(10000);
     it('should work fine when load without a specific version(local) and auto load a latest version', async () => {
       const pm = PackageManagerCreator({
         version: '1.0.6',
