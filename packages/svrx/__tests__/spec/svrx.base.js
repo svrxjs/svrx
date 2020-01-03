@@ -38,7 +38,7 @@ describe('Basic', () => {
         svr.close(done);
       });
     });
-  });
+  }).timeout(10000);
 
   it('#start with no port', (done) => {
     const svr = createServer({
@@ -68,7 +68,7 @@ describe('Basic', () => {
         });
       });
     });
-  });
+  }).timeout(10000);
 
   it('getCurrentVersion', () => {
     expect(Svrx.getCurrentVersion()).to.equal(require('../../package.json').version);  // eslint-disable-line
@@ -325,42 +325,44 @@ describe('Public API', () => {
   });
 });
 
-describe('Signal handling', () => {
-  after(() => {
-    process.removeAllListeners('SIGTERM');
-    process.removeAllListeners('SIGINT');
-  });
-
+if (process.platform !== 'win32') {
   describe('Signal handling', () => {
-    ['SIGINT', 'SIGTERM'].forEach((SIGNAL) => {
-      describe(`${SIGNAL}`, () => {
-        let sandbox;
-        let exitStub;
+    after(() => {
+      process.removeAllListeners('SIGTERM');
+      process.removeAllListeners('SIGINT');
+    });
 
-        beforeEach(() => {
-          sandbox = sinon.createSandbox({ useFakeTimers: true });
-          exitStub = sandbox.stub(process, 'exit');
-        });
+    describe('Signal handling', () => {
+      ['SIGINT', 'SIGTERM'].forEach((SIGNAL) => {
+        describe(`${SIGNAL}`, () => {
+          let sandbox;
+          let exitStub;
 
-        afterEach(() => {
-          sandbox.restore();
-        });
-
-        it(`should call 'process.exit()' when receiving a ${SIGNAL}`, (done) => {
-          process.once(SIGNAL, () => {
-            if (SIGNAL === 'SIGINT') {
-              sinon.assert.calledTwice(exitStub); // one for 'tmp'
-            } else {
-              sinon.assert.calledOnce(exitStub); // one for 'tmp'
-            }
-            done();
+          beforeEach(() => {
+            sandbox = sinon.createSandbox({ useFakeTimers: true });
+            exitStub = sandbox.stub(process, 'exit');
           });
-          process.kill(process.pid, SIGNAL);
+
+          afterEach(() => {
+            sandbox.restore();
+          });
+
+          it(`should call 'process.exit()' when receiving a ${SIGNAL}`, (done) => {
+            process.once(SIGNAL, () => {
+              if (SIGNAL === 'SIGINT') {
+                sinon.assert.calledTwice(exitStub); // one for 'tmp'
+              } else {
+                sinon.assert.calledOnce(exitStub); // one for 'tmp'
+              }
+              done();
+            });
+            process.kill(process.pid, SIGNAL);
+          });
         });
       });
     });
   });
-});
+}
 
 describe('Config change', () => {
   it('Change logger.level', async () => {

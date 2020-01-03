@@ -16,7 +16,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha --recursive __tests__/spec",
+    "test": "nyc --reporter=html --reporter=text mocha --recursive __tests__/spec --exit",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
