@@ -19,13 +19,19 @@ if (process.platform === 'win32') {
 }
 const PREFIX = `void function({route, all, ${methods.join(',')}}){`;
 const POSTFIX = `}((()=>{
-    const Router = require('${ROUTE_MODULE_PATH}') 
+    const Router = require('${ROUTE_MODULE_PATH}')
     const router = new Router();
     module.exports = router;
     return router.commands;
 })())`;
 
-function wrap(content) {
+function wrap(root, content) {
+  content = content.replace(/require\(['"](.+)['"]\)/g, (match, target) => {
+    if (libFs.existsSync(libPath.join(root, target))) {
+      return match;
+    }
+    return `require('${root}/node_modules/${target}')`;
+  });
   return `${PREFIX}\n${content}\n${POSTFIX}`;
 }
 
@@ -40,7 +46,8 @@ function requireSource(src, filename) {
 }
 
 class Loader {
-  constructor() {
+  constructor(options = {}) {
+    this.rootPath = options.rootPath;
     this.moduleMap = new Map();
     this._middlewares = [];
     this._cachedMiddleware = compose(
@@ -65,7 +72,7 @@ class Loader {
 
   async build(filename, content) {
     content = content || (await readContent(filename));
-    const wrapContent = wrap(content);
+    const wrapContent = wrap(this.rootPath, content);
     let m;
     try {
       m = requireSource(wrapContent, filename);
