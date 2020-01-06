@@ -57,6 +57,34 @@ describe('Router ', () => {
       });
     });
 
+    it('require libs', (done) => {
+      const svrx = createServer({
+        route: libPath.join(ROUTER_PATH, 'rule.require.js'),
+      });
+
+      svrx.setup().then(() => {
+        supertest(svrx.callback())
+          .post('/test/post')
+          .send({ name: 'john' })
+          .set('Accept', 'application/json')
+          .expect(200)
+          .expect({ name: 'john' })
+          .end((err) => {
+            if (err) return done(err);
+            return supertest(svrx.callback())
+              .post('/test/post/relative')
+              .send({ name: 'watson' })
+              .set('Accept', 'application/json')
+              .expect(200)
+              .expect({ name: 'watson' })
+              .end((e) => {
+                done(e);
+                svrx.close();
+              });
+          });
+      });
+    });
+
     it('exportsToPlugin', (done) => {
       const loader = new Loader();
       const { action, route } = exportsToPlugin(loader);
