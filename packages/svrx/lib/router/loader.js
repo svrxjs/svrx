@@ -17,22 +17,10 @@ let ROUTE_MODULE_PATH = libPath.join(__dirname, 'router.js');
 if (process.platform === 'win32') {
   ROUTE_MODULE_PATH = ROUTE_MODULE_PATH.replace(/\\/g, '\\\\');
 }
-const PREFIX = `void function({route, all, ${methods.join(',')}}){`;
-const POSTFIX = `}((()=>{
-    const Router = require('${ROUTE_MODULE_PATH}')
-    const router = new Router();
-    module.exports = router;
-    return router.commands;
-})())`;
+const PREFIX = `void function({route, all, require, ${methods.join(',')}}){`;
 
-function wrap(root, content) {
-  content = content.replace(/require\(['"](.+)['"]\)/g, (match, target) => {
-    if (libFs.existsSync(libPath.join(root, target))) {
-      return match;
-    }
-    return `require('${root}/node_modules/${target}')`;
-  });
-  return `${PREFIX}\n${content}\n${POSTFIX}`;
+function wrap(content, postfix) {
+  return `${PREFIX}\n${content}\n${postfix}`;
 }
 
 async function readContent(filename) {
@@ -48,6 +36,16 @@ function requireSource(src, filename) {
 class Loader {
   constructor(options = {}) {
     this.rootPath = options.rootPath;
+    this.POSTFIX = `}((()=>{
+        const Router = require('${ROUTE_MODULE_PATH}');
+        const router = new Router({rootPath:'${this.rootPath}'});
+        module.exports = router;
+        return {
+          ...router.commands,
+          require: router.require,
+        };
+    })())`;
+
     this.moduleMap = new Map();
     this._middlewares = [];
     this._cachedMiddleware = compose(
@@ -72,7 +70,7 @@ class Loader {
 
   async build(filename, content) {
     content = content || (await readContent(filename));
-    const wrapContent = wrap(this.rootPath, content);
+    const wrapContent = wrap(content, this.POSTFIX);
     let m;
     try {
       m = requireSource(wrapContent, filename);
@@ -82,7 +80,7 @@ class Loader {
         new Error(
           `build routeFile [${filename}] failed\n${(e.stack)
             .replace(PREFIX, '')
-            .replace(POSTFIX, '')}`,
+            .replace(this.POSTFIX, '')}`,
         ),
       );
       return null;
