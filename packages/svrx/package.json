@@ -27,7 +27,7 @@
     "url": "https://github.com/svrxjs/svrx"
   },
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha --recursive __tests__/spec",
+    "test": "nyc --reporter=html --reporter=text mocha --recursive __tests__/spec --exit",
     "webpack:dev": "webpack --config ./scripts/webpack.injector.js -w",
     "webpack:build": "webpack --config ./scripts/webpack.injector.js",
     "dev": "npm run webpack:dev",
