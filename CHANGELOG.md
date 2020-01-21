@@ -1,3 +1,20 @@
+## v1.1.4 (2019-12-24)
+
+#### :rocket: New Feature
+* `svrx`
+  * [#168](https://github.com/svrxjs/svrx/pull/168) Support svrx-plugin-ui ([@xuchaoying](https://github.com/xuchaoying))
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#173](https://github.com/svrxjs/svrx/pull/173) Fix the priority of cors and route ([@xuchaoying](https://github.com/xuchaoying))
+  * [#167](https://github.com/svrxjs/svrx/pull/167) Fix `window.__svrx__` undefined when using require.js ([@xuchaoying](https://github.com/xuchaoying))
+* `svrx-util`, `svrx`
+  * [#165](https://github.com/svrxjs/svrx/pull/165) Revert global-npm to 0.3.0 ([@xuchaoying](https://github.com/xuchaoying))
+
+#### :nail_care: Enhancement
+* `svrx-util`
+  * [#174](https://github.com/svrxjs/svrx/pull/174) Put auto update package after local package load ([@xuchaoying](https://github.com/xuchaoying))
+
 ## v1.1.3 (2019-12-02)
 
 #### :bug: Bug Fix
