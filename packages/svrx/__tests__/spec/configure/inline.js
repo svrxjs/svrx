@@ -68,9 +68,9 @@ describe('Inline/RC File Config', () => {
         const moduleId = '/svrx/packages/svrx/lib/configure/index.js';
 
         fakes.forEach((fake) => {
-          const fakePackagePath = `${fake.path}/package.json`;
+          const fakePackagePath = libPath.join(fake.path, 'package.json');
           const existsSyncStub = sinon.stub(fs, 'existsSync');
-          const configModule = module.children.find((mod) => mod.id.endsWith(moduleId));
+          const configModule = module.children.find((mod) => mod.id.split(libPath.sep).join('/').endsWith(moduleId));
           const requireStub = sinon.stub(configModule, 'require');
 
           // fake functions
