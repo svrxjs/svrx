@@ -27,8 +27,7 @@ svrx(server-x) is a platform built for efficient front-end development.
 
 ```bash
 npm install -g @svrx/cli
-mkdir example && cd example
-echo '<html><body>Hello svrx!</body></html>' > index.html
+
 svrx
 ```
 
