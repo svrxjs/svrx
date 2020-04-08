@@ -214,7 +214,7 @@ describe('Plugin System', () => {
           expect(e).to.match(/install error: package 'svrx-plugin-not-exsits-error' not found/);
           done();
         });
-    }).timeout(4000);
+    }).timeout(10000);
 
     it('load empty keep silent', (done) => {
       const config = new Configure({
@@ -427,7 +427,7 @@ describe('Plugin System', () => {
       svrx.setup().then(() => {
         request(svrx.callback())
           .get('/demo.js')
-          .expect("parseInt('123', 10);\n", done);
+          .expect(/parseInt\('123', 10\);/, done);
       });
     });
     it('serveStatic: injector', (done) => {

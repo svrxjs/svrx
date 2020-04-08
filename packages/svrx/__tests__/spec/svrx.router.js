@@ -359,8 +359,8 @@ describe('Router ', () => {
             .end(done);
         });
 
-        setTimeout(() => {
-          write(
+        setTimeout(async () => {
+          await write(
             filePath,
             `
             get('/blog/:id').send({title: 'svrx.router is awesome!'})
@@ -400,8 +400,8 @@ describe('Router ', () => {
           .end(done);
       });
 
-      setTimeout(() => {
-        write(filePath2, 'get(\'/change2/:id\').send({title: \'change2 is ready!\'})');
+      setTimeout(async () => {
+        await write(filePath2, 'get(\'/change2/:id\').send({title: \'change2 is ready!\'})');
       }, 10);
     }).timeout(5000);
 
