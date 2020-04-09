@@ -1,5 +1,4 @@
-const libPath = require('path');
-const libFs = require('fs');
+const nodeResolve = require('resolve');
 const compose = require('../util/compose');
 const methods = require('./methods');
 const Route = require('./route');
@@ -9,12 +8,8 @@ class Router {
     this._routes = [];
     this.commands = {};
     const { rootPath } = options;
-    this.require = (path) => {
-      if (libFs.existsSync(libPath.join(rootPath, path))) {
-        return require(libPath.join(rootPath, path)); // eslint-disable-line
-      }
-      return require(libPath.join(options.rootPath, 'node_modules', path)) // eslint-disable-line
-    };
+    this.require = (path) =>
+       require(nodeResolve.sync(path, { basedir: rootPath })); // eslint-disable-line
     this._initMethod();
   }
 
