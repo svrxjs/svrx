@@ -36,9 +36,13 @@ function requireSource(src, filename) {
 class Loader {
   constructor(options = {}) {
     this.rootPath = options.rootPath;
+    /* istanbul ignore if */
+    if (this.rootPath && process.platform === 'win32') {
+      this.rootPath = this.rootPath.replace(/\\/g, '\\\\');
+    }
     this.POSTFIX = `}((()=>{
         const Router = require('${ROUTE_MODULE_PATH}');
-        const router = new Router({rootPath:'${this.rootPath.replace(/\\/g, '\\\\')}'});
+        const router = new Router({rootPath:'${this.rootPath}'});
         module.exports = router;
         return {
           ...router.commands,
