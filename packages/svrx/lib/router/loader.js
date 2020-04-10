@@ -38,7 +38,7 @@ class Loader {
     this.rootPath = options.rootPath;
     this.POSTFIX = `}((()=>{
         const Router = require('${ROUTE_MODULE_PATH}');
-        const router = new Router({rootPath:'${this.rootPath}'});
+        const router = new Router({rootPath:'${this.rootPath.replace(/\\/g, '\\\\')}'});
         module.exports = router;
         return {
           ...router.commands,
