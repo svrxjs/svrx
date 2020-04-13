@@ -1,12 +1,15 @@
+const nodeResolve = require('resolve');
 const compose = require('../util/compose');
 const methods = require('./methods');
 const Route = require('./route');
 
-
 class Router {
-  constructor() {
+  constructor(options = {}) {
     this._routes = [];
     this.commands = {};
+    const { rootPath } = options;
+    this.require = (path) =>
+       require(nodeResolve.sync(path, { basedir: rootPath })); // eslint-disable-line
     this._initMethod();
   }
 
