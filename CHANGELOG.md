@@ -1,3 +1,13 @@
+## v1.1.5 (2020-04-13)
+
+#### :rocket: New Feature
+* `svrx`
+  * [#178](https://github.com/svrxjs/svrx/pull/178) Support lib require in route file ([@xuchaoying](https://github.com/xuchaoying))
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#177](https://github.com/svrxjs/svrx/pull/177) Fix enable dashed plugins through cli shortcut ([@xuchaoying](https://github.com/xuchaoying))
+
 ## v1.1.4 (2019-12-24)
 
 #### :rocket: New Feature
