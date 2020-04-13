@@ -55,7 +55,9 @@ class Svrx {
     const { events, injector, io } = this;
 
     // @TODO
-    this.loader = new Loader();
+    this.loader = new Loader({
+      rootPath: config.get('root'),
+    });
     this.loader.on('error', (payload) => logger.error(payload));
     this.loader.on('update', (payload) => logger.notify(`[routing update] ${payload}`));
 
