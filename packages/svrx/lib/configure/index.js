@@ -311,7 +311,10 @@ class Configure {
 
     _.keys(cliPlugins).forEach((name) => {
       const value = cliPlugins[name];
-      const newValue = { name };
+      const newValue = {
+        // helloWorld -> hello-world
+        name: name.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`),
+      };
 
       if (value === false) {
         newValue._enable = false;
