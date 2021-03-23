@@ -2,7 +2,8 @@ name: cov
 
 on:
   pull_request:
-    branches: [ $default-branch ]
+    branches:
+      - master
 
 jobs:
   build:
