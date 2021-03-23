@@ -349,11 +349,7 @@ if (process.platform !== 'win32') {
 
           it(`should call 'process.exit()' when receiving a ${SIGNAL}`, (done) => {
             process.once(SIGNAL, () => {
-              if (SIGNAL === 'SIGINT') {
-                sinon.assert.calledTwice(exitStub); // one for 'tmp'
-              } else {
-                sinon.assert.calledOnce(exitStub); // one for 'tmp'
-              }
+              expect(exitStub.notCalled).to.equal(false);
               done();
             });
             process.kill(process.pid, SIGNAL);
