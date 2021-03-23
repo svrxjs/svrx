@@ -1,0 +1,22 @@
+name: cov
+
+on:
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '15.x'
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+      - run: npm run report-coverage
+
