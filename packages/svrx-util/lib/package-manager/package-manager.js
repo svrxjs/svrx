@@ -158,7 +158,7 @@ class PackageManager {
 
       const { stderr } = await exec(cmd);
 
-      if (stderr) {
+      if (stderr && stderr.indexOf('WARN') === -1) {
         throw new Error(stderr);
       }
       const installedVersion = (() => {
