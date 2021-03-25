@@ -161,15 +161,20 @@ class PackageManager {
       if (stderr && stderr.indexOf('WARN') === -1) {
         throw new Error(stderr);
       }
+      const pkgFileLib = libPath.join(tmpPath, 'lib/node_modules', packageName, 'package.json');
+      const pkgFileLibExist = fs.existsSync(pkgFileLib);
+      const tmpFolder = pkgFileLibExist
+        ? libPath.join(tmpPath, 'lib/node_modules', packageName)
+        : libPath.join(tmpPath, 'node_modules', packageName);
+
       const installedVersion = (() => {
-        const pkginfo = require(libPath.join(tmpPath, 'lib/node_modules', packageName, 'package.json'));
+        const pkginfo = require(libPath.join(tmpFolder, 'package.json'));
         return (pkginfo && pkginfo.version) || '';
       })();
       if (!installedVersion) {
         throw new Error('no version installed');
       }
 
-      const tmpFolder = libPath.join(tmpPath, 'lib/node_modules', packageName);
       const destFolder = libPath.join(root, installedVersion);
       fs.copySync(tmpFolder, destFolder, {
         dereference: true, // ensure linked folder is copied too
