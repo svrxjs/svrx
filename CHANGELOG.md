@@ -1,3 +1,9 @@
+## v1.1.6 (2021-03-25)
+
+#### :bug: Bug Fix
+* `svrx`
+  * [#195](https://github.com/svrxjs/svrx/pull/195) Fix start error on node@15, use child_process to exec npm commands directly ([@xuchaoying](https://github.com/xuchaoying))
+
 ## v1.1.5 (2020-04-13)
 
 #### :rocket: New Feature
