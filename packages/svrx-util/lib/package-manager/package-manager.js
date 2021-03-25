@@ -3,10 +3,10 @@ const mkdirp = require('mkdirp');
 const fs = require('fs-extra');
 const tmp = require('tmp');
 const libPath = require('path');
-const { fork } = require('child_process');
 const semver = require('semver');
 const rimraf = require('rimraf');
-const npm = require('../npm');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
 const requireEnsure = (path) => {
   delete require.cache[path];
@@ -141,31 +141,46 @@ class PackageManager {
   }
 
   /**
-   *
    * @param {string|undefined} version
    * @returns {Promise<void>}
    */
   async install(version) {
     const {
-      packageName, registry, root, path,
+      packageName, registry, root,
     } = this;
-    const task = fork(libPath.join(__dirname, './tasks/install.js'), {
-      silent: true,
-    });
 
     try {
-      return new Promise((resolve, reject) => {
-        task.on('error', reject);
-        task.on('message', (ret) => {
-          if (ret.error) reject(new Error(`install failed: ${ret.error}`));
-          else resolve(ret);
-        });
-        task.send({
-          packageName, version, registry, root, path,
-        });
+      const tmpPath = tmp.dirSync().name;
+      const registryCmd = registry ? `--registry=${registry}` : '';
+      const cmd = `
+      npm install --prefix=${libPath.resolve(tmpPath)} ${packageName}@${version || 'latest'} -g ${registryCmd}
+    `;
+
+      const { stderr } = await exec(cmd);
+
+      if (stderr && stderr.indexOf('WARN') === -1) {
+        throw new Error(stderr);
+      }
+      const pkgFileLib = libPath.join(tmpPath, 'lib/node_modules', packageName, 'package.json');
+      const pkgFileLibExist = fs.existsSync(pkgFileLib);
+      const tmpFolder = pkgFileLibExist
+        ? libPath.join(tmpPath, 'lib/node_modules', packageName)
+        : libPath.join(tmpPath, 'node_modules', packageName);
+
+      const installedVersion = (() => {
+        const pkginfo = require(libPath.join(tmpFolder, 'package.json'));
+        return (pkginfo && pkginfo.version) || '';
+      })();
+      if (!installedVersion) {
+        throw new Error('no version installed');
+      }
+
+      const destFolder = libPath.join(root, installedVersion);
+      fs.copySync(tmpFolder, destFolder, {
+        dereference: true, // ensure linked folder is copied too
       });
     } catch (e) {
-      throw new Error(`install failed: ${e.message}`);
+      throw new Error(`install failed: ${e}`);
     }
   }
 
@@ -199,23 +214,37 @@ class PackageManager {
 
   async getRemotePackages() {
     const { packageName, registry } = this;
-    const task = fork(libPath.join(__dirname, './tasks/view.js'), {
-      silent: true,
-    });
-
     try {
-      return new Promise((resolve, reject) => {
-        task.on('error', reject);
-        task.on('message', (ret) => {
-          if (ret.error) reject(new Error(`install error: package '${packageName}' not found: ${ret.error}`));
-          else resolve(ret);
-        });
-        task.send({
-          packageName, registry,
-        });
-      });
+      const registryCmd = registry ? `--registry=${registry}` : '';
+      const cmd = `npm view ${packageName}@* engines ${registryCmd}`;
+
+      const { stdout, stderr } = await exec(cmd);
+      // eg: svrx-plugin-demo@1.0.3 { svrx: '^0.0.3' }
+      // eg: @svrx/svrx@1.0.0 { node: '>=8.9.0' }
+
+      if (!stdout || stderr) {
+        throw new Error(stderr);
+      }
+
+      const results = stdout.split('\n');
+      return results.map((str) => {
+        const ind = str.indexOf('{');
+        if (ind < 0) return null;
+        const version = str.slice(packageName.length + 1, ind - 1);
+
+        // cannot use regex to find the pattern due to special characters in stdout
+        const engineInd = str.indexOf('svrx', ind);
+        if (engineInd < 0) return { version };
+        const engineQuoteStartInd = str.indexOf("'", engineInd);
+        const engineQuoteEndInd = str.indexOf("'", engineQuoteStartInd + 1);
+        const pattern = str.slice(engineQuoteStartInd + 1, engineQuoteEndInd);
+        return {
+          version,
+          pattern,
+        };
+      }).filter((item) => item);
     } catch (e) {
-      throw new Error(`install error: package '${packageName}' not found: ${e.message}`);
+      throw new Error(`install error: package '${packageName}' not found: ${e}`);
     }
   }
 
@@ -328,45 +357,5 @@ class PackageManager {
     await Promise.all(promises);
   }
 }
-
-PackageManager.getInstallTask = async ({
-  packageName, version, root, registry,
-}) => {
-  const tmpPath = tmp.dirSync().name;
-
-  const options = {
-    name: packageName,
-    nameReal: packageName,
-    version,
-    path: tmpPath,
-    registry,
-    global: true,
-  };
-
-  const result = await npm.install(options);
-  const tmpFolder = libPath.join(tmpPath, 'node_modules', packageName);
-  const destFolder = libPath.join(root, result.version);
-
-  fs.copySync(tmpFolder, destFolder, {
-    dereference: true, // ensure linked folder is copied too
-  });
-
-  return result.version;
-};
-
-PackageManager.getViewTask = async ({
-  packageName, registry,
-}) => {
-  const viewResult = await npm.view([
-    `${packageName}@*`,
-    'engines',
-  ], {
-    registry,
-  });
-  return Object.keys(viewResult).map((v) => ({
-    version: v,
-    pattern: (viewResult[v].engines && viewResult[v].engines.svrx) || '*',
-  }));
-};
 
 module.exports = PackageManager;
