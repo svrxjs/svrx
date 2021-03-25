@@ -216,7 +216,7 @@ class PackageManager {
     const { packageName, registry } = this;
     try {
       const registryCmd = registry ? `--registry=${registry}` : '';
-      const cmd = `npm view '${packageName}@*' engines ${registryCmd}`;
+      const cmd = `npm view ${packageName}@* engines ${registryCmd}`;
 
       const { stdout, stderr } = await exec(cmd);
       // eg: svrx-plugin-demo@1.0.3 { svrx: '^0.0.3' }
