@@ -1,3 +1,9 @@
+## v1.1.7 (2021-04-22)
+
+#### :bug: Bug Fix
+* `svrx-util`
+  * Fix package install error on Windows ([@xuchaoying](https://github.com/xuchaoying))
+  
 ## v1.1.6 (2021-03-25)
 
 #### :bug: Bug Fix
