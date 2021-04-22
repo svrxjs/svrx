@@ -156,7 +156,7 @@ class PackageManager {
       npm install --prefix=${libPath.resolve(tmpPath)} ${packageName}@${version || 'latest'} -g ${registryCmd}
     `;
 
-      const { stderr } = await exec(cmd);
+      const { stderr } = await exec(cmd.trim());
 
       if (stderr && stderr.indexOf('WARN') === -1) {
         throw new Error(stderr);
@@ -218,7 +218,7 @@ class PackageManager {
       const registryCmd = registry ? `--registry=${registry}` : '';
       const cmd = `npm view ${packageName}@* engines ${registryCmd}`;
 
-      const { stdout, stderr } = await exec(cmd);
+      const { stdout, stderr } = await exec(cmd.trim());
       // eg: svrx-plugin-demo@1.0.3 { svrx: '^0.0.3' }
       // eg: @svrx/svrx@1.0.0 { node: '>=8.9.0' }
 
