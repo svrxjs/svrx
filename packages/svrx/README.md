@@ -4,7 +4,7 @@
 
 svrx(server-x) is a platform built for efficient front-end development.
 
-See our [website](https://svrx.io/) for more information.
+See our [website](https://svrxjs.github.io/svrx-www/) for more information.
 
 ## Install
 

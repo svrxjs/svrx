@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="320" src="https://svrx.io/assets/images/banner.png">
+  <img width="320" src="https://svrxjs.github.io/svrx-www/assets/images/banner.png">
 </p>
 
 <p align="center">
@@ -9,17 +9,8 @@
   <a href="https://nodejs.org/en/">
     <img src="https://img.shields.io/node/v/@svrx/svrx?style=flat-square" alt="node">
   </a>
-  <a href="https://travis-ci.org/svrxjs/svrx" rel="nofollow">
-    <img src="https://img.shields.io/travis/svrxjs/svrx/master?style=flat-square&logo=travis" alt="Build Status">
-  </a>
   <a href="https://codecov.io/gh/svrxjs/svrx">
     <img src="https://img.shields.io/codecov/c/gh/svrxjs/svrx?style=flat-square&logo=codecov" alt="codecov">
-  </a>
-  <a href="https://david-dm.org/svrxjs/svrx?path=packages%2Fsvrx">
-    <img src="https://img.shields.io/david/svrxjs/svrx?path=packages%2Fsvrx&style=flat-square" alt="Dependencies">
-  </a>
-  <a href="https://david-dm.org/svrxjs/svrx?path=packages%2Fsvrx&type=dev">
-    <img src="https://img.shields.io/david/dev/svrxjs/svrx?path=packages%2Fsvrx&style=flat-square" alt="DevDependencies">
   </a>
   <a href="https://gitter.im/svrxjs/svrx?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
     <img src="https://badges.gitter.im/svrxjs/svrx.svg" alt="gitter">
