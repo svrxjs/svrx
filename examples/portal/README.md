@@ -1,6 +1,6 @@
 # svrx-plugin-portal
 
-The portal plugin for svrx. Provide intranet penetration
+The portal plugin for svrx. Provide intranet penetration.
 
 ```bash
 svrx --portal
